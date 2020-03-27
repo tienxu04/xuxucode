@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<!--front page intro-->
+<div class="jumbotron jumbotron-fluid">
+<div class="container">
+  <h1 class="display-4">Son's Library</h1>
+  <p class="lead">Welcome to my small world where you can browse for books, write your own reviews and read others'.</p>
+</div>
+</div>
+<!-- featured posts -->
+<div class="container">
+
+  <div class="row">
+
+    {% for book in books %}
+        <div class="col-sm">
+      <div class="card" style="width: 18rem;">
+  <div class="card-body">
+    <h5 class="card-title">{{book.title}}</h5>
+    <h6 class="card-subtitle mb-2 text-muted">{{book.author}}</h6>
+    <p class="card-text">This book was published in {{book.year}}</p>
+    <a href="{{ url_for('view_book', book_id=book.id) }}" class="card-link">Read more</a>
+  </div>
+</div>
+    </div>
+
+{% endfor %}
+  </div>
+  <p></p>
+  <!-- older posts-->
+  <button type="button" class="btn btn-primary">
+    Older posts <span class="badge badge-light">10</span>
+  </button>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Author</th>
+        <th scope="col">Year</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for older in olders %}
+      <tr>
+        <td><a href="{{ url_for('view_book', book_id=older.id) }}">{{older.title}}</a></td>
+        <td>{{older.author}}</td>
+        <td>{{older.year}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block alertmessage %}
+{% endblock %}
+
+{% block body %}
+<div class="card">
+  <div class="card-header">
+    Goodbye!
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">Bye for now</h5>
+    <p class="card-text">You have signed out.</p>
+    <a href="{{url_for('index')}}" class="btn btn-primary">Back to home</a>
+  </div>
+</div>
+{% endblock %}

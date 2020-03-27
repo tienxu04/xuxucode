@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="alert alert-success" role="alert">
+You have logged in successfully. You'll be automatically brought back to home after 3 seconds.</div>
+<script type="text/javascript">
+setTimeout(
+function ( )
+{
+//  history.back();
+window.location=document.location.href="/";
+}, 2500 );
+</script>
+
+{% endblock %}

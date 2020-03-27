@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<div class="card">
+  <div class="card-header">
+    Join us today
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">Become a member</h5>
+    <p class="card-text">Please fill in the form below to sign up for an account.</p>
+    <form action="{{url_for('signup')}}" method="post">
+      <div class="form-group">
+        <label for="exampleInputUsername">Username</label>
+        <input type="text" name="username" class="form-control" placeholder="Choose a username">
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1">Password</label>
+        <input type="password" class="form-control" name="password" placeholder="Password">
+        <small id="passwordHelp" class="form-text text-muted">Please choose a strong password.</small>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

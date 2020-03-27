@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{url_for('index')}}">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">View book detals.</li>
+  </ol>
+</nav>
+<!--book detail-->
+<div class="jumbotron jumbotron-fluid">
+<div class="container">
+  <h1 class="display-4">{{book.title}}</h1>
+  <p class="lead">Published in {{book.year}} by {{book.author}}</p>
+<p>ISBN: {{book.isbn}}</p>
+  <p>This book has been rated {{goodreadsinfo.ratings_counts}} times on Goodreads with an average rating of <span class="badge badge-pill badge-success">{{goodreadsinfo.avg_rating}}</span></p>
+</div>
+</div>
+
+<!-- goodreads reviews -->
+<div class="container">
+
+<h5 class="card-header">{{book.title}} currently has <span class="badge badge-pill badge-success">{{goodreadsinfo.review_counts}}</span> reviews on Goodreads</h5>
+<div style="height:250px" class="embed-responsive embed-responsive-16by9">
+<iframe class="embed-responsive-item" id="the_iframe" src="https://www.goodreads.com/api/reviews_widget_iframe?did=64044&format=html&isbn={{book.isbn}}&links=660&review_back=fff&stars=000&text=000" width="1100" height="280" frameborder="0"></iframe>
+</div>
+
+
+
+  <!--  WRITE YOUR REVIEW-->
+  <div class="card">
+
+    <h5 class="card-header">Write a review</h5>
+    <form action="{{url_for('review', book_id=book.id)}}" method="post">
+    <div class="card-body">
+      <h5 class="card-title">Rate this book</h5>
+      <p><input type="radio" name="rating" value="1">&nbsp;&nbsp;<input type="radio" name="rating" value="2">&nbsp;&nbsp;<input type="radio" name="rating" value="3">&nbsp;&nbsp;<input type="radio" name="rating" value="4">&nbsp;&nbsp;<input type="radio" name="rating" value="5"></p>
+          <div class="form-group">
+      <textarea name="review_input" class="form-control" rows="5" cols="120"></textarea></div>
+          <div class="form-group">
+    <button type="submit" class="btn btn-primary">Submit</button></div>
+      </form>
+    </div>
+  </div>
+  <p></p>
+  <div class="row">
+<!-- show reviews, if any -->
+    <div class="col-sm">
+      {% if not reviews %}
+      <div class="alert alert-success" role="alert">
+no review yet. be the first to write one
+</div>
+      {% else %}
+
+      {% for review in reviews %}
+<div class="card">
+  <div class="card-header">
+    Review No. #{{review.rid}}
+  </div>
+  <div class="card-body">
+    <blockquote class="blockquote mb-0">
+      <p>{{review.content}}</p>
+      <footer class="blockquote-footer">Posted by <cite title="Source Title">{{review.username}}</cite> with a rating of {{review.rating}}/5 stars</footer>
+    </blockquote>
+  </div>
+</div>
+<p></p>
+{% endfor %}
+{% endif %}
+</div></div></div>
+{% endblock %}

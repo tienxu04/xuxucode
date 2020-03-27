@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+
+{% block body %}
+
+<div class="alert alert-success" role="alert">
+  {{message}}
+
+</div>
+<!-- auto redirect to previous page -->
+<script type="text/javascript">
+setTimeout(
+function ( )
+{
+//  history.back();
+window.location=document.referrer;
+}, 2500 );
+</script>
+
+
+{% endblock %}

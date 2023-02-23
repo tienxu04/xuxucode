@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Input to Textarea Example</title>
+     <style>
+      body {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        background-color: #f0f2f5;
+        padding-right: 150px;
+        padding-left: 150px;
+      }
+      label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      input[type="text"],
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: none;
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+      button {
+        background-color: #1877f2;
+        color: #fff;
+        border-radius: 5px;
+        border: none;
+        padding: 10px 15px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #166fe5;
+      }
+      #output {
+        height: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1> New issue ad generator</h1>
+    <h3>powered by chatgpt</h3>
+    <label for="input1">Số báo:</label>
+    <input type="text" id="input1" />
+    <br />
+    <label for="input2">Ngày phát hành:</label>
+    <input type="text" id="input2" />
+    <br />
+    <label for="input3">Link:</label>
+    <input type="text" id="input3" />
+    <br />
+    <button onclick="concatenateInputs()">Concatenate Inputs</button>
+    <br />
+    <label for="output">Output:</label>
+    <br />
+    <textarea id="output"></textarea>
+          <button onclick="copyToClipboard()">Copy to Clipboard</button>
+
+    <script>
+      function concatenateInputs() {
+        const input1 = document.getElementById("input1").value;
+        const input2 = document.getElementById("input2").value;
+        const input3 = document.getElementById("input3").value;
+        const output = document.getElementById("output");
+        output.value = "Mời các bạn đón đọc Tuổi Trẻ Cuối Tuần số " +input1 + "-2023, có trên sạp báo ngày mai " + input2 + ".\nGiới thiệu nội dung: " + input3 + "\nĐặt báo dài hạn: https://pay.tuoitre.vn/dat-bao";
+      }
+      function copyToClipboard() {
+        const output = document.getElementById("output");
+        output.select();
+        document.execCommand("copy");
+        alert("Copied to clipboard!");
+      }
+    </script>
+  </body>
+</html>

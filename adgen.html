@@ -53,11 +53,16 @@
     <input type="text" id="input3" />
     <br />
     <button onclick="concatenateInputs()">Concatenate Inputs</button>
-    <br />
-    <label for="output">Output:</label>
+    <br /><br />
+    <label for="output">Output for FB post:</label>
     <br />
     <textarea id="output"></textarea>
-          <button onclick="copyToClipboard()">Copy to Clipboard</button>
+    <br />
+    <button onclick="copyToClipboard()">Copy to Clipboard</button>
+    <br /><br />
+    <label for="output">Output for newsletter (double-click 2 copy):</label>
+    <br />
+    <textarea id="output2"></textarea>
 
     <script>
       function concatenateInputs() {
@@ -65,14 +70,33 @@
         const input2 = document.getElementById("input2").value;
         const input3 = document.getElementById("input3").value;
         const output = document.getElementById("output");
-        output.value = "Mời các bạn đón đọc Tuổi Trẻ Cuối Tuần số " +input1 + "-2023, có trên sạp báo ngày mai " + input2 + ".\n\nGiới thiệu nội dung: " + input3 + "\n\nĐặt báo dài hạn: https://pay.tuoitre.vn/dat-bao";
-      }
+        output.value = "Mời các bạn đón đọc Tuổi Trẻ Cuối Tuần số " +input1 + "-2023, có trên sạp báo ngày mai " + input2 + ".\nGiới thiệu nội dung: " + input3 + "\nĐặt báo dài hạn: https://pay.tuoitre.vn/dat-bao";
+        output2.value ="Tuổi Trẻ Cuối Tuần số "+input1+"-2023 (link to: "+input3+") + Button \"Đặt báo\" (link to: https://pay.tuoitre.vn/dat-bao)";
+        // Get the textarea element
+const textarea = document.getElementById('output2');
+
+// Add a double-click event listener to the textarea element
+textarea.addEventListener('dblclick', function() {
+  // Select the text in the textarea
+  this.select();
+
+  // Copy the selected text to the clipboard
+  document.execCommand('copy');
+  alert("Copied to clipboard!");
+
+  // Deselect the text
+  this.setSelectionRange(0, 0);
+});
+
+       };
+      
       function copyToClipboard() {
         const output = document.getElementById("output");
         output.select();
         document.execCommand("copy");
         alert("Copied to clipboard!");
       }
+
     </script>
   </body>
 </html>

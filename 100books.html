@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .checked-title {
+            text-decoration: line-through;
+            color: gray;
+        }
+    </style>
+    <script>
+        // Inline CSV data
+        const csvData = `
+No.,Title,Author
+1,Demon Copperhead,Barbara Kingsolver
+2,All the Light We Cannot See,Anthony Doerr
+3,A Gentleman in Moscow,Amor Towles
+4,The Goldfinch,Donna Tartt
+5,Pachinko,Min Jin Lee
+6,Educated,Tara Westover
+7,Tomorrow, and Tomorrow, and Tomorrow,Gabrielle Zevin
+8,My Brilliant Friend,Elena Ferrante; translated by Ann Goldstein
+9,Never Let Me Go,Kazuo Ishiguro
+10,Station Eleven,Emily St. John Mandel
+11,A Little Life,Hanya Yanagihara
+12,The Overstory,Richard Powers
+13,The Underground Railroad,Colson Whitehead
+14,Wolf Hall,Hilary Mantel
+15,The Road,Cormac McCarthy
+16,Lincoln in the Bardo,George Saunders
+17,Atonement,Ian McEwan
+18,Middlesex,Jeffrey Eugenides
+19,Americanah,Chimamanda Ngozi Adichie
+20,The Amazing Adventures of Kavalier & Clay,Michael Chabon
+21,Homegoing,Yaa Gyasi
+22,Hamnet,Maggie O’Farrell
+23,The Warmth of Other Suns,Isabel Wilkerson
+24,Bel Canto,Ann Patchett
+25,Gilead,Marilynne Robinson
+26,The Corrections,Jonathan Franzen
+27,Normal People,Sally Rooney
+28,Cutting for Stone,Abraham Verghese
+29,Say Nothing,Patrick Radden Keefe
+30,A Visit From the Goon Squad,Jennifer Egan
+31,Circe,Madeline Miller
+32,Cloud Cuckoo Land,Anthony Doerr
+33,The Book Thief,Markus Zusak
+34,Cloud Atlas,David Mitchell
+35,The Covenant of Water,Abraham Verghese
+36,The Year of Magical Thinking,Joan Didion
+37,The Nickel Boys,Colson Whitehead
+38,The Great Believers,Rebecca Makkai
+39,Olive Kitteridge,Elizabeth Strout
+40,The Kite Runner,Khaled Hosseini
+41,Life After Life,Kate Atkinson
+42,The Brief Wondrous Life of Oscar Wao,Junot Díaz
+43,Between the World and Me,Ta-Nehisi Coates
+44,The Heaven & Earth Grocery Store,James McBride
+45,There There,Tommy Orange
+46,The Song of Achilles,Madeline Miller
+47,Lessons in Chemistry,Bonnie Garmus
+48,On Earth We’re Briefly Gorgeous,Ocean Vuong
+49,Gone Girl,Gillian Flynn
+50,James,Percival Everett
+51,Caste,Isabel Wilkerson
+52,The Nightingale,Kristin Hannah
+53,Trust,Hernan Diaz
+54,11/22/63,Stephen King
+55,Braiding Sweetgrass,Robin Wall Kimmerer
+56,The Hunger Games,Suzanne Collins
+57,Small Things Like These,Claire Keegan
+58,White Teeth,Zadie Smith
+59,Where the Crawdads Sing,Delia Owens
+60,The Dutch House,Ann Patchett
+61,North Woods,Daniel Mason
+62,The Sympathizer,Viet Thanh Nguyen
+63,The Fifth Season,N.K. Jemisin
+64,2666,Roberto Bolaño; translated by Natasha Wimmer
+65,Evicted,Matthew Desmond
+66,Just Kids,Patti Smith
+67,Piranesi,Susanna Clarke
+68,The Devil in the White City,Erik Larson
+69,Killers of the Flower Moon,David Grann
+70,Know My Name,Chanel Miller
+71,Sing, Unburied, Sing,Jesmyn Ward
+72,Crying in H Mart,Michelle Zauner
+73,Harry Potter and the Deathly Hallows,J.K. Rowling
+74,Klara and the Sun,Kazuo Ishiguro
+75,The Lincoln Highway,Amor Towles
+76,Just Mercy,Bryan Stevenson
+77,Sapiens,Yuval Noah Harari
+78,Kafka on the Shore,Haruki Murakami; translated by Philip Gabriel
+79,1Q84,Haruki Murakami; translated by Jay Rubin and Philip Gabriel
+80,Deacon King Kong,James McBride
+81,The Immortal Life of Henrietta Lacks,Rebecca Skloot
+82,Tom Lake,Ann Patchett
+83,Let the Great World Spin,Colum McCann
+84,Tenth of December,George Saunders
+85,When Breath Becomes Air,Paul Kalanithi
+86,Life of Pi,Yann Martel
+87,Girl, Woman, Other,Bernardine Evaristo
+88,The Plot Against America,Philip Roth
+89,The Glass Castle,Jeannette Walls
+90,In the Dream House,Carmen Maria Machado
+91,Project Hail Mary,Andy Weir
+92,Drive Your Plow Over the Bones of the Dead,Olga Tokarczuk; translated by Antonia Lloyd-Jones
+93,Remarkably Bright Creatures,Shelby Van Pelt
+94,The Bee Sting,Paul Murray
+95,A Thousand Splendid Suns,Khaled Hosseini
+96,The Vanishing Half,Brit Bennett
+97,My Year of Rest and Relaxation,Ottessa Moshfegh
+98,Shuggie Bain,Douglas Stuart
+99,Empire of Pain,Patrick Radden Keefe
+100,A Man Called Ove,Fredrik Backman; translated by Henning Koch
+        `;
+
+        // Function to parse CSV data and build the table
+        function parseCSVData(csvData) {
+            const rows = csvData.trim().split('\n').slice(1); // Skip header row
+            const tbody = document.querySelector('tbody');
+
+            rows.forEach((row, index) => {
+                const columns = row.split(',');
+                const tr = document.createElement('tr');
+                tr.id = 'book' + (index + 1);
+
+                const noCell = document.createElement('td');
+                noCell.textContent = columns[0];
+                tr.appendChild(noCell);
+
+                const titleCell = document.createElement('td');
+                titleCell.textContent = columns[1];
+                tr.appendChild(titleCell);
+
+                const authorCell = document.createElement('td');
+                authorCell.textContent = columns[2];
+                tr.appendChild(authorCell);
+
+                const checkboxCell = document.createElement('td');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.onclick = () => toggleRead(checkbox, tr.id);
+                checkboxCell.appendChild(checkbox);
+                tr.appendChild(checkboxCell);
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Function to toggle read status
+        function toggleRead(checkbox, id) {
+            const row = document.getElementById(id);
+            if (checkbox.checked) {
+                row.classList.add('checked-title');
+            } else {
+                row.classList.remove('checked-title');
+            }
+        }
+
+        // Initialize table on page load
+        window.onload = () => {
+            parseCSVData(csvData);
+        };
+    </script>
+</head>
+<body>
+
+<h1>My Reading List</h1>
+<table>
+    <thead>
+        <tr>
+            <th>No.</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Read</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Rows will be generated here by JavaScript -->
+    </tbody>
+</table>
+
+</body>
+</html>

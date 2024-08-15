@@ -3,33 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reading List</title>
+    <title>Reading List - 3 Columns</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+        /* Facebook-like color scheme */
+        :root {
+            --facebook-blue: #1877F2;
+            --light-gray: #F0F2F5;
+            --dark-gray: #65676B;
+            --border-gray: #DADDE1;
+            --white: #FFFFFF;
         }
-        h1 {
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--facebook-blue);
+            padding: 10px 20px;
+            color: white;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        /* Main container */
+        .container {
+            display: flex;
+            margin: 80px auto 20px auto;
+            max-width: 1200px;
+            padding: 0 20px;
+            gap: 20px;
+        }
+
+        /* Columns */
+        .column {
+            flex: 1;
+            background-color: var(--white);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+
+        h2 {
+            color: var(--facebook-blue);
+            font-size: 20px;
+            margin-bottom: 10px;
             text-align: center;
         }
+
+        /* Table styles */
         table {
             width: 100%;
             border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
         }
+
         th, td {
-            padding: 8px;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-gray);
             text-align: left;
-            border-bottom: 1px solid #ddd;
         }
+
         th {
-            background-color: #f2f2f2;
+            background-color: var(--light-gray);
+            font-weight: bold;
         }
+
         .checked-title {
             text-decoration: line-through;
-            color: gray;
+            color: var(--dark-gray);
         }
+
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            padding: 10px 20px;
+            text-align: center;
+            color: var(--dark-gray);
+            font-size: 14px;
+        }
+
+        ul {
+    list-style-type: none; /* Remove default bullets */
+    padding: 0;
+    margin: 0;
+}
+
+ul li {
+    line-height: 1.5; /* Increase line height for better readability */
+    padding: 5px 0; /* Add vertical padding for spacing */
+}
+/* End message styling */
+#end-message {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: #1877f2; /* Facebook blue color */
+    font-weight: bold;
+    font-family: 'Helvetica Neue', Arial, sans-serif; /* Facebook-like font */
+}
+
+/* Finalize button styling */
+#finalize-button, #clearDataBtn{
+    background-color: #1877f2; /* Facebook blue color */
+    color: white; /* White text */
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    font-family: 'Helvetica Neue', Arial, sans-serif; /* Facebook-like font */
+}
+
+#finalize-button:hover, #clearDataBtn:hover {
+    background-color: #165eab; /* Slightly darker blue on hover */
+}
+
+#finalize-button:active, #clearDataBtn:active {
+    background-color: #0c4b8e; /* Even darker blue when clicked */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2); /* Pressed effect */
+}
+
+
     </style>
-    <script>
+     <script>
         // Inline CSV data
         const csvData = `
 No.,Title,Author
@@ -39,8 +148,8 @@ No.,Title,Author
 4,The Goldfinch,Donna Tartt
 5,Pachinko,Min Jin Lee
 6,Educated,Tara Westover
-7,Tomorrow, and Tomorrow, and Tomorrow,Gabrielle Zevin
-8,My Brilliant Friend,Elena Ferrante; translated by Ann Goldstein
+7,Tomorrow and Tomorrow and Tomorrow,Gabrielle Zevin
+8,My Brilliant Friend,Elena Ferrante
 9,Never Let Me Go,Kazuo Ishiguro
 10,Station Eleven,Emily St. John Mandel
 11,A Little Life,Hanya Yanagihara
@@ -96,7 +205,7 @@ No.,Title,Author
 61,North Woods,Daniel Mason
 62,The Sympathizer,Viet Thanh Nguyen
 63,The Fifth Season,N.K. Jemisin
-64,2666,Roberto Bolaño; translated by Natasha Wimmer
+64,2666,Roberto Bolaño
 65,Evicted,Matthew Desmond
 66,Just Kids,Patti Smith
 67,Piranesi,Susanna Clarke
@@ -110,8 +219,8 @@ No.,Title,Author
 75,The Lincoln Highway,Amor Towles
 76,Just Mercy,Bryan Stevenson
 77,Sapiens,Yuval Noah Harari
-78,Kafka on the Shore,Haruki Murakami; translated by Philip Gabriel
-79,1Q84,Haruki Murakami; translated by Jay Rubin and Philip Gabriel
+78,Kafka on the Shore,Haruki Murakami
+79,1Q84,Haruki Murakami
 80,Deacon King Kong,James McBride
 81,The Immortal Life of Henrietta Lacks,Rebecca Skloot
 82,Tom Lake,Ann Patchett
@@ -119,12 +228,12 @@ No.,Title,Author
 84,Tenth of December,George Saunders
 85,When Breath Becomes Air,Paul Kalanithi
 86,Life of Pi,Yann Martel
-87,Girl, Woman, Other,Bernardine Evaristo
+87,Girl Woman Other,Bernardine Evaristo
 88,The Plot Against America,Philip Roth
 89,The Glass Castle,Jeannette Walls
 90,In the Dream House,Carmen Maria Machado
 91,Project Hail Mary,Andy Weir
-92,Drive Your Plow Over the Bones of the Dead,Olga Tokarczuk; translated by Antonia Lloyd-Jones
+92,Drive Your Plow Over the Bones of the Dead,Olga Tokarczuk
 93,Remarkably Bright Creatures,Shelby Van Pelt
 94,The Bee Sting,Paul Murray
 95,A Thousand Splendid Suns,Khaled Hosseini
@@ -132,74 +241,262 @@ No.,Title,Author
 97,My Year of Rest and Relaxation,Ottessa Moshfegh
 98,Shuggie Bain,Douglas Stuart
 99,Empire of Pain,Patrick Radden Keefe
-100,A Man Called Ove,Fredrik Backman; translated by Henning Koch
+100,A Man Called Ove,Fredrik Backman
         `;
 
-        // Function to parse CSV data and build the table
-        function parseCSVData(csvData) {
-            const rows = csvData.trim().split('\n').slice(1); // Skip header row
-            const tbody = document.querySelector('tbody');
-
-            rows.forEach((row, index) => {
-                const columns = row.split(',');
-                const tr = document.createElement('tr');
-                tr.id = 'book' + (index + 1);
-
-                const noCell = document.createElement('td');
-                noCell.textContent = columns[0];
-                tr.appendChild(noCell);
-
-                const titleCell = document.createElement('td');
-                titleCell.textContent = columns[1];
-                tr.appendChild(titleCell);
-
-                const authorCell = document.createElement('td');
-                authorCell.textContent = columns[2];
-                tr.appendChild(authorCell);
-
-                const checkboxCell = document.createElement('td');
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.onclick = () => toggleRead(checkbox, tr.id);
-                checkboxCell.appendChild(checkbox);
-                tr.appendChild(checkboxCell);
-
-                tbody.appendChild(tr);
-            });
-        }
-
-        // Function to toggle read status
-        function toggleRead(checkbox, id) {
-            const row = document.getElementById(id);
-            if (checkbox.checked) {
-                row.classList.add('checked-title');
-            } else {
-                row.classList.remove('checked-title');
-            }
-        }
-
-        // Initialize table on page load
-        window.onload = () => {
-            parseCSVData(csvData);
+       // Save the state of all checkboxes to local storage
+function saveCheckboxStates() {
+    const allRows = Array.from(document.querySelectorAll('tbody tr'));
+    const checkboxStates = allRows.map(row => {
+        const readCheckbox = row.querySelector('input[type="checkbox"]');
+        const toReadCheckbox = row.querySelectorAll('input[type="checkbox"]')[1];
+        return {
+            id: row.id,
+            readChecked: readCheckbox ? readCheckbox.checked : false,
+            toReadChecked: toReadCheckbox ? toReadCheckbox.checked : false
         };
+    });
+    localStorage.setItem('checkboxStates', JSON.stringify(checkboxStates));
+}
+
+// Load the state of all checkboxes from local storage
+function loadCheckboxStates() {
+    const savedStates = JSON.parse(localStorage.getItem('checkboxStates') || '[]');
+    savedStates.forEach(state => {
+        const row = document.getElementById(state.id);
+        if (row) {
+            const readCheckbox = row.querySelector('input[type="checkbox"]');
+            const toReadCheckbox = row.querySelectorAll('input[type="checkbox"]')[1];
+            if (readCheckbox) readCheckbox.checked = state.readChecked;
+            if (toReadCheckbox) toReadCheckbox.checked = state.toReadChecked;
+            toggleRead(readCheckbox, state.id); // Adjust row styling based on saved state
+            updateLists(); // Update the column lists based on saved state
+        }
+    });
+}
+
+// Update the lists based on checkbox states
+function updateLists() {
+    const readBooks = document.getElementById('readBooks');
+    const plannedBooks = document.getElementById('plannedBooks');
+    const allRows = Array.from(document.querySelectorAll('tbody tr'));
+
+    readBooks.innerHTML = '';
+    plannedBooks.innerHTML = '';
+
+    allRows.forEach(row => {
+        const readChecked = row.querySelector('input[type="checkbox"]').checked;
+        const toReadChecked = row.querySelectorAll('input[type="checkbox"]')[1].checked;
+        const title = row.querySelector('td:nth-child(2)').textContent;
+        const author = row.querySelector('td:nth-child(3)').textContent;
+        const bookInfo = `${title} by ${author}`;
+
+        if (readChecked) {
+            readBooks.innerHTML += `<li>${bookInfo}</li>`;
+        } else if (toReadChecked) {
+            plannedBooks.innerHTML += `<li>${bookInfo}</li>`;
+        }
+    });
+}
+
+// Function to toggle read status
+function toggleRead(checkbox, id) {
+    const row = document.getElementById(id);
+    if (checkbox.checked) {
+        row.classList.add('checked-title');
+    } else {
+        row.classList.remove('checked-title');
+    }
+    saveCheckboxStates(); // Save states after toggling
+    updateLists(); // Update lists after toggling
+}
+
+// Parse CSV data and handle checkbox
+function parseCSVData(csvData) {
+    const rows = csvData.trim().split('\n').slice(1); // Skip header row
+    const tbody = document.querySelector('tbody');
+
+    rows.forEach((row, index) => {
+        const columns = row.split(',');
+        const tr = document.createElement('tr');
+        tr.id = 'book' + (index + 1);
+
+        const noCell = document.createElement('td');
+        noCell.textContent = columns[0];
+        tr.appendChild(noCell);
+
+        const titleCell = document.createElement('td');
+        titleCell.textContent = columns[1];
+        tr.appendChild(titleCell);
+
+        const authorCell = document.createElement('td');
+        authorCell.textContent = columns[2];
+        tr.appendChild(authorCell);
+
+        const readCheckboxCell = document.createElement('td');
+        const readCheckbox = document.createElement('input');
+        readCheckbox.type = 'checkbox';
+        readCheckbox.onclick = () => toggleRead(readCheckbox, tr.id);
+        readCheckboxCell.appendChild(readCheckbox);
+        tr.appendChild(readCheckboxCell);
+
+        const toReadCheckboxCell = document.createElement('td');
+        const toReadCheckbox = document.createElement('input');
+        toReadCheckbox.type = 'checkbox';
+        toReadCheckbox.onclick = () => toggleRead(toReadCheckbox, tr.id);
+        toReadCheckboxCell.appendChild(toReadCheckbox);
+        tr.appendChild(toReadCheckboxCell);
+
+        tbody.appendChild(tr);
+    });
+}
+
+// Finalize the list and generate report
+function finalizeList() {
+    let existingReport = document.getElementById('report-section');
+    if (existingReport) {
+        existingReport.remove(); // Remove existing report if it already exists
+    }
+
+    const reportSection = document.createElement('div');
+    reportSection.id = 'report-section';
+    reportSection.style.marginTop = '20px';
+
+    // Get list items and counts
+    const readListItems = Array.from(document.getElementById('readBooks').children).map(item => item.textContent);
+    const plannedListItems = Array.from(document.getElementById('plannedBooks').children).map(item => item.textContent);
+    const allRows = Array.from(document.querySelectorAll('tbody tr'));
+
+    const readCount = readListItems.length;
+    const plannedCount = plannedListItems.length;
+    const unreadCount = allRows.filter(row => {
+        const readChecked = row.querySelector('input[type="checkbox"]').checked;
+        const toReadChecked = row.querySelectorAll('input[type="checkbox"]')[1].checked;
+        return !readChecked && !toReadChecked;
+    }).length;
+
+    reportSection.innerHTML = `
+    <h2>Your Reading List Report</h2>
+    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <tr>
+            <th style="text-align: left; padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4;">Books I already read (${readCount}):</th>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                <ul style="margin: 0; padding: 0; list-style-type: none; line-height: 1.6;">
+                    ${readListItems.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <th style="text-align: left; padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4;">Books I've heard of and planned to read (${plannedCount}):</th>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                <ul style="margin: 0; padding: 0; list-style-type: none; line-height: 1.6;">
+                    ${plannedListItems.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <th style="text-align: left; padding: 10px; border-bottom: 1px solid #ddd; background-color: #f4f4f4;">Books I don't think I will read (${unreadCount}):</th>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                <ul style="margin: 0; padding: 0; list-style-type: none; line-height: 1.6;">
+                    ${allRows.filter(row => {
+                        const readChecked = row.querySelector('input[type="checkbox"]').checked;
+                        const toReadChecked = row.querySelectorAll('input[type="checkbox"]')[1].checked;
+                        return !readChecked && !toReadChecked;
+                    }).map(row => row.querySelector('td:nth-child(2)').textContent + ' by ' + row.querySelector('td:nth-child(3)').textContent).map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            </td>
+        </tr>
+    </table>
+    `;
+
+    document.body.appendChild(reportSection);
+}
+
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', () => {
+  //  const csvData = getCSVData(); // Fetch CSV data (update as needed)
+    parseCSVData(csvData); // Parse and display CSV data
+
+    loadCheckboxStates(); // Load saved states when the page loads
+    updateLists(); // Update the lists when the page loads
+
+    document.getElementById('finalizeBtn').addEventListener('click', finalizeList);
+
+   
+
+});
+document.addEventListener('DOMContentLoaded', function() {
+    const clearButton = document.getElementById('clearDataBtn');
+    clearButton.addEventListener('click', function() {
+        if (confirm('Are you sure you want to clear all data?')) {
+            localStorage.clear(); // Clear local storage
+            location.reload(); // Reload the page
+        }
+    });
+});
+
     </script>
 </head>
 <body>
 
-<h1>My Reading List</h1>
-<table>
-    <thead>
-        <tr>
-            <th>No.</th>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Read</th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- Rows will be generated here by JavaScript -->
-    </tbody>
-</table>
+<header>My Reading List</header>
+
+<div class="container">
+    <!-- First Column: Table and Checklist -->
+    <div class="column">
+        <h2>Reading List</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Read</th>
+                    <th>To Read</th> <!-- New column for "To Read" checkbox -->
+
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Content generated by JavaScript or manually added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Second Column: Read Books -->
+    <div class="column">
+        <h2>Read</h2>
+        <ul id="readBooks">
+            <!-- List of read books will appear here -->
+        </ul>
+    </div>
+
+    <!-- Third Column: Planned to Read -->
+    <div class="column">
+        <h2>Planned to Read</h2>
+        <ul id="plannedBooks">
+            <!-- List of planned books will appear here -->
+        </ul>
+    </div>
+</div>
+
+<!-- Message at the end of the page -->
+<div id="end-message" style="text-align: center; margin-top: 20px; font-size: 1.2em; color: #333;">
+    Hey, you made it to the end!
+</div>
+
+<!-- Finalize Button -->
+<div id="finalize-section" style="text-align: center; margin-top: 20px;">
+    <button id="finalize-button" onclick="finalizeList()">Finalize my list</button>
+    
+    <button id="clearDataBtn" class="clear-data-button">Clear All Data</button>
+
+
+</div>
+
+
+
+<footer>&copy; 2024 My Reading List</footer>
 
 </body>
 </html>

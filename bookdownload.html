@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Các trang tải ebook</title>
+  <style>
+    :root {
+      --bg-color: #f9f9f9;
+      --text-color: #1c1c1e;
+      --link-color: #007aff;
+      --hover-bg: #f2f2f7;
+      --border-radius: 12px;
+      --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-family);
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    li a {
+      display: block;
+      text-decoration: none;
+      color: var(--link-color);
+      padding: 1rem;
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    li a:hover {
+      background-color: var(--hover-bg);
+      transform: scale(1.01);
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Các trang tải ebook</h1>
+    <ul>
+      <li><a href="https://dokumen.pub/" target="_blank">dokumen.pub</a></li>
+      <li><a href="https://libgen.is/" target="_blank">libgen.is</a></li>
+      <li><a href="https://annas-archive.org/" target="_blank">annas-archive.org</a></li>
+      <li><a href="https://www.dtv-ebook.com/" target="_blank">dtv-ebook.com</a></li>
+      <li><a href="https://isach.info/" target="_blank">isach.info</a></li>
+      <li><a href="https://z-lib.fm/" target="_blank">Z-Libs</a></li>
+      <li><a href="https://romhub.io/EBOOK/10%20NG%C3%80N%20CU%E1%BB%90N%20EPUB" target="_blank">romhub.io – 10 nghìn cuốn EPUB</a></li>
+      <li><a href="https://nhasachmienphi.com/category/tieu-thuyet-phuong-tay" target="_blank">nhasachmienphi – Tiểu thuyết phương Tây</a></li>
+      <li><a href="https://sach.nhuttruong.com/chia-se-kho-sach-nhom-vtc-group-lam-sach-rat-dep/" target="_blank">sach.nhuttruong – Kho sách nhóm VTC</a></li>
+      <li><a href="https://sach.nhuttruong.com/list-sach-tbooks/" target="_blank">sach.nhuttruong – List sách TBooks</a></li>
+      <li><a href="https://ebookvie.com/" target="_blank">ebookvie.com</a></li>
+      <li><a href="https://phongvanvu.com/" target="_blank">phongvanvu.com</a></li>
+      <li><a href="https://playaudiobooks.com" target="_blank">playaudiobooks.com</a></li>
+    </ul>
+  </div>
+</body>
+</html>

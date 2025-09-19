@@ -1,0 +1,113 @@
+(() => {
+  // ====== CẤU HÌNH NHANH ======
+  const START = 1;   // số bắt đầu
+  const END   = 63;  // số kết thúc
+  const BASE  = 'https://storageext.ezaudiobooks.com/audio/the-housemaid/1724925419957';
+  // =============================
+
+// ask chatgpt to identify file name patter
+
+  const makeUrl = num => `${BASE}/${num}%20-%20The%20Housemaid%2001%20-%20The%20Housemaid.mp3`;
+  const makeName = num => `${num} - The Housemaid 01 - The Housemaid.mp3`;
+  const pad2 = n => String(n).padStart(2,'0');
+
+  // UI box
+  const box = document.createElement('div');
+  Object.assign(box.style, {
+    position:'fixed', top:'10px', right:'10px', zIndex:999999, width:'420px',
+    maxHeight:'80vh', overflow:'auto', background:'#fff', border:'1px solid #ddd',
+    borderRadius:'10px', boxShadow:'0 8px 24px rgba(0,0,0,.15)', padding:'12px',
+    font:'14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial'
+  });
+
+  const title = document.createElement('div');
+  title.innerHTML = `<b>The Housemaid – tải dần (click thủ công)</b><br>
+  Gợi ý: mở 1–2 link đầu để qua Cloudflare rồi tiếp tục.`;
+  title.style.marginBottom = '8px';
+
+  const toolbar = document.createElement('div');
+  toolbar.style.margin = '8px 0';
+  toolbar.style.display = 'flex';
+  toolbar.style.gap = '8px';
+
+  const nextBtn = document.createElement('button');
+  nextBtn.textContent = 'Next ▶';
+  Object.assign(nextBtn.style, {padding:'6px 10px', border:'1px solid #ccc', borderRadius:'6px', background:'#0b76ef', color:'#fff', cursor:'pointer'});
+
+  const copyBtn = document.createElement('button');
+  copyBtn.textContent = 'Copy All URLs';
+  Object.assign(copyBtn.style, {padding:'6px 10px', border:'1px solid #ccc', borderRadius:'6px', background:'#f6f6f6', cursor:'pointer'});
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '✕';
+  Object.assign(closeBtn.style, {marginLeft:'auto', padding:'6px 10px', border:'1px solid #ccc', borderRadius:'6px', background:'#f6f6f6', cursor:'pointer'});
+
+  toolbar.appendChild(nextBtn);
+  toolbar.appendChild(copyBtn);
+  toolbar.appendChild(closeBtn);
+
+  const list = document.createElement('ol');
+  list.style.margin = '8px 0';
+  list.style.paddingLeft = '20px';
+
+  const urls = [];
+  for (let i = START; i <= END; i++) {
+    const num = pad2(i);
+    const url = makeUrl(num);
+    urls.push(url);
+
+    const li = document.createElement('li');
+    li.style.margin = '4px 0';
+    const a = document.createElement('a');
+    a.href = url;
+    a.textContent = makeName(num);
+    a.download = makeName(num);
+    a.target = '_blank'; // giúp qua challenge CF
+    a.rel = 'noopener';
+    li.appendChild(a);
+    list.appendChild(li);
+  }
+
+  // trạng thái "con trỏ" cho Next
+  let cursor = 0;
+  const anchors = Array.from(list.querySelectorAll('a'));
+  const jumpTo = idx => {
+    if (idx < 0 || idx >= anchors.length) return;
+    anchors[idx].scrollIntoView({behavior:'smooth', block:'center'});
+    anchors[idx].style.outline = '2px solid #0b76ef';
+    setTimeout(()=> anchors[idx].style.outline = '', 1200);
+  };
+
+  nextBtn.onclick = () => {
+    if (cursor >= anchors.length) { nextBtn.textContent = 'Hết ✅'; return; }
+    // user gesture → mở link tiếp theo
+    anchors[cursor].click();
+    jumpTo(cursor);
+    cursor++;
+    nextBtn.textContent = cursor >= anchors.length ? 'Hết ✅' : `Next ▶ (${cursor}/${anchors.length})`;
+  };
+
+  copyBtn.onclick = async () => {
+    const text = urls.join('\n');
+    try {
+      await navigator.clipboard.writeText(text);
+      copyBtn.textContent = 'Đã copy ✅';
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove();
+      copyBtn.textContent = 'Đã copy (fallback) ✅';
+    }
+    setTimeout(()=> copyBtn.textContent = 'Copy All URLs', 1500);
+  };
+
+  closeBtn.onclick = () => box.remove();
+
+  box.appendChild(title);
+  box.appendChild(toolbar);
+  box.appendChild(list);
+  document.body.appendChild(box);
+
+  // highlight item đầu
+  jumpTo(0);
+})();

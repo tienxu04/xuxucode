@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Audio Playlist Code Generator</title>
+  <style>
+    body{margin:0;font:16px/1.5 system-ui, sans-serif;background:#0f172a;color:#e5e7eb}
+    .wrap{max-width:800px;margin:40px auto;padding:0 16px}
+    h1{margin:0 0 12px}
+    .card{background:#111827;border-radius:8px;padding:16px;margin:16px 0}
+    label{display:block;font-size:13px;color:#94a3b8;margin:0 0 6px}
+    input,textarea{width:100%;padding:8px 10px;border-radius:6px;border:1px solid #334155;background:#0b1020;color:#e5e7eb}
+    textarea{min-height:120px;font-family:monospace}
+    button{cursor:pointer;border:none;border-radius:6px;padding:8px 14px;margin-top:10px;font-weight:600}
+    .btn{background:#22d3ee;color:#0f172a}
+    .btn.secondary{background:#1f2937;color:#e5e7eb}
+    .mono{font-family:monospace}
+    .actions{margin-top:8px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Audio Playlist Code Generator</h1>
+  <div class="card">
+    <label for="sample">Paste sample link (any chapter)</label>
+    <input id="sample" placeholder="https://.../03%20-%20Book%20Title.mp3" />
+
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <div style="flex:1">
+        <label for="start">Start #</label>
+        <input id="start" type="number" value="1" />
+      </div>
+      <div style="flex:1">
+        <label for="end">End #</label>
+        <input id="end" type="number" value="10" />
+      </div>
+    </div>
+
+    <button id="gen" class="btn">Generate</button>
+    <button id="clear" class="btn secondary">Clear</button>
+  </div>
+
+  <div class="card">
+    <h3>Result Code</h3>
+    <textarea id="cfg" readonly></textarea>
+    <div class="actions">
+      <button id="copyCfg" class="btn secondary">Copy</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Preview links</h3>
+    <div id="samples" class="mono"></div>
+  </div>
+</div>
+<script>
+function parseSample(url){
+  try{
+    const u=new URL(url);
+    const parts=u.pathname.split('/');
+    const file=parts.pop();
+    const base=u.origin+parts.join('/');
+    const decoded=decodeURIComponent(file);
+    const title=decoded.replace(/^\d+\s*-\s*/,'').replace(/\.mp3$/,'');
+    return {base, title};
+  }catch(e){return null;}
+}
+
+const sampleEl=document.getElementById('sample');
+const startEl=document.getElementById('start');
+const endEl=document.getElementById('end');
+const cfgEl=document.getElementById('cfg');
+const samples=document.getElementById('samples');
+
+function gen(){
+  const sample=sampleEl.value.trim();
+  const info=parseSample(sample);
+  if(!info){alert('Invalid sample link');return;}
+  const START=parseInt(startEl.value||'1',10);
+  const END=parseInt(endEl.value||'1',10);
+  const TITLE=info.title;
+  const BASE=info.base;
+
+  const cfg=`// ====== CONFIG ======\n`+
+`const START = ${START};\n`+
+`const END   = ${END};\n\n`+
+`const BASE  = '${BASE}';\n`+
+`const TITLE = ${JSON.stringify(TITLE)};\n`+
+`// =====================\n\n`+
+`const pad2 = n => String(n).padStart(2,'0');\n\n`+
+`const makeUrl = num => \`${'${BASE}/${pad2(num)}%20-%20${encodeURIComponent(TITLE)}.mp3'}\`;\n`+
+`const makeName = num => \`${'${pad2(num)} - ${TITLE}.mp3'}\`;`;
+
+  cfgEl.value=cfg;
+
+  const s1=`${BASE}/${String(START).padStart(2,'0')}%20-%20${encodeURIComponent(TITLE)}.mp3`;
+  const mid=START+Math.floor((END-START)/2);
+  const s2=`${BASE}/${String(mid).padStart(2,'0')}%20-%20${encodeURIComponent(TITLE)}.mp3`;
+  const s3=`${BASE}/${String(END).padStart(2,'0')}%20-%20${encodeURIComponent(TITLE)}.mp3`;
+  samples.textContent=[s1,s2,s3].join('\n');
+}
+
+document.getElementById('gen').addEventListener('click', gen);
+document.getElementById('clear').addEventListener('click',()=>{
+  sampleEl.value='';startEl.value=1;endEl.value=10;cfgEl.value='';samples.textContent='';
+});
+document.getElementById('copyCfg').addEventListener('click',()=>{
+  cfgEl.select();
+  document.execCommand('copy');
+  document.getElementById('copyCfg').textContent='Copied!';
+  setTimeout(()=>{document.getElementById('copyCfg').textContent='Copy';},1000);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Translator Đơn Giản</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #1D4ED8; /* Blue-700 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .container-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-2 flex items-center justify-center">
+            <i data-lucide="languages" class="w-7 h-7 mr-3 text-blue-600"></i>
+            AI Translator
+        </h1>
+        <p class="text-center text-gray-500 mb-6">Dịch nội dung sách, tài liệu nhanh chóng bằng AI</p>
+
+        <!-- API/Quota Information Banner -->
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-lg mb-6 container-shadow">
+            <h2 class="font-semibold text-lg flex items-center mb-1">
+                <i data-lucide="info" class="w-5 h-5 mr-2"></i>
+                Thông tin Hạn mức & Cài đặt
+            </h2>
+            <ul class="list-disc list-inside ml-4 text-sm space-y-1">
+                <li>**Hạn mức khuyến nghị:** $\mathbf{500.000}$ ký tự/tháng (có thể vượt quá cho sách 400 trang).</li>
+                <li>**Dung lượng Input phù hợp:** Giữ dưới $\mathbf{10.000}$ ký tự cho mỗi lần dịch để đảm bảo độ chính xác.</li>
+                <li class="mt-2 text-red-700 font-bold">
+                    ⚠️ **QUAN TRỌNG KHI CHẠY LOCAL:** Bạn phải tự thêm khóa API vào biến `const API_KEY = "";` trong mã JavaScript.
+                </li>
+            </ul>
+        </div>
+
+        <!-- Language Selectors and Translation Button -->
+        <div class="flex flex-col sm:flex-row items-center justify-between bg-white p-4 rounded-xl container-shadow mb-6">
+            <div class="flex items-center space-x-2 w-full sm:w-auto mb-4 sm:mb-0">
+                <select id="sourceLang" class="p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700">
+                    <option value="vi">Tiếng Việt (Việt Nam)</option>
+                    <option value="en">Tiếng Anh (English)</option>
+                    <option value="fr" selected>Tiếng Pháp (Français)</option>
+                    <option value="de">Tiếng Đức (Deutsch)</option>
+                    <option value="zh">Tiếng Trung (中文)</option>
+                </select>
+                <i data-lucide="arrow-right-left" class="w-5 h-5 text-gray-500"></i>
+                <select id="targetLang" class="p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-700">
+                    <option value="en">Tiếng Anh (English)</option>
+                    <option value="vi" selected>Tiếng Việt (Việt Nam)</option>
+                    <option value="fr">Tiếng Pháp (Français)</option>
+                    <option value="de">Tiếng Đức (Deutsch)</option>
+                    <option value="zh">Tiếng Trung (中文)</option>
+                </select>
+            </div>
+
+            <button onclick="handleTranslate()" id="translateBtn" class="w-full sm:w-auto px-6 py-2 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition duration-150 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center disabled:bg-gray-400">
+                <i data-lucide="check-check" class="w-5 h-5 mr-2"></i>
+                <span id="btnText">Dịch Nội Dung</span>
+            </button>
+        </div>
+
+        <!-- Text Areas (Two Columns) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Source Content -->
+            <div class="flex flex-col bg-white p-5 rounded-xl container-shadow">
+                <label for="sourceText" class="text-xl font-semibold text-gray-700 mb-3 flex items-center">
+                    <i data-lucide="align-left" class="w-5 h-5 mr-2 text-blue-600"></i>
+                    Nội dung Gốc
+                </label>
+                <textarea id="sourceText" rows="15" placeholder="Dán nội dung sách, văn bản vào đây (giới hạn khuyến nghị < 10.000 ký tự)..." class="flex-grow p-4 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                <p id="charCount" class="text-sm text-gray-500 mt-2 text-right">0 ký tự</p>
+            </div>
+
+            <!-- Translated Content -->
+            <div class="flex flex-col bg-white p-5 rounded-xl container-shadow">
+                <label for="targetText" class="text-xl font-semibold text-gray-700 mb-3 flex items-center">
+                    <i data-lucide="speech" class="w-5 h-5 mr-2 text-blue-600"></i>
+                    Bản Dịch
+                </label>
+                <textarea id="targetText" rows="15" placeholder="Bản dịch sẽ hiển thị ở đây..." readonly class="flex-grow p-4 border border-gray-300 rounded-lg bg-gray-50 resize-none"></textarea>
+                <div id="loadingIndicator" class="hidden text-center mt-3 p-3 bg-blue-50 rounded-lg text-blue-700">
+                    <div class="flex items-center justify-center space-x-2">
+                        <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Đang dịch... Vui lòng chờ.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error/Message Display -->
+        <div id="messageArea" class="mt-6 hidden p-4 rounded-lg text-sm" role="alert"></div>
+
+    </div>
+
+    <script>
+        // Khởi tạo icons Lucide
+        lucide.createIcons();
+
+        // Cập nhật số ký tự
+        const sourceTextarea = document.getElementById('sourceText');
+        const charCountDisplay = document.getElementById('charCount');
+        const inputLimit = 10000; // Giới hạn khuyến nghị cho mỗi lần gọi API
+
+        sourceTextarea.addEventListener('input', () => {
+            const count = sourceTextarea.value.length;
+            charCountDisplay.textContent = `${count} ký tự`;
+            if (count > inputLimit) {
+                charCountDisplay.classList.add('text-red-600', 'font-bold');
+                showMessage('Cảnh báo: Nội dung vượt quá giới hạn $\mathbf{10.000}$ ký tự khuyến nghị. Bản dịch có thể bị cắt bớt hoặc kém chính xác.', 'error');
+            } else {
+                charCountDisplay.classList.remove('text-red-600', 'font-bold');
+                document.getElementById('messageArea').classList.add('hidden');
+            }
+        });
+
+        // =========================================================================
+        // GEMINI API TRANSLATION LOGIC
+        // =========================================================================
+
+        const MODEL_NAME = 'gemini-2.5-flash-preview-05-20';
+        
+        // !!! QUAN TRỌNG KHI CHẠY LOCAL (NGOÀI CANVAS) !!!
+        // 1. Lấy khóa API của bạn từ Google AI Studio.
+        // 2. Dán khóa API vào biến dưới đây. (Ví dụ: const API_KEY = "AIzaSy...";)
+        // 3. Khi chạy trên Canvas, hãy để trống: const API_KEY = "";
+        //const API_KEY = "AIzaSyCK0CaDTNz1bx0L7d4onSfA5mzJ0CpM-5g"; 
+		
+		const API_KEY = localStorage.getItem('dt_key') ?? (localStorage.setItem('dt_key', (prompt('Enter OpenAI API key (sk-...)') || '').trim()), localStorage.getItem('dt_key'));
+
+
+        const elements = {
+            targetTextarea: document.getElementById('targetText'),
+            loadingIndicator: document.getElementById('loadingIndicator'),
+            translateBtn: document.getElementById('translateBtn'),
+            btnText: document.getElementById('btnText'),
+            sourceLang: document.getElementById('sourceLang'),
+            targetLang: document.getElementById('targetLang'),
+            messageArea: document.getElementById('messageArea'),
+        };
+
+        /**
+         * Hiển thị thông báo lỗi hoặc thành công.
+         * @param {string} message - Nội dung thông báo.
+         * @param {string} type - 'success' hoặc 'error'.
+         */
+        function showMessage(message, type) {
+            elements.messageArea.classList.remove('hidden', 'bg-red-100', 'border-red-500', 'text-red-700', 'bg-green-100', 'border-green-500', 'text-green-700');
+            elements.messageArea.style.borderLeft = '4px solid';
+
+            if (type === 'error') {
+                elements.messageArea.classList.add('bg-red-100', 'border-red-500', 'text-red-700');
+                elements.messageArea.innerHTML = `<span class="font-bold">Lỗi:</span> ${message}`;
+            } else {
+                elements.messageArea.classList.add('bg-green-100', 'border-green-500', 'text-green-700');
+                elements.messageArea.innerHTML = `<span class="font-bold">Thành công:</span> ${message}`;
+            }
+        }
+
+        /**
+         * Tạm dừng thực thi trong một khoảng thời gian.
+         * @param {number} ms - Số mili giây tạm dừng.
+         */
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        /**
+         * Chức năng gọi API Gemini để dịch thuật với chiến lược exponential backoff.
+         */
+        async function translateText(sourceText, sourceLang, targetLang, maxRetries = 5) {
+            
+            if (API_KEY === "" && (typeof __initial_auth_token === 'undefined' || typeof __app_id === 'undefined')) {
+                // Kiểm tra nếu API_KEY rỗng VÀ không chạy trên Canvas (không có biến Canvas)
+                showMessage('Lỗi: Bạn đang chạy ứng dụng cục bộ. Vui lòng dán Khóa API Gemini của bạn vào biến API_KEY trong mã JavaScript.', 'error');
+                return "";
+            }
+            
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
+
+            // Tạo system instruction để hướng dẫn AI thực hiện dịch thuật
+            const systemPrompt = `Bạn là một dịch giả chuyên nghiệp. Nhiệm vụ của bạn là dịch văn bản sau từ mã ngôn ngữ "${sourceLang}" sang mã ngôn ngữ "${targetLang}". Vui lòng chỉ trả về văn bản đã được dịch, không thêm bất kỳ ghi chú, lời giải thích hay tiêu đề nào.`;
+            
+            const userQuery = sourceText.trim();
+            if (userQuery.length === 0) {
+                showMessage('Vui lòng nhập nội dung cần dịch.', 'error');
+                return "";
+            }
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+            };
+
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    // Kiểm tra HTTP status code
+                    if (!response.ok) {
+                        if (response.status === 429) {
+                            // Too many requests - thử lại với exponential backoff
+                            const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                            if (i < maxRetries - 1) {
+                                await sleep(delay);
+                                continue; // Thử lại
+                            } else {
+                                throw new Error(`API quá tải (429) sau ${maxRetries} lần thử.`);
+                            }
+                        }
+                        // Lỗi khác (400, 500, 403)
+                        const errorData = await response.json();
+                        throw new Error(`Lỗi API (${response.status}): ${errorData.error?.message || 'Lỗi không xác định.'}`);
+                    }
+
+                    const result = await response.json();
+                    const translatedText = result.candidates?.[0]?.content?.parts?.[0]?.text || 'Không thể lấy bản dịch.';
+
+                    return translatedText;
+
+                } catch (error) {
+                    // Xử lý lỗi fetch hoặc lỗi đã ném
+                    if (i === maxRetries - 1) {
+                        console.error('Lỗi dịch thuật:', error);
+                        showMessage(`Dịch thất bại: ${error.message}. Vui lòng thử lại sau.`, 'error');
+                        return "";
+                    }
+                    // Nếu chưa phải lần thử cuối, tiếp tục vòng lặp để thử lại
+                }
+            }
+            return ""; // Nếu tất cả các lần thử đều thất bại
+        }
+
+        /**
+         * Xử lý sự kiện khi nhấn nút dịch.
+         */
+        async function handleTranslate() {
+            elements.messageArea.classList.add('hidden');
+            elements.targetTextarea.value = '';
+            
+            const sourceText = sourceTextarea.value;
+            const sourceLang = elements.sourceLang.value;
+            const targetLang = elements.targetLang.value;
+
+            if (sourceText.trim() === "") {
+                showMessage('Vui lòng nhập nội dung cần dịch.', 'error');
+                return;
+            }
+
+            // Hiển thị trạng thái tải
+            elements.translateBtn.disabled = true;
+            elements.btnText.textContent = 'Đang Dịch...';
+            elements.loadingIndicator.classList.remove('hidden');
+
+            const translated = await translateText(sourceText, sourceLang, targetLang);
+
+            // Ẩn trạng thái tải và khôi phục nút
+            elements.translateBtn.disabled = false;
+            elements.btnText.textContent = 'Dịch Nội Dung';
+            elements.loadingIndicator.classList.add('hidden');
+            
+            if (translated) {
+                elements.targetTextarea.value = translated;
+                showMessage('Dịch thành công!', 'success');
+            } else {
+                // Lỗi đã được xử lý trong translateText
+            }
+        }
+
+        // Tự động kích hoạt đếm ký tự ban đầu
+        sourceTextarea.dispatchEvent(new Event('input'));
+    </script>
+</body>
+</html>

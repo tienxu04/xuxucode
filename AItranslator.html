@@ -138,7 +138,6 @@
         // 1. Lấy khóa API của bạn từ Google AI Studio.
         // 2. Dán khóa API vào biến dưới đây. (Ví dụ: const API_KEY = "AIzaSy...";)
         // 3. Khi chạy trên Canvas, hãy để trống: const API_KEY = "";
-        //const API_KEY = "AIzaSyCK0CaDTNz1bx0L7d4onSfA5mzJ0CpM-5g"; 
 		
 		const API_KEY = localStorage.getItem('dt_key') ?? (localStorage.setItem('dt_key', (prompt('Enter OpenAI API key (sk-...)') || '').trim()), localStorage.getItem('dt_key'));
 

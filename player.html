@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sách Nói Cá Nhân - Web Player</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #007aff; text-align: center; margin-bottom: 20px; }
+        #filePicker { display: block; width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; }
+        #audioPlayer { width: 100%; margin-bottom: 20px; }
+        #currentSong { font-size: 1.1em; font-weight: bold; margin-bottom: 10px; text-align: center; }
+        #playlist { list-style: none; padding: 0; border-top: 1px solid #eee; }
+        #playlist li { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: background-color 0.3s; }
+        #playlist li:hover { background-color: #e9e9e9; }
+        .playing { background-color: #d1e7ff; color: #007aff; font-weight: bold; }
+        .instructions { background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ffeeba; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎧 Trình Nghe Sách Cá Nhân</h1>
+    
+    <div class="instructions">
+        <strong>Hướng dẫn:</strong> Nhấn "Choose Files", chọn thư mục bạn đã lưu MP3 trong ứng dụng Files (hoặc chọn từng file).
+    </div>
+
+    <input type="file" id="filePicker" multiple accept=".mp3,audio/*">
+    
+    <div id="currentSong">Chưa chọn sách nói.</div>
+    
+    <audio id="audioPlayer" controls></audio>
+    
+    <h2>Danh sách phát:</h2>
+    <ul id="playlist">
+        </ul>
+</div>
+
+<script>
+    const filePicker = document.getElementById('filePicker');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const playlist = document.getElementById('playlist');
+    const currentSongDisplay = document.getElementById('currentSong');
+    
+    let audioFiles = [];
+    let currentTrackIndex = -1;
+
+    // --- Xử lý chọn File ---
+    filePicker.addEventListener('change', (event) => {
+        // Lấy tất cả các file đã chọn
+        audioFiles = Array.from(event.target.files).filter(file => file.type.startsWith('audio/'));
+        
+        if (audioFiles.length === 0) {
+            playlist.innerHTML = '<li>Không tìm thấy file MP3 nào hợp lệ.</li>';
+            currentSongDisplay.textContent = 'Chưa chọn sách nói.';
+            return;
+        }
+
+        // Sắp xếp theo tên file (giả định tên file là 1.mp3, 2.mp3,...)
+        audioFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+
+        // Xây dựng danh sách phát
+        buildPlaylist();
+        // Bắt đầu phát bài đầu tiên
+        playTrack(0);
+    });
+
+    // --- Xây dựng Playlist ---
+    function buildPlaylist() {
+        playlist.innerHTML = ''; // Xóa danh sách cũ
+        audioFiles.forEach((file, index) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${index + 1}. ${file.name.replace('.mp3', '')}`;
+            listItem.dataset.index = index;
+            listItem.addEventListener('click', () => {
+                playTrack(index);
+            });
+            playlist.appendChild(listItem);
+        });
+    }
+
+    // --- Logic Phát nhạc ---
+    function playTrack(index) {
+        if (index < 0 || index >= audioFiles.length) {
+            return;
+        }
+
+        currentTrackIndex = index;
+        const file = audioFiles[index];
+        
+        // 1. Tạo URL cục bộ từ File đã chọn
+        const fileURL = URL.createObjectURL(file);
+        
+        // 2. Cập nhật trình phát
+        audioPlayer.src = fileURL;
+        audioPlayer.play();
+
+        // 3. Cập nhật giao diện
+        currentSongDisplay.textContent = `Đang Phát: ${file.name}`;
+        highlightCurrentTrack();
+    }
+
+    // --- Đánh dấu bài đang phát ---
+    function highlightCurrentTrack() {
+        // Xóa highlight cũ
+        playlist.querySelectorAll('li').forEach(li => li.classList.remove('playing'));
+        
+        // Thêm highlight mới
+        const currentItem = playlist.querySelector(`li[data-index="${currentTrackIndex}"]`);
+        if (currentItem) {
+            currentItem.classList.add('playing');
+            // Cuộn đến bài hát đang phát (tùy chọn)
+            currentItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    // --- Tự động chuyển bài khi hết bài ---
+    audioPlayer.addEventListener('ended', () => {
+        if (currentTrackIndex < audioFiles.length - 1) {
+            playTrack(currentTrackIndex + 1); // Phát bài tiếp theo
+        } else {
+            // Hết danh sách
+            currentSongDisplay.textContent = "Đã phát hết danh sách.";
+            audioPlayer.pause();
+            currentTrackIndex = -1;
+            highlightCurrentTrack();
+        }
+    });
+
+    // Ngăn chặn sự cố rò rỉ bộ nhớ khi tạo URL đối tượng
+    audioPlayer.addEventListener('loadedmetadata', () => {
+        // Giải phóng URL cũ
+        if (audioPlayer.previousObjectURL) {
+            URL.revokeObjectURL(audioPlayer.previousObjectURL);
+        }
+        audioPlayer.previousObjectURL = audioPlayer.src;
+    });
+
+</script>
+
+</body>
+</html>

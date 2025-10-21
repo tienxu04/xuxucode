@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>My Friends — Secure Player</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <style>
+    :root { --b:#1f2937; --m:#475569; --hl:#dbeafe; }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:24px;max-width:860px;line-height:1.5;color:var(--b)}
+    h1{font-size:1.25rem;margin:0 0 8px}
+    .now{margin:6px 0 16px;color:var(--m)}
+    .grid{display:grid;grid-template-columns:1fr;gap:16px}
+    @media (min-width:860px){.grid{grid-template-columns:1fr 360px;align-items:start}}
+    audio{width:100%}
+    .controls{display:flex;gap:8px;margin:8px 0}
+    button{padding:8px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;cursor:pointer}
+    button:hover{background:#f8fafc}
+    ul{list-style:none;padding:0;margin:0;border:1px solid #e5e7eb;border-radius:12px;max-height:70vh;overflow:auto}
+    li{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid #f1f5f9;cursor:pointer}
+    li:last-child{border-bottom:none}
+    li:hover{background:#f8fafc}
+    li.active{background:var(--hl)}
+    .no{min-width:2.2em;color:var(--m)}
+    .t{flex:1}
+  </style>
+</head>
+<body>
+  <h1>My Friends — Secure Audio Player</h1>
+  <div class="now">Now playing: <strong id="now-title">—</strong></div>
+
+  <div class="grid">
+    <div>
+      <audio id="player" controls preload="none"></audio>
+      <div class="controls">
+        <button id="prevBtn" title="Previous (AirPods/keyboard supported)">⏮ Prev</button>
+        <button id="nextBtn" title="Next (AirPods/keyboard supported)">⏭ Next</button>
+      </div>
+    </div>
+
+    <ul id="trackList"></ul>
+  </div>
+
+  <script>
+    // 👇 ĐỔI thành URL Worker của bạn
+    const WORKER_BASE = "https://silent-hat-9260.tienxu04.workers.dev/";
+
+    // Tổng số file (1.mp3 … 62.mp3)
+    const TOTAL = 62;
+
+    // Gán nhãn bài theo yêu cầu đặc biệt
+    function trackLabel(n){
+      if(n === 1) return "Dedication";   // nếu muốn giữ “Deication” thì sửa lại string này
+      if(n === 2) return "Epigraph";
+      if(n === 62) return "Credit";
+      if(n >= 3 && n <= 61) return `Chap ${n-2}`;
+      return `Track ${n}`;
+    }
+
+    // Tên file thực trong bucket/worker
+    function fileName(n){ return `${n}.mp3`; }
+
+    // Build URL đến Worker (?file=…)
+    function workerSrc(filename){
+      const u = new URL(WORKER_BASE);
+      u.searchParams.set("file", filename);     // Worker sẽ decode chính xác
+      u.searchParams.set("from","pages");       // dấu hiệu từ site của bạn (nếu Worker có check)
+      return u.toString();
+    }
+
+    const player = document.getElementById("player");
+    const listEl = document.getElementById("trackList");
+    const nowEl  = document.getElementById("now-title");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    let current = 1;
+
+    // Render danh sách
+    for(let i=1;i<=TOTAL;i++){
+      const li = document.createElement("li");
+      li.dataset.idx = String(i);
+      li.dataset.file = fileName(i);
+      li.innerHTML = `<span class="no">${String(i).padStart(2,'0')}.</span>
+                      <span class="t">${trackLabel(i)}</span>`;
+      li.addEventListener("click", () => playTrack(i));
+      listEl.appendChild(li);
+    }
+
+    function highlight(n){
+      listEl.querySelectorAll(".active").forEach(el => el.classList.remove("active"));
+      const row = listEl.querySelector(`li[data-idx="${n}"]`);
+      if(row) row.classList.add("active");
+    }
+
+    function setMediaSession(n){
+      if (!('mediaSession' in navigator)) return;
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: trackLabel(n),
+          artist: "—",
+          album: "My Friends",
+          artwork: [
+            // Bạn có thể trỏ artwork thật nếu muốn
+            { src: 'https://fav.farm/🫶', sizes: '96x96', type: 'image/png' }
+          ]
+        });
+
+        navigator.mediaSession.setActionHandler('play', () => player.play());
+        navigator.mediaSession.setActionHandler('pause', () => player.pause());
+        navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
+        navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
+        // (tuỳ chọn) seek handlers:
+        navigator.mediaSession.setActionHandler('seekbackward', (d)=> player.currentTime = Math.max(0, player.currentTime - (d.seekOffset||10)));
+        navigator.mediaSession.setActionHandler('seekforward',  (d)=> player.currentTime = Math.min(player.duration||1e9, player.currentTime + (d.seekOffset||30)));
+      } catch (_) {}
+    }
+
+    function playTrack(n){
+      if(n < 1 || n > TOTAL) return;
+      current = n;
+      const src = workerSrc(fileName(n));
+      if (player.src !== src) player.src = src;
+      nowEl.textContent = trackLabel(n);
+      highlight(n);
+      setMediaSession(n);
+      player.play().catch(()=>{/* Autoplay có thể bị chặn; user bấm Play là chạy */});
+    }
+
+    function nextTrack(){
+      if(current < TOTAL){ playTrack(current + 1); }
+      // Nếu muốn vòng về 1 khi hết album: else playTrack(1);
+    }
+
+    function prevTrack(){
+      if(current > 1){ playTrack(current - 1); }
+    }
+
+    // Auto-next khi bài hiện tại kết thúc
+    player.addEventListener("ended", nextTrack);
+
+    // Nút bấm
+    nextBtn.addEventListener("click", nextTrack);
+    prevBtn.addEventListener("click", prevTrack);
+
+    // (tuỳ chọn) nhớ vị trí nghe
+    // const saved = Number(localStorage.getItem("mf_current")||"1");
+    // if (saved>=1 && saved<=TOTAL) current = saved;
+    // player.addEventListener("play", ()=> localStorage.setItem("mf_current", String(current)));
+
+    // Khởi động: phát track 1
+    playTrack(1);
+  </script>
+</body>
+</html>

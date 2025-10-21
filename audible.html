@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Audible Shelf - Kệ Đĩa Sách Nói</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset cơ bản */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #e0e5ec; /* Nền xám nhạt, hơi có chiều sâu */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden; /* Ngăn cuộn ngang */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            width: 100%;
+        }
+
+        /* Header */
+        header {
+            background-color: #ffffff;
+            padding: 20px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px; /* Tăng khoảng cách */
+        }
+
+        header h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 2.5em; /* Lớn hơn */
+            font-weight: 700;
+        }
+        header p {
+            text-align: center;
+            color: #6C757D;
+            margin-top: 8px;
+            font-size: 1.1em;
+        }
+
+        /* Main Content & Audiobook Shelf */
+        .main-content {
+            flex-grow: 1;
+        }
+
+        .audiobook-shelf {
+            display: flex;
+            flex-wrap: wrap; /* Cho phép các đĩa xuống dòng */
+            justify-content: center; /* Căn giữa các đĩa */
+            gap: 40px 30px; /* Khoảng cách giữa các đĩa và giữa các hàng */
+            padding-bottom: 60px;
+        }
+
+        .book-item-wrapper {
+            width: 200px; /* Kích thước cố định cho mỗi item (ảnh + text) */
+            text-align: center;
+            /* Để các item trên một "kệ" có thể có chiều cao khác nhau tùy nội dung */
+        }
+
+        .book-link {
+            text-decoration: none;
+            color: inherit;
+            display: block; /* Để link chiếm toàn bộ item */
+            transition: transform 0.3s ease;
+        }
+
+        .book-link:hover {
+            transform: translateY(-8px); /* Nâng nhẹ khi hover */
+        }
+
+        .book-disc {
+            width: 180px; /* Kích thước đĩa */
+            height: 180px;
+            border-radius: 50%; /* Làm cho ảnh bìa tròn */
+            overflow: hidden; /* Đảm bảo ảnh không tràn ra ngoài hình tròn */
+            margin: 0 auto 15px auto; /* Căn giữa và khoảng cách với text */
+            box-shadow: 
+                0 6px 20px rgba(0, 0, 0, 0.2), /* Bóng đổ lớn hơn, tạo cảm giác nổi */
+                0 0 0 5px rgba(255, 255, 255, 0.4) inset; /* Viền trắng bên trong mô phỏng đĩa */
+            background-color: #fff; /* Nền trắng nếu ảnh không tải được */
+            display: flex; /* Để căn giữa ảnh */
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #ccc; /* Viền nhẹ bên ngoài */
+            position: relative;
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Đảm bảo ảnh fill toàn bộ hình tròn */
+            display: block;
+        }
+
+        .book-info {
+            padding: 0 5px; /* Giảm padding ngang */
+        }
+
+        .book-title {
+            font-weight: 600;
+            font-size: 1.1em; /* Nhỏ hơn một chút */
+            color: #007BFF;
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }
+
+        .book-author {
+            font-size: 0.9em;
+            color: #555;
+            line-height: 1.3;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #34495e;
+            color: #ecf0f1;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: auto; /* Đẩy footer xuống dưới */
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .audiobook-shelf {
+                gap: 30px 20px;
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Thử dùng grid lại cho dễ quản lý */
+            }
+            .book-item-wrapper {
+                width: auto; /* Reset width để grid tự xử lý */
+            }
+            .book-disc {
+                width: 160px;
+                height: 160px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+            .audiobook-shelf {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            .book-disc {
+                width: 140px;
+                height: 140px;
+            }
+            .book-title {
+                font-size: 1em;
+            }
+            .book-author {
+                font-size: 0.85em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            header h1 {
+                font-size: 1.8em;
+            }
+            header p {
+                font-size: 1em;
+            }
+            .audiobook-shelf {
+                grid-template-columns: 1fr; /* Một cột duy nhất trên màn hình rất nhỏ */
+                gap: 25px 0;
+            }
+            .book-item-wrapper {
+                 width: 100%; /* Đảm bảo item chiếm hết chiều rộng */
+            }
+            .book-disc {
+                width: 180px; /* Kích thước đĩa lớn hơn khi chỉ có 1 cột */
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Kệ Audible Của Tôi</h1>
+            <p>Khám phá tuyển tập yêu thích</p>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div id="audiobook-list" class="audiobook-shelf">
+                </div>
+            <p id="error-message" style="display: none; color: red; text-align: center; margin-top: 20px;">
+                Không thể tải danh sách sách. Vui lòng kiểm tra file data.json hoặc đường dẫn ảnh bìa.
+            </p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 My Audiobook Shelf. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const JSON_FILE_PATH = './data.json';
+        const listContainer = document.getElementById('audiobook-list');
+        const errorMessage = document.getElementById('error-message');
+
+        async function loadAudiobooks() {
+            try {
+                const response = await fetch(JSON_FILE_PATH);
+                if (!response.ok) {
+                    throw new Error(`Lỗi khi tải file: ${response.statusText}`);
+                }
+                const books = await response.json();
+
+                // Group books into rows of 3 (hoặc số lượng khác tùy theo responsive)
+                // Tuy nhiên, với CSS Grid/Flexbox hiện tại, việc chia row không cần xử lý JS mà để CSS tự làm
+                // Chúng ta chỉ cần tạo từng item riêng lẻ
+
+                books.forEach(book => {
+                    const bookItemWrapper = document.createElement('div');
+                    bookItemWrapper.className = 'book-item-wrapper';
+
+                    const bookLink = document.createElement('a');
+                    bookLink.href = book.link;
+                    bookLink.target = '_blank';
+                    bookLink.className = 'book-link';
+
+                    bookLink.innerHTML = `
+                        <div class="book-disc">
+                            <img src="${book.cover}" alt="Bìa sách ${book.title}" class="book-cover">
+                        </div>
+                        <div class="book-info">
+                            <h3 class="book-title">${book.title}</h3>
+                            <p class="book-author">Tác giả: ${book.author}</p>
+                        </div>
+                    `;
+                    
+                    bookItemWrapper.appendChild(bookLink);
+                    listContainer.appendChild(bookItemWrapper);
+                });
+
+            } catch (error) {
+                console.error("Có lỗi xảy ra:", error);
+                errorMessage.style.display = 'block';
+            }
+        }
+
+        loadAudiobooks();
+    </script>
+</body>
+</html>

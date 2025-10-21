@@ -1,0 +1,94 @@
+[
+  {
+    "id": 1,
+    "title": "The Housemaid",
+    "author": "Freida McFadden",
+    "cover": "maid1.jpg",
+    "link": "https://tienxu04.github.io/housemaid/"
+  },
+  {
+    "id": 2,
+    "title": "The Housemaid's Secret",
+    "author": "Freida McFadden",
+    "cover": "maid2.jpeg",
+    "link": "https://tienxu04.github.io/housemaid2/index.html"
+  },
+  {
+    "id": 3,
+    "title": "6 kẻ nói dối và lá thư buộc tội",
+    "author": "Akinari Asakura",
+    "cover": "noidoi.jpg",
+    "link": "https://tienxu04.github.io/sachnoi/noidoi/"
+  },
+  {
+    "id": 4,
+    "title": "The Sympathizer",
+    "author": "Viet Thanh Nguyen",
+    "cover": "sympa.jpg",
+    "link": "https://tienxu04.github.io/sachnoi/sympa/"
+  },
+  {
+    "id": 5,
+    "title": "First Lie Wins",
+    "author": "Ashley Elston",
+    "cover": "firstlie.jpg",
+    "link": "https://tienxu04.github.io/sachnoi/firstlie/"
+  },
+  {
+    "id": 3,
+    "title": "My Friends",
+    "author": "Beartown",
+    "author": "Fredrik Backman",
+    "cover": "friends.jpg",
+    "link": "https://tienxu04.github.io/xuxucode/friends.html"
+  },
+  {
+    "id": 3,
+    "title": "Home Before Dark",
+    "author": "Riley Sager",
+    "cover": "home.jpg",
+    "link": "https://tienxu04.github.io/xuxucode/home.html"
+  },
+   {
+    "id": 6,
+    "title": "Beartown",
+    "author": "Fredrik Backman",
+    "cover": "beartown1.jpg",
+    "link": "https://tienxu04.github.io/beartown/book1/"
+  },
+  {
+    "id": 7,
+    "title": "Beartown 2",
+    "author": "Fredrik Backman",
+    "cover": "beartown2.jpg",
+    "link": "https://tienxu04.github.io/beartown/book2/"
+  },
+  {
+    "id": 8,
+    "title": "Xứ sở diệu kỳ tàn bạo và chốn tận cùng thế giới",
+    "author": "Murakami Haruki",
+    "cover": "tancung.jpg",
+    "link": "https://tienxu04.github.io/tancung/"
+  },
+  {
+    "id": 9,
+    "title": "Người Bóng Bay",
+    "author": "Chan Ho-Kei",
+    "cover": "bongbay.jpg",
+    "link": "https://tienxu04.github.io/sachnoi/bongbay/"
+  },
+  {
+    "id": 10,
+    "title": "Educated",
+    "author": "Tada Westover",
+    "cover": "edu.jpg",
+    "link": "https://tienxu04.github.io/educated-audio/"
+  },
+  {
+    "id": 11,
+    "title": "The Wedding People",
+    "author": "Alison Espach",
+    "cover": "wedding.jpg",
+    "link": "https://tienxu04.github.io/wedding/"
+  }
+]

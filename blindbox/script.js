@@ -22,7 +22,7 @@ chest.addEventListener('click', function() {
     setTimeout(() => {
         phase1.classList.add('hidden');
         phase2.classList.remove('hidden');
-        publisherReveal.innerHTML = `NXB: <span class="reveal-text">${randomNXB}</span>`;
+        publisherReveal.innerHTML = `<span class="reveal-text">${randomNXB}</span>`;
         renderBooks(randomNXB);
     }, 600);
 });

@@ -56,7 +56,7 @@ function renderBooks(nxb) {
 }
 
 function showFinalResult(nxb, book) {
-    modalMessage.innerHTML = `Bạn đã bốc trúng cuốn:<br><strong>${book}</strong><br>(Thuộc NXB ${nxb})`;
+    modalMessage.innerHTML = `Bạn đã bốc trúng cuốn:<br><strong>${book}</strong><br>(Thuộc nhóm ${nxb})`;
     modal.style.display = 'flex';
 }
 

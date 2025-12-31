@@ -2,29 +2,37 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bốc Thăm Chọn Sách May Mắn</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Book Blind Box (c) xuxudocsach</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-    <div id="phase-1" class="phase">
-        <h1>Khám Phá Kho Sách</h1>
-        <p class="instruction">Click vào rương để xem hôm nay đọc NXB nào!</p>
-        <div id="main-chest" class="chest-container">
-            <div class="chest-icon"><i class="fas fa-box-open"></i></div>
-            <div class="lid"></div>
+    <div class="container">
+        <div id="phase-1" class="phase">
+            <h1>Book Blind Box</h1>
+            <p class="instruction">Chạm vào rương để biết nên đọc nhà nào tiếp theo!</p>
+            <div id="main-chest" class="chest-container">
+                <i class="fas fa-box-open"></i>
+            </div>
+        </div>
+
+        <div id="phase-2" class="phase hidden">
+            <h2 id="publisher-reveal"></h2>
+            <p class="instruction">Giờ hãy bốc một cuốn sách bất kỳ:</p>
+            <div class="book-cards" id="book-cards"></div>
+            <button onclick="location.reload()" class="reset-button">Chơi lại từ đầu</button>
+        </div>
+
+        <div id="result-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2 style="color: #ff6f61;">Chúc Mừng!</h2>
+                <p id="modal-message"></p>
+                <button onclick="location.reload()" class="play-again-button">Tuyệt vời!</button>
+            </div>
         </div>
     </div>
-
-    <div id="phase-2" class="phase hidden">
-        <h2 id="publisher-reveal"></h2>
-        <p class="instruction">Vận may đã gọi tên! Giờ hãy chọn 1 cuốn sách:</p>
-        <div class="book-cards" id="book-cards"></div>
-        <button onclick="location.reload()" class="reset-button">Quay lại từ đầu</button>
-    </div>
-</div>
 
     <script src="script.js"></script>
 </body>

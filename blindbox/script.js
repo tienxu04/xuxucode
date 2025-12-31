@@ -4,52 +4,61 @@ const publishersData = {
     "Trinh thám TQ": ["Kẻ tình nghi hoàn mỹ", "Lũng tây nổi gió", "Cái bóng trầm mặc", "Người ếch"],
     "Khác": ["Nghi can giấu mặt", "Án mạng trong tháp thủy tinh", "Chặng cuối", "Bất khuất", "Đường vinh quang"]
 };
-
 const chest = document.getElementById('main-chest');
 const phase1 = document.getElementById('phase-1');
 const phase2 = document.getElementById('phase-2');
 const bookCardsDiv = document.getElementById('book-cards');
 const publisherReveal = document.getElementById('publisher-reveal');
+const modal = document.getElementById('result-modal');
+const modalMessage = document.getElementById('modal-message');
 
-// Bước 1: Mở thùng chọn NXB ngẫu nhiên
+// BƯỚC 1: Xử lý mở rương chọn NXB ngẫu nhiên
 chest.addEventListener('click', function() {
     this.classList.add('chest-open-animation');
     
-    // Lấy ngẫu nhiên 1 NXB
     const keys = Object.keys(publishersData);
     const randomNXB = keys[Math.floor(Math.random() * keys.length)];
 
     setTimeout(() => {
         phase1.classList.add('hidden');
         phase2.classList.remove('hidden');
-        publisherReveal.innerHTML = `Nhà Xuất Bản: <span class="reveal-text">${randomNXB}</span>`;
+        publisherReveal.innerHTML = `NXB: <span class="reveal-text">${randomNXB}</span>`;
         renderBooks(randomNXB);
     }, 600);
 });
 
-// Bước 2: Hiển thị sách của NXB đó
+// BƯỚC 2: Tạo danh sách sách của NXB đó
 function renderBooks(nxb) {
     bookCardsDiv.innerHTML = '';
     publishersData[nxb].forEach(title => {
         const card = document.createElement('div');
         card.className = 'book-card';
         card.innerHTML = `
-            <div class="book-front"><i class="fas fa-question"></i></div>
-            <div class="book-back"><p>${title}</p></div>
+            <div class="book-front"><i class="fas fa-book"></i></div>
+            <div class="book-back"><span>${title}</span></div>
         `;
-        card.onclick = function() {
-            if(!this.classList.contains('flipped')) {
+        
+        card.addEventListener('click', function() {
+            if (!this.classList.contains('flipped')) {
+                // Chỉ cho lật một cuốn duy nhất
+                const allCards = document.querySelectorAll('.book-card');
+                allCards.forEach(c => c.style.pointerEvents = 'none'); 
+                
                 this.classList.add('flipped');
-                // Hiệu ứng ăn mừng khi lật sách
-                confettiEffect();
+                
+                setTimeout(() => {
+                    showFinalResult(nxb, title);
+                }, 800);
             }
-        };
+        });
         bookCardsDiv.appendChild(card);
     });
 }
 
-// Hàm pháo hoa đơn giản
-function confettiEffect() {
-    // Tận dụng hàm createConfetti từ code cũ của bạn hoặc thêm thư viện bên ngoài
-    alert("Chúc mừng! Bạn đã bốc trúng cuốn sách này!");
+function showFinalResult(nxb, book) {
+    modalMessage.innerHTML = `Bạn đã bốc trúng cuốn:<br><strong>${book}</strong><br>(Thuộc NXB ${nxb})`;
+    modal.style.display = 'flex';
 }
+
+// Đóng modal khi bấm X
+document.querySelector('.close-button').onclick = () => modal.style.display = 'none';

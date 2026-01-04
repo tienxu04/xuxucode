@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebP to JPG Converter Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --glass: rgba(255, 255, 255, 0.95);
+            --success: #10b981;
+            --text: #1f2937;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+            color: var(--text);
+        }
+
+        .container {
+            background: var(--glass);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        h1 { margin-bottom: 0.5rem; color: #333; }
+        p.subtitle { color: #666; margin-bottom: 2rem; }
+
+        /* Upload Area */
+        .upload-area {
+            border: 3px dashed #cbd5e1;
+            border-radius: 15px;
+            padding: 3rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8fafc;
+            position: relative;
+        }
+
+        .upload-area:hover, .upload-area.drag-active {
+            border-color: var(--primary);
+            background: #eef2ff;
+            transform: scale(1.01);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .btn-select {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        
+        .btn-select:hover { background: var(--primary-hover); }
+
+        input[type="file"] { display: none; }
+
+        /* File List */
+        .file-list {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .file-item {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .preview-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 15px;
+            border: 1px solid #eee;
+        }
+
+        .file-info {
+            flex: 1;
+            text-align: left;
+        }
+
+        .file-name { font-weight: 600; font-size: 0.9rem; }
+        .file-status { font-size: 0.8rem; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .status-processing { background: #fff7ed; color: #c2410c; }
+        .status-done { background: #ecfdf5; color: var(--success); }
+
+        .btn-download {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: none; /* Hidden until ready */
+            text-decoration: none;
+            color: var(--text);
+        }
+        .btn-download:hover { background: #f3f4f6; border-color: #bbb; }
+
+        /* Global Actions */
+        .actions-bar {
+            margin-top: 2rem;
+            border-top: 1px solid #eee;
+            padding-top: 1.5rem;
+            display: none; /* Hidden until files exist */
+        }
+
+        .btn-zip {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            transition: transform 0.2s;
+        }
+        .btn-zip:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); }
+        .btn-zip:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* Spinner */
+        .spinner {
+            width: 12px; height: 12px;
+            border: 2px solid #ccc;
+            border-top-color: #333;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        /* Error msg */
+        .error-msg {
+            color: #ef4444;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>WebP / AVIF to JPG Converter</h1>
+    <p class="subtitle">Chuyển đổi hình ảnh chất lượng cao. Miễn phí & Xử lý tại trình duyệt.</p>
+
+    <div class="upload-area" id="dropZone">
+        <span class="upload-icon">📂</span>
+        <h3>Kéo & Thả file WebP / AVIF vào đây</h3>
+        <p style="color: #999; font-size: 0.9rem;">hoặc</p>
+        <button class="btn-select" onclick="document.getElementById('fileInput').click()">Chọn File</button>
+        <p style="font-size: 0.8rem; margin-top: 10px; color: #666;">Tối đa 5 file. Định dạng .webp/.avif</p>
+        <input type="file" id="fileInput" multiple accept=".webp,image/webp,.avif,image/avif">
+    </div>
+    
+    <div id="errorDisplay" class="error-msg"></div>
+
+    <div class="file-list" id="fileList">
+        </div>
+
+    <div class="actions-bar" id="actionsBar">
+        <button class="btn-zip" id="btnDownloadAll" onclick="downloadAllZip()">
+            <span id="zipText">Tải tất cả (.ZIP)</span>
+        </button>
+    </div>
+</div>
+
+<script>
+  // --- Cấu hình & Biến ---
+    const MAX_FILES = 5;
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileListEl = document.getElementById('fileList');
+    const actionsBar = document.getElementById('actionsBar');
+    const errorDisplay = document.getElementById('errorDisplay');
+    const btnDownloadAll = document.getElementById('btnDownloadAll');
+    
+    let processedFiles = []; 
+
+    // --- Xử lý sự kiện Drag & Drop ---
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-active'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-active'), false);
+    });
+
+    dropZone.addEventListener('drop', handleDrop, false);
+    fileInput.addEventListener('change', handleFiles, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles({ target: { files: files } });
+    }
+
+    // --- Xử lý logic chính ---
+    function handleFiles(e) {
+        const files = Array.from(e.target.files);
+        
+        resetUI();
+
+        if (files.length > MAX_FILES) {
+            showError(`Bạn chỉ được upload tối đa ${MAX_FILES} file cùng lúc.`);
+            return;
+        }
+
+        // --- CẬP NHẬT: Cho phép cả WebP và AVIF ---
+        const validTypes = ['image/webp', 'image/avif'];
+        const validExtensions = ['.webp', '.avif'];
+
+        const validFiles = files.filter(file => {
+            const isTypeValid = validTypes.includes(file.type);
+            const isExtValid = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+            return isTypeValid || isExtValid;
+        });
+        
+        if (validFiles.length === 0) {
+            showError("Vui lòng chỉ chọn file định dạng .webp hoặc .avif");
+            return;
+        }
+
+        if (validFiles.length < files.length) {
+            showError("Một số file không đúng định dạng đã bị bỏ qua.");
+        }
+
+        actionsBar.style.display = 'block';
+        btnDownloadAll.disabled = true;
+        
+        let completedCount = 0;
+
+        validFiles.forEach((file, index) => {
+            const id = `file-${Date.now()}-${index}`;
+            createFileItemUI(id, file);
+            
+            convertToJpg(file).then(jpgBlob => {
+                // --- CẬP NHẬT: Regex thay thế cả .webp và .avif ---
+                const newName = file.name.replace(/\.(webp|avif)$/i, '.jpg');
+                
+                updateItemSuccess(id, jpgBlob, newName);
+                
+                processedFiles.push({
+                    name: newName,
+                    blob: jpgBlob
+                });
+
+                completedCount++;
+                if (completedCount === validFiles.length) {
+                    btnDownloadAll.disabled = false;
+                    document.getElementById('zipText').textContent = "Tải tất cả (.ZIP)";
+                }
+            }).catch(err => {
+                console.error(err);
+                updateItemError(id);
+            });
+        });
+    }
+
+    // --- Hàm Convert ảnh (Core) ---
+    // Không cần sửa gì ở đây, Canvas tự động hiểu AVIF
+    function convertToJpg(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+
+                    // Fill nền trắng
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    ctx.drawImage(img, 0, 0);
+
+                    canvas.toBlob((blob) => {
+                        if(blob) resolve(blob);
+                        else reject("Conversion failed");
+                    }, 'image/jpeg', 0.9);
+                };
+                img.onerror = reject;
+            };
+            reader.onerror = reject;
+        });
+    }
+
+    // --- Các hàm UI ---
+    function createFileItemUI(id, file) {
+        const div = document.createElement('div');
+        div.className = 'file-item';
+        div.id = id;
+        
+        const url = URL.createObjectURL(file);
+
+        div.innerHTML = `
+            <img src="${url}" class="preview-img">
+            <div class="file-info">
+                <div class="file-name">${file.name}</div>
+                <div class="file-status">
+                    <span class="status-badge status-processing">
+                        <span class="spinner"></span> Converting...
+                    </span>
+                </div>
+            </div>
+            <a href="#" class="btn-download" id="btn-${id}" download>Tải về</a>
+        `;
+        fileListEl.appendChild(div);
+    }
+
+    function updateItemSuccess(id, blob, fileName) {
+        const el = document.getElementById(id);
+        if(!el) return;
+        
+        const url = URL.createObjectURL(blob);
+        
+        const statusEl = el.querySelector('.file-status');
+        statusEl.innerHTML = `<span class="status-badge status-done">✅ Đã xong</span>`;
+
+        const btn = el.querySelector('.btn-download');
+        btn.href = url;
+        btn.download = fileName;
+        btn.style.display = 'inline-block';
+        btn.textContent = 'Tải .JPG';
+    }
+
+    function updateItemError(id) {
+        const el = document.getElementById(id);
+        if(el) {
+            el.querySelector('.file-status').innerHTML = `<span style="color:red">Lỗi!</span>`;
+        }
+    }
+
+    function showError(msg) {
+        errorDisplay.textContent = msg;
+        errorDisplay.style.display = 'block';
+    }
+
+    function resetUI() {
+        fileListEl.innerHTML = '';
+        processedFiles = [];
+        errorDisplay.style.display = 'none';
+        actionsBar.style.display = 'none';
+        fileInput.value = ''; 
+    }
+
+    // --- Hàm Download ZIP ---
+    function downloadAllZip() {
+        if(processedFiles.length === 0) return;
+
+        const zip = new JSZip();
+        const folder = zip.folder("converted_images");
+
+        const btnText = document.getElementById('zipText');
+        const oldText = btnText.textContent;
+        btnText.textContent = "Đang nén...";
+        btnDownloadAll.disabled = true;
+
+        processedFiles.forEach(f => {
+            folder.file(f.name, f.blob);
+        });
+
+        zip.generateAsync({type:"blob"}).then(function(content) {
+            saveAs(content, "converted_images.zip");
+            btnText.textContent = oldText;
+            btnDownloadAll.disabled = false;
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Góc Đọc Sách Bí Ẩn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #FF6584;
+            --bg-color: #f0f2f5;
+            --card-back-color: #2D3436;
+            --text-color: #2D3436;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: var(--text-color);
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        p.subtitle {
+            color: #636e72;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* --- CONTROL PANEL (Menu + Button) --- */
+        .control-panel {
+            margin-bottom: 40px;
+            z-index: 10;
+            display: flex;
+            gap: 15px; /* Khoảng cách giữa dropdown và nút */
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Style cho Dropdown Menu */
+        select#categorySelect {
+            padding: 15px 20px;
+            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            border: 2px solid var(--primary-color);
+            border-radius: 50px;
+            background-color: white;
+            color: var(--primary-color);
+            font-weight: bold;
+            cursor: pointer;
+            outline: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            appearance: none; /* Xóa mũi tên mặc định của trình duyệt */
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236C63FF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 20px top 50%;
+            background-size: 12px auto;
+            padding-right: 40px; /* Chừa chỗ cho mũi tên */
+        }
+
+        select#categorySelect:hover {
+            background-color: #f0f0ff;
+        }
+
+        button#pickBtn {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            padding: 15px 40px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(108, 99, 255, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button#pickBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(108, 99, 255, 0.4);
+        }
+
+        button#pickBtn:active {
+            transform: scale(0.95);
+        }
+
+        button#pickBtn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        /* --- GRID LAYOUT --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 1000px;
+            perspective: 1000px;
+        }
+
+        @media (min-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .grid-container {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 25px;
+            }
+        }
+
+        /* --- CARD STYLE --- */
+        .card {
+            background-color: transparent;
+            aspect-ratio: 2/3;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .card.highlight .card-inner {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--secondary-color);
+            border: 2px solid var(--secondary-color);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .card-front {
+            background: var(--card-back-color);
+            background-image: 
+                radial-gradient(circle at 50% 50%, #3a4244 2px, transparent 2.5px),
+                radial-gradient(circle at 50% 50%, #3a4244 2px, transparent 2.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            color: white;
+            border: 2px solid #fff;
+            transform: rotateY(0deg);
+        }
+        
+        .card-front::after {
+            content: "?";
+            font-size: 3rem;
+            font-weight: bold;
+            color: rgba(255,255,255,0.2);
+        }
+
+        .card-back {
+            background: white;
+            color: var(--text-color);
+            transform: rotateY(180deg);
+            flex-direction: column;
+            border: 2px solid var(--primary-color);
+        }
+
+        .book-title {
+            font-weight: 700;
+            font-size: 1rem;
+            line-height: 1.4;
+            color: var(--primary-color);
+            word-wrap: break-word;
+        }
+        
+        .book-decoration {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Hôm nay đọc gì?</h1>
+    <p class="subtitle">Chọn danh mục và để vũ trụ quyết định</p>
+
+    <div class="control-panel">
+        <select id="categorySelect" onchange="changeList()">
+            <option value="newAuthors">New Authors</option>
+            <option value="oldOnes">Old Ones</option>
+        </select>
+
+        <button id="pickBtn" onclick="pickRandomBook()">Chọn giúp tôi</button>
+    </div>
+
+    <div class="grid-container" id="cardGrid">
+        </div>
+
+    <script>
+        // ==========================================
+        // KHU VỰC DATA - CẤU TRÚC 2 DANH SÁCH
+        // ==========================================
+        
+        const library = {
+            // Danh sách bạn vừa gửi
+            newAuthors: [
+                "Home Before Dark",
+           
+                "The Silent Patient",
+                "Don't Let Him",
+                "You Killed Me First",
+                "Rock Paper Scissors",
+                "Beautiful Ugly",
+                "Appetite for Innocence",
+                "The River is Waiting",
+                "Broken Country",
+                "The Frozen River"
+            ],
+            
+            // Danh sách mẫu (Bạn thay thế tên sách vào đây nhé)
+            oldOnes: [
+                "In The Midnight Feast",
+                "The Paris Apartment",
+                "Long Bright River",
+                "Don't Let Him In",
+                "The boyfriend",
+                "The intruder",
+                "Carrie Soto Is Back "
+            ]
+        };
+
+        // ==========================================
+        // LOGIC HỆ THỐNG
+        // ==========================================
+
+        const gridContainer = document.getElementById('cardGrid');
+        const pickBtn = document.getElementById('pickBtn');
+        const categorySelect = document.getElementById('categorySelect');
+        
+        let currentList = []; // Danh sách đang hiển thị hiện tại
+        let isSpinning = false;
+
+        // 1. Hàm khởi tạo lưới thẻ
+        function initGrid() {
+            // Lấy value từ dropdown để biết đang chọn list nào
+            const selectedKey = categorySelect.value;
+            currentList = library[selectedKey];
+
+            gridContainer.innerHTML = ''; // Xóa cũ
+            
+            // Tạo thẻ mới dựa trên danh sách đã chọn
+            currentList.forEach((title, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = `card-${index}`;
+                
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front"></div>
+                        <div class="card-back">
+                            <div class="book-title">${title}</div>
+                            <div class="book-decoration">★ BOOK ★</div>
+                        </div>
+                    </div>
+                `;
+                gridContainer.appendChild(card);
+            });
+        }
+
+        // 2. Hàm xử lý khi đổi Dropdown
+        function changeList() {
+            // Nếu đang quay thì không cho đổi
+            if (isSpinning) return;
+            initGrid(); // Vẽ lại lưới thẻ mới
+        }
+
+        // 3. Logic Reset
+        function resetCards() {
+            const allCards = document.querySelectorAll('.card');
+            allCards.forEach(card => {
+                card.classList.remove('flipped');
+                card.classList.remove('highlight');
+            });
+        }
+
+        // 4. Logic Random
+        function pickRandomBook() {
+            if (isSpinning) return;
+            isSpinning = true;
+            pickBtn.disabled = true;
+            categorySelect.disabled = true; // Khóa dropdown khi đang quay
+            pickBtn.innerText = "Đang chọn...";
+
+            resetCards();
+
+            const allCards = document.querySelectorAll('.card');
+            const totalCards = allCards.length;
+            
+            if (totalCards === 0) {
+                isSpinning = false;
+                pickBtn.disabled = false;
+                categorySelect.disabled = false;
+                return;
+            }
+
+            let loops = 0;
+            const maxLoops = 3; 
+            let currentIndex = 0;
+            let speed = 100; 
+
+            const winnerIndex = Math.floor(Math.random() * totalCards);
+
+            function highlightNext() {
+                allCards.forEach(c => c.classList.remove('highlight'));
+                allCards[currentIndex].classList.add('highlight');
+
+                currentIndex++;
+                if (currentIndex >= totalCards) {
+                    currentIndex = 0;
+                    loops++;
+                }
+
+                if (loops >= maxLoops && currentIndex === winnerIndex) {
+                    setTimeout(() => {
+                        const winnerCard = allCards[winnerIndex];
+                        winnerCard.classList.remove('highlight');
+                        winnerCard.classList.add('flipped');
+                        
+                        isSpinning = false;
+                        pickBtn.disabled = false;
+                        categorySelect.disabled = false; // Mở lại dropdown
+                        pickBtn.innerText = "Chọn lại";
+                    }, speed);
+                } else {
+                    if (loops === maxLoops) speed += 30;
+                    setTimeout(highlightNext, speed);
+                }
+            }
+
+            setTimeout(highlightNext, 300);
+        }
+
+        // Chạy lần đầu
+        initGrid();
+
+    </script>
+</body>
+</html>

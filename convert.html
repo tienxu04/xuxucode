@@ -6,7 +6,7 @@
     <title>WebP to JPG Converter Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js"></script>
     <style>
         :root {
             --primary: #4f46e5;
@@ -193,16 +193,16 @@
 <body>
 
 <div class="container">
-    <h1>WebP / AVIF to JPG Converter</h1>
+    <h1>WebP / AVIF / HEIC to JPG Converter</h1>
     <p class="subtitle">Chuyển đổi hình ảnh chất lượng cao. Miễn phí & Xử lý tại trình duyệt.</p>
 
     <div class="upload-area" id="dropZone">
         <span class="upload-icon">📂</span>
-        <h3>Kéo & Thả file WebP / AVIF vào đây</h3>
+        <h3>Kéo & Thả file WebP / AVIF / HEIC vào đây</h3>
         <p style="color: #999; font-size: 0.9rem;">hoặc</p>
         <button class="btn-select" onclick="document.getElementById('fileInput').click()">Chọn File</button>
         <p style="font-size: 0.8rem; margin-top: 10px; color: #666;">Tối đa 5 file. Định dạng .webp/.avif</p>
-        <input type="file" id="fileInput" multiple accept=".webp,image/webp,.avif,image/avif">
+        <input type="file" id="fileInput" multiple accept=".webp,image/webp,.avif,image/avif,.heic,image/heic">
     </div>
     
     <div id="errorDisplay" class="error-msg"></div>
@@ -218,7 +218,7 @@
 </div>
 
 <script>
-  // --- Cấu hình & Biến ---
+ // --- Cấu hình & Biến ---
     const MAX_FILES = 5;
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
@@ -229,7 +229,7 @@
     
     let processedFiles = []; 
 
-    // --- Xử lý sự kiện Drag & Drop ---
+    // --- Drag & Drop Events ---
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, preventDefaults, false);
     });
@@ -256,10 +256,9 @@
         handleFiles({ target: { files: files } });
     }
 
-    // --- Xử lý logic chính ---
+    // --- Main Logic ---
     function handleFiles(e) {
         const files = Array.from(e.target.files);
-        
         resetUI();
 
         if (files.length > MAX_FILES) {
@@ -267,18 +266,15 @@
             return;
         }
 
-        // --- CẬP NHẬT: Cho phép cả WebP và AVIF ---
-        const validTypes = ['image/webp', 'image/avif'];
-        const validExtensions = ['.webp', '.avif'];
-
+        // Cập nhật danh sách đuôi file cho phép
+        const validExtensions = ['.webp', '.avif', '.heic'];
+        // File HEIC trên một số máy tính có thể không có file.type chuẩn, nên ta check đuôi file là chính
         const validFiles = files.filter(file => {
-            const isTypeValid = validTypes.includes(file.type);
-            const isExtValid = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
-            return isTypeValid || isExtValid;
+            return validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
         });
         
         if (validFiles.length === 0) {
-            showError("Vui lòng chỉ chọn file định dạng .webp hoặc .avif");
+            showError("Chỉ hỗ trợ file định dạng: .webp, .avif, .heic");
             return;
         }
 
@@ -293,11 +289,13 @@
 
         validFiles.forEach((file, index) => {
             const id = `file-${Date.now()}-${index}`;
+            // Với HEIC, ta không thể preview ngay bằng URL.createObjectURL như webp/avif
+            // Nên ta sẽ hiển thị icon loading hoặc ảnh placeholder trước
             createFileItemUI(id, file);
             
             convertToJpg(file).then(jpgBlob => {
-                // --- CẬP NHẬT: Regex thay thế cả .webp và .avif ---
-                const newName = file.name.replace(/\.(webp|avif)$/i, '.jpg');
+                // Regex thay thế tất cả đuôi mở rộng cũ
+                const newName = file.name.replace(/\.(webp|avif|heic)$/i, '.jpg');
                 
                 updateItemSuccess(id, jpgBlob, newName);
                 
@@ -312,54 +310,81 @@
                     document.getElementById('zipText').textContent = "Tải tất cả (.ZIP)";
                 }
             }).catch(err => {
-                console.error(err);
+                console.error("Lỗi convert:", err);
                 updateItemError(id);
             });
         });
     }
 
-    // --- Hàm Convert ảnh (Core) ---
-    // Không cần sửa gì ở đây, Canvas tự động hiểu AVIF
+    // --- Hàm Convert Thông Minh (Hỗ trợ HEIC + WebP + AVIF) ---
     function convertToJpg(file) {
         return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
+            
+            // 1. Kiểm tra nếu là HEIC
+            if (file.name.toLowerCase().endsWith('.heic')) {
+                // heic2any trả về blob (hoặc mảng blob). Ta ép kiểu về Blob đơn.
+                // Lưu ý: HEIC xử lý lâu hơn WebP nhiều do phải giải mã
+                heic2any({
+                    blob: file,
+                    toType: "image/jpeg",
+                    quality: 0.9
+                }).then((conversionResult) => {
+                    // Nếu kết quả là mảng (trường hợp heic động), lấy frame đầu
+                    const blob = Array.isArray(conversionResult) ? conversionResult[0] : conversionResult;
+                    resolve(blob);
+                }).catch(e => {
+                    reject(e);
+                });
+            } 
+            
+            // 2. Nếu là WebP hoặc AVIF (Dùng Canvas Native cho nhanh)
+            else {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
 
-                    // Fill nền trắng
-                    ctx.fillStyle = "#FFFFFF";
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    
-                    ctx.drawImage(img, 0, 0);
+                        // Fill nền trắng
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0);
 
-                    canvas.toBlob((blob) => {
-                        if(blob) resolve(blob);
-                        else reject("Conversion failed");
-                    }, 'image/jpeg', 0.9);
+                        canvas.toBlob((blob) => {
+                            if(blob) resolve(blob);
+                            else reject("Canvas error");
+                        }, 'image/jpeg', 0.9);
+                    };
+                    img.onerror = reject;
                 };
-                img.onerror = reject;
-            };
-            reader.onerror = reject;
+                reader.onerror = reject;
+            }
         });
     }
 
-    // --- Các hàm UI ---
+    // --- UI Helpers ---
     function createFileItemUI(id, file) {
         const div = document.createElement('div');
         div.className = 'file-item';
         div.id = id;
         
-        const url = URL.createObjectURL(file);
+        // Logic hiển thị ảnh preview
+        let previewHTML = '';
+        if(file.name.toLowerCase().endsWith('.heic')) {
+            // HEIC không xem trước được ngay, dùng icon placeholder
+            previewHTML = `<div class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:24px;">🍏</div>`;
+        } else {
+            const url = URL.createObjectURL(file);
+            previewHTML = `<img src="${url}" class="preview-img">`;
+        }
 
         div.innerHTML = `
-            <img src="${url}" class="preview-img">
+            ${previewHTML}
             <div class="file-info">
                 <div class="file-name">${file.name}</div>
                 <div class="file-status">
@@ -379,9 +404,20 @@
         
         const url = URL.createObjectURL(blob);
         
+        // Cập nhật lại ảnh preview (Vì lúc đầu HEIC chưa có ảnh)
+        const previewArea = el.querySelector('.preview-img');
+        if (previewArea.tagName === 'DIV') {
+             const img = document.createElement('img');
+             img.src = url;
+             img.className = 'preview-img';
+             previewArea.replaceWith(img);
+        }
+
+        // Update status
         const statusEl = el.querySelector('.file-status');
         statusEl.innerHTML = `<span class="status-badge status-done">✅ Đã xong</span>`;
 
+        // Update Button
         const btn = el.querySelector('.btn-download');
         btn.href = url;
         btn.download = fileName;
@@ -409,10 +445,9 @@
         fileInput.value = ''; 
     }
 
-    // --- Hàm Download ZIP ---
+    // --- Download ZIP ---
     function downloadAllZip() {
         if(processedFiles.length === 0) return;
-
         const zip = new JSZip();
         const folder = zip.folder("converted_images");
 

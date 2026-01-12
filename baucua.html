@@ -1,327 +1,284 @@
-import React, { useState, useEffect } from 'react';
-import { Dices, RotateCw, Play } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bầu Cua Online - AI Edition</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        .shake-anim { animation: shake 0.5s infinite; }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            100% { transform: translate(1px, 1px) rotate(0deg); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-green-800 via-green-700 to-green-900 min-h-screen p-4 font-sans">
 
-const ANIMALS = [
-  { id: 'bau', name: 'Bầu', emoji: '🎃', color: 'bg-orange-100' },
-  { id: 'cua', name: 'Cua', emoji: '🦀', color: 'bg-red-100' },
-  { id: 'tom', name: 'Tôm', emoji: '🦐', color: 'bg-pink-100' },
-  { id: 'ca', name: 'Cá', emoji: '🐟', color: 'bg-blue-100' },
-  { id: 'ga', name: 'Gà', emoji: '🐓', color: 'bg-yellow-100' },
-  { id: 'nai', name: 'Nai', emoji: '🦌', color: 'bg-green-100' }
-];
+<div id="app" class="max-w-7xl mx-auto">
+    <div v-if="toast" :class="toastClass" class="fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white max-w-xs animate__animated animate__fadeInRight">
+        <div class="whitespace-pre-line text-sm font-bold">{{ toast.message }}</div>
+    </div>
 
-const BET_AMOUNT = 5000;
-const INITIAL_BALANCE = 100000;
-
-export default function BauCuaGame() {
-  const [balance, setBalance] = useState(INITIAL_BALANCE);
-  const [bets, setBets] = useState({});
-  const [diceResults, setDiceResults] = useState([]);
-  const [isShaking, setIsShaking] = useState(false);
-  const [gamePhase, setGamePhase] = useState('betting'); // betting, shaking, result
-  const [toast, setToast] = useState(null);
-  const [ai1Bets, setAi1Bets] = useState({});
-  const [ai2Bets, setAi2Bets] = useState({});
-  const [ai1Balance, setAi1Balance] = useState(INITIAL_BALANCE);
-  const [ai2Balance, setAi2Balance] = useState(INITIAL_BALANCE);
-
-  useEffect(() => {
-    if (gamePhase === 'betting') {
-      generateAIBets();
-    }
-  }, [gamePhase]);
-
-  const generateAIBets = () => {
-    const generateBet = () => {
-      const newBets = {};
-      const numBets = Math.floor(Math.random() * 3) + 1;
-      const shuffled = [...ANIMALS].sort(() => Math.random() - 0.5);
-      
-      for (let i = 0; i < numBets; i++) {
-        const animal = shuffled[i];
-        newBets[animal.id] = (Math.floor(Math.random() * 3) + 1) * BET_AMOUNT;
-      }
-      return newBets;
-    };
-
-    setAi1Bets(generateBet());
-    setAi2Bets(generateBet());
-  };
-
-  const placeBet = (animalId) => {
-    if (gamePhase !== 'betting') return;
-    
-    const currentBet = bets[animalId] || 0;
-    const newBetAmount = currentBet + BET_AMOUNT;
-    
-    if (balance >= BET_AMOUNT) {
-      setBets({ ...bets, [animalId]: newBetAmount });
-      setBalance(balance - BET_AMOUNT);
-    } else {
-      showToast('Không đủ tiền!', 'error');
-    }
-  };
-
-  const resetBets = () => {
-    const totalBet = Object.values(bets).reduce((sum, bet) => sum + bet, 0);
-    setBalance(balance + totalBet);
-    setBets({});
-  };
-
-  const rollDice = () => {
-    if (Object.keys(bets).length === 0) {
-      showToast('Vui lòng đặt cược trước!', 'error');
-      return;
-    }
-
-    setGamePhase('shaking');
-    setIsShaking(true);
-
-    setTimeout(() => {
-      const results = [
-        ANIMALS[Math.floor(Math.random() * 6)],
-        ANIMALS[Math.floor(Math.random() * 6)],
-        ANIMALS[Math.floor(Math.random() * 6)]
-      ];
-      
-      setDiceResults(results);
-      setIsShaking(false);
-      setGamePhase('result');
-
-      setTimeout(() => {
-        calculateWinnings(results);
-      }, 1000);
-    }, 2000);
-  };
-
-  const calculateWinnings = (results) => {
-    const resultCounts = {};
-    results.forEach(animal => {
-      resultCounts[animal.id] = (resultCounts[animal.id] || 0) + 1;
-    });
-
-    let totalWin = 0;
-    let winDetails = [];
-
-    Object.entries(bets).forEach(([animalId, betAmount]) => {
-      const count = resultCounts[animalId] || 0;
-      if (count > 0) {
-        const winAmount = betAmount + (betAmount * count);
-        totalWin += winAmount;
-        winDetails.push(`${ANIMALS.find(a => a.id === animalId).name}: +${winAmount.toLocaleString()}đ`);
-      }
-    });
-
-    const totalBet = Object.values(bets).reduce((sum, bet) => sum + bet, 0);
-    const netProfit = totalWin - totalBet;
-
-    setBalance(balance + totalWin);
-
-    if (netProfit > 0) {
-      showToast(`🎉 Thắng ${netProfit.toLocaleString()}đ!\n${winDetails.join('\n')}`, 'success');
-    } else if (netProfit === 0) {
-      showToast('Hòa! Hoàn tiền cược.', 'info');
-    } else {
-      showToast(`Thua ${Math.abs(netProfit).toLocaleString()}đ`, 'error');
-    }
-
-    calculateAIWinnings(resultCounts, ai1Bets, setAi1Balance, ai1Balance);
-    calculateAIWinnings(resultCounts, ai2Bets, setAi2Balance, ai2Balance);
-
-    setTimeout(() => {
-      setBets({});
-      setDiceResults([]);
-      setGamePhase('betting');
-    }, 3000);
-  };
-
-  const calculateAIWinnings = (resultCounts, aiBets, setBalance, currentBalance) => {
-    let totalWin = 0;
-    Object.entries(aiBets).forEach(([animalId, betAmount]) => {
-      const count = resultCounts[animalId] || 0;
-      if (count > 0) {
-        totalWin += betAmount + (betAmount * count);
-      }
-    });
-    setBalance(currentBalance + totalWin);
-  };
-
-  const showToast = (message, type) => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
-
-  const totalBet = Object.values(bets).reduce((sum, bet) => sum + bet, 0);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-800 via-green-700 to-green-900 p-4">
-      {/* Toast Notification */}
-      {toast && (
-        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white max-w-xs ${
-          toast.type === 'success' ? 'bg-green-600' : 
-          toast.type === 'error' ? 'bg-red-600' : 'bg-blue-600'
-        }`}>
-          <div className="whitespace-pre-line">{toast.message}</div>
-        </div>
-      )}
-
-      <div className="max-w-7xl mx-auto">
-        {/* Top - Dealer */}
-        <div className="text-center mb-6">
-          <div className="inline-block bg-red-700 text-white px-6 py-3 rounded-lg shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="text-3xl">🎰</div>
-              <div>
-                <div className="font-bold text-lg">NHÀ CÁI</div>
-                <div className="text-sm opacity-90">Bot Dealer</div>
-              </div>
+    <div class="text-center mb-6">
+        <div class="inline-block bg-red-700 text-white px-6 py-3 rounded-lg shadow-lg mb-4">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">🎰</span>
+                <div class="text-left">
+                    <div class="font-bold text-lg">NHÀ CÁI</div>
+                    <div class="text-xs opacity-80">Bot Dealer</div>
+                </div>
             </div>
-          </div>
-          
-          {/* Dice Shaking Area */}
-          <div className="mt-4 bg-red-900 rounded-xl p-6 inline-block shadow-2xl">
-            <div className={`flex gap-4 ${isShaking ? 'animate-bounce' : ''}`}>
-              {gamePhase === 'betting' || gamePhase === 'shaking' ? (
-                <>
-                  <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center text-3xl shadow-lg">
-                    <Dices className="w-10 h-10 text-red-700" />
-                  </div>
-                  <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center text-3xl shadow-lg">
-                    <Dices className="w-10 h-10 text-red-700" />
-                  </div>
-                  <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center text-3xl shadow-lg">
-                    <Dices className="w-10 h-10 text-red-700" />
-                  </div>
-                </>
-              ) : (
-                diceResults.map((animal, idx) => (
-                  <div key={idx} className="w-16 h-16 bg-white rounded-lg flex items-center justify-center text-4xl shadow-lg transform scale-110">
-                    {animal.emoji}
-                  </div>
-                ))
-              )}
-            </div>
-            {isShaking && (
-              <div className="text-yellow-300 font-bold mt-2 text-lg animate-pulse">
-                Đang lắc...
-              </div>
-            )}
-          </div>
         </div>
 
-        {/* Main Game Area */}
-        <div className="grid grid-cols-12 gap-4">
-          {/* Left AI Player */}
-          <div className="col-span-2">
-            <div className="bg-blue-800 text-white p-4 rounded-lg shadow-lg">
-              <div className="text-center mb-3">
-                <div className="text-2xl mb-2">🤖</div>
-                <div className="font-bold">AI Player 1</div>
-                <div className="text-sm text-blue-200">{ai1Balance.toLocaleString()}đ</div>
-              </div>
-              <div className="space-y-2">
-                {Object.entries(ai1Bets).map(([animalId, amount]) => {
-                  const animal = ANIMALS.find(a => a.id === animalId);
-                  return (
-                    <div key={animalId} className="bg-blue-700 p-2 rounded text-xs">
-                      <div>{animal.emoji} {animal.name}</div>
-                      <div className="text-yellow-300">{amount.toLocaleString()}đ</div>
+        <div class="block">
+            <div :class="{'shake-anim': isShaking}" class="bg-red-900 rounded-xl p-6 inline-flex gap-4 shadow-2xl border-4 border-yellow-600">
+                <template v-if="gamePhase === 'betting' || gamePhase === 'shaking'">
+                    <div v-for="i in 3" class="w-16 h-16 bg-white rounded-lg flex items-center justify-center shadow-inner">
+                        <span class="text-3xl text-red-700">🎲</span>
                     </div>
-                  );
-                })}
-              </div>
+                </template>
+                <template v-else>
+                    <div v-for="res in diceResults" class="w-16 h-16 bg-white rounded-lg flex items-center justify-center text-4xl shadow-lg animate__animated animate__bounceIn">
+                        {{ res.emoji }}
+                    </div>
+                </template>
             </div>
-          </div>
+            <div v-if="isShaking" class="text-yellow-300 font-bold mt-2 animate-pulse">Đang lắc...</div>
+        </div>
+    </div>
 
-          {/* Center - Betting Board */}
-          <div className="col-span-8">
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              {ANIMALS.map(animal => (
-                <button
-                  key={animal.id}
-                  onClick={() => placeBet(animal.id)}
-                  disabled={gamePhase !== 'betting'}
-                  className={`${animal.color} p-6 rounded-xl shadow-lg hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed border-4 border-white`}
-                >
-                  <div className="text-6xl mb-2">{animal.emoji}</div>
-                  <div className="font-bold text-xl">{animal.name}</div>
-                  {bets[animal.id] > 0 && (
-                    <div className="mt-2 bg-yellow-400 text-yellow-900 font-bold py-2 px-3 rounded-lg">
-                      {bets[animal.id].toLocaleString()}đ
+    <div class="grid grid-cols-12 gap-4">
+        <div class="col-span-12 md:col-span-2">
+            <div class="bg-blue-800 text-white p-4 rounded-xl shadow-lg border border-blue-400">
+                <div class="text-center mb-3">
+                    <div class="text-3xl">🤖</div>
+                    <div class="font-bold">AI Player 1</div>
+                    <div class="text-yellow-400 font-mono">{{ formatMoney(ai1Balance) }}</div>
+                </div>
+                <div class="space-y-1">
+                    <div v-for="(amount, id) in ai1Bets" class="bg-blue-700 p-2 rounded text-xs flex justify-between">
+                        <span>{{ getAnimal(id).emoji }} {{ getAnimal(id).name }}</span>
+                        <span class="text-yellow-300 font-bold">{{ formatMoney(amount) }}</span>
                     </div>
-                  )}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-12 md:col-span-8">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <button v-for="item in animals" 
+                    @click="placeBet(item.id)"
+                    :disabled="gamePhase !== 'betting'"
+                    :class="[item.color, 'p-4 md:p-6 rounded-2xl shadow-xl transition-all hover:scale-105 active:scale-95 border-4 border-white flex flex-col items-center relative overflow-hidden disabled:opacity-70']">
+                    <span class="text-5xl md:text-7xl mb-2">{{ item.emoji }}</span>
+                    <span class="font-black text-xl md:text-2xl uppercase text-gray-800">{{ item.name }}</span>
+                    
+                    <div v-if="bets[item.id]" class="mt-2 bg-yellow-400 text-red-700 font-black py-1 px-4 rounded-full shadow-md animate__animated animate__pulse">
+                        {{ formatMoney(bets[item.id]) }}
+                    </div>
                 </button>
-              ))}
             </div>
-          </div>
-
-          {/* Right AI Player */}
-          <div className="col-span-2">
-            <div className="bg-purple-800 text-white p-4 rounded-lg shadow-lg">
-              <div className="text-center mb-3">
-                <div className="text-2xl mb-2">🤖</div>
-                <div className="font-bold">AI Player 2</div>
-                <div className="text-sm text-purple-200">{ai2Balance.toLocaleString()}đ</div>
-              </div>
-              <div className="space-y-2">
-                {Object.entries(ai2Bets).map(([animalId, amount]) => {
-                  const animal = ANIMALS.find(a => a.id === animalId);
-                  return (
-                    <div key={animalId} className="bg-purple-700 p-2 rounded text-xs">
-                      <div>{animal.emoji} {animal.name}</div>
-                      <div className="text-yellow-300">{amount.toLocaleString()}đ</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Bottom - Player Controls */}
-        <div className="mt-6 bg-gradient-to-r from-yellow-600 to-yellow-700 p-6 rounded-xl shadow-2xl">
-          <div className="flex items-center justify-between">
-            <div className="text-white">
-              <div className="text-sm opacity-90">Người chơi chính</div>
-              <div className="text-3xl font-bold">{balance.toLocaleString()}đ</div>
-              {totalBet > 0 && (
-                <div className="text-sm mt-1">Đã cược: {totalBet.toLocaleString()}đ</div>
-              )}
+        <div class="col-span-12 md:col-span-2">
+            <div class="bg-purple-800 text-white p-4 rounded-xl shadow-lg border border-purple-400">
+                <div class="text-center mb-3">
+                    <div class="text-3xl">🤖</div>
+                    <div class="font-bold">AI Player 2</div>
+                    <div class="text-yellow-400 font-mono">{{ formatMoney(ai2Balance) }}</div>
+                </div>
+                <div class="space-y-1">
+                    <div v-for="(amount, id) in ai2Bets" class="bg-purple-700 p-2 rounded text-xs flex justify-between">
+                        <span>{{ getAnimal(id).emoji }} {{ getAnimal(id).name }}</span>
+                        <span class="text-yellow-300 font-bold">{{ formatMoney(amount) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 bg-gradient-to-r from-yellow-500 to-yellow-600 p-6 rounded-2xl shadow-2xl border-t-4 border-yellow-300">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="text-white text-center md:text-left">
+                <div class="uppercase text-xs font-bold opacity-80 tracking-widest">Tài khoản của bạn</div>
+                <div class="text-4xl font-black drop-shadow-md">{{ formatMoney(balance) }}</div>
+                <div v-if="totalBet > 0" class="bg-black/20 rounded px-2 mt-1 inline-block">Đã cược: {{ formatMoney(totalBet) }}</div>
             </div>
             
-            <div className="flex gap-4">
-              <button
-                onClick={resetBets}
-                disabled={gamePhase !== 'betting' || Object.keys(bets).length === 0}
-                className="bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 shadow-lg transition-all disabled:cursor-not-allowed"
-              >
-                <RotateCw className="w-5 h-5" />
-                Đặt lại
-              </button>
-              
-              <button
-                onClick={rollDice}
-                disabled={gamePhase !== 'betting' || Object.keys(bets).length === 0}
-                className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-8 py-3 rounded-lg font-bold text-xl flex items-center gap-2 shadow-lg transition-all disabled:cursor-not-allowed"
-              >
-                <Play className="w-6 h-6" />
-                KHUI
-              </button>
+            <div class="flex gap-4">
+                <button @click="resetBets" 
+                    :disabled="gamePhase !== 'betting' || totalBet === 0"
+                    class="bg-gray-700 hover:bg-gray-800 text-white px-6 py-4 rounded-xl font-bold transition-all disabled:opacity-50">
+                    Hủy cược
+                </button>
+                <button @click="rollDice" 
+                    :disabled="gamePhase !== 'betting' || totalBet === 0"
+                    class="bg-red-600 hover:bg-red-700 text-white px-12 py-4 rounded-xl font-black text-2xl shadow-lg transition-all transform active:translate-y-1 disabled:bg-gray-500">
+                    KHUI 🎲
+                </button>
             </div>
-          </div>
         </div>
-
-        {/* Game Rules */}
-        <div className="mt-4 bg-white bg-opacity-10 text-white p-4 rounded-lg text-sm">
-          <div className="font-bold mb-2">📋 Luật chơi:</div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>• Mỗi lần đặt: 5.000đ</div>
-            <div>• Trúng 1 linh vật: Hoàn + thưởng 1x</div>
-            <div>• Trúng 2: Hoàn + thưởng 2x</div>
-            <div>• Trúng 3: Hoàn + thưởng 3x</div>
-          </div>
-        </div>
-      </div>
     </div>
-  );
-}
+
+    <div class="mt-6 text-center text-white/50 text-sm italic">
+        * Nhấn vào ô linh vật để đặt cược (5.000đ/lần)
+    </div>
+</div>
+
+<script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    createApp({
+        setup() {
+            const animals = [
+                { id: 'bau', name: 'Bầu', emoji: '🎃', color: 'bg-orange-100' },
+                { id: 'cua', name: 'Cua', emoji: '🦀', color: 'bg-red-100' },
+                { id: 'tom', name: 'Tôm', emoji: '🦐', color: 'bg-pink-100' },
+                { id: 'ca', name: 'Cá', emoji: '🐟', color: 'bg-blue-100' },
+                { id: 'ga', name: 'Gà', emoji: '🐓', color: 'bg-yellow-100' },
+                { id: 'nai', name: 'Nai', emoji: '🦌', color: 'bg-green-100' }
+            ];
+
+            const balance = ref(100000);
+            const ai1Balance = ref(100000);
+            const ai2Balance = ref(100000);
+            const bets = ref({});
+            const ai1Bets = ref({});
+            const ai2Bets = ref({});
+            const diceResults = ref([]);
+            const isShaking = ref(false);
+            const gamePhase = ref('betting');
+            const toast = ref(null);
+            const betUnit = 5000;
+
+            const formatMoney = (val) => val.toLocaleString('vi-VN') + 'đ';
+            const getAnimal = (id) => animals.find(a => a.id === id);
+            
+            const totalBet = computed(() => {
+                return Object.values(bets.value).reduce((s, b) => s + b, 0);
+            });
+
+            const toastClass = computed(() => {
+                if (!toast.value) return '';
+                return {
+                    'bg-green-600': toast.value.type === 'success',
+                    'bg-red-600': toast.value.type === 'error',
+                    'bg-blue-600': toast.value.type === 'info'
+                };
+            });
+
+            const showToast = (msg, type) => {
+                toast.value = { message: msg, type };
+                setTimeout(() => toast.value = null, 3500);
+            };
+
+            const generateAIBets = () => {
+                const getRandBets = () => {
+                    const b = {};
+                    const count = Math.floor(Math.random() * 3) + 1;
+                    for(let i=0; i<count; i++) {
+                        const ani = animals[Math.floor(Math.random() * 6)];
+                        b[ani.id] = (Math.floor(Math.random() * 2) + 1) * betUnit;
+                    }
+                    return b;
+                };
+                ai1Bets.value = getRandBets();
+                ai2Bets.value = getRandBets();
+            };
+
+            const placeBet = (id) => {
+                if (gamePhase.value !== 'betting') return;
+                if (balance.value < betUnit) {
+                    showToast('Bạn không đủ tiền cược!', 'error');
+                    return;
+                }
+                bets.value[id] = (bets.value[id] || 0) + betUnit;
+                balance.value -= betUnit;
+            };
+
+            const resetBets = () => {
+                balance.value += totalBet.value;
+                bets.value = {};
+            };
+
+            const rollDice = () => {
+                gamePhase.value = 'shaking';
+                isShaking.value = true;
+                
+                setTimeout(() => {
+                    isShaking.value = false;
+                    const res = [
+                        animals[Math.floor(Math.random() * 6)],
+                        animals[Math.floor(Math.random() * 6)],
+                        animals[Math.floor(Math.random() * 6)]
+                    ];
+                    diceResults.value = res;
+                    gamePhase.value = 'result';
+                    
+                    setTimeout(() => calculateAll(res), 1200);
+                }, 2000);
+            };
+
+            const calculateAll = (results) => {
+                const counts = {};
+                results.forEach(r => counts[r.id] = (counts[r.id] || 0) + 1);
+
+                // Tính cho Main Player
+                let win = 0;
+                let details = [];
+                Object.entries(bets.value).forEach(([id, amount]) => {
+                    if (counts[id]) {
+                        const plus = amount + (amount * counts[id]);
+                        win += plus;
+                        details.push(`${getAnimal(id).name} x${counts[id]}`);
+                    }
+                });
+
+                const profit = win - totalBet.value;
+                balance.value += win;
+
+                if (profit > 0) showToast(`BẠN THẮNG: +${formatMoney(profit)}\n(${details.join(', ')})`, 'success');
+                else if (profit === 0) showToast('HÒA VỐN!', 'info');
+                else showToast(`BẠN THUA: -${formatMoney(Math.abs(profit))}`, 'error');
+
+                // Tính cho AI
+                const calcAI = (aiBets, aiBal) => {
+                    let aiWin = 0;
+                    Object.entries(aiBets).forEach(([id, amount]) => {
+                        if (counts[id]) aiWin += amount + (amount * counts[id]);
+                    });
+                    return aiWin;
+                };
+
+                ai1Balance.value += (calcAI(ai1Bets.value) - Object.values(ai1Bets.value).reduce((s, b) => s + b, 0));
+                ai2Balance.value += (calcAI(ai2Bets.value) - Object.values(ai2Bets.value).reduce((s, b) => s + b, 0));
+
+                // Reset ván mới
+                setTimeout(() => {
+                    bets.value = {};
+                    diceResults.value = [];
+                    gamePhase.value = 'betting';
+                    generateAIBets();
+                }, 3000);
+            };
+
+            onMounted(generateAIBets);
+
+            return {
+                animals, balance, ai1Balance, ai2Balance, bets, ai1Bets, ai2Bets,
+                diceResults, isShaking, gamePhase, toast, totalBet,
+                formatMoney, getAnimal, placeBet, resetBets, rollDice, toastClass
+            }
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>

@@ -2,352 +2,305 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra Cứu Xổ Số Miền Nam (GitHub Version)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dò Số Miền Nam @ xuxukun </title>
     <style>
-        /* CSS GIAO DIỆN */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #d32f2f; margin-bottom: 25px; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 15px;}
-        
-        .control-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
-        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; transition: 0.3s; }
-        select:focus, input:focus { border-color: #d32f2f; outline: none; }
-        
-        button { width: 100%; padding: 14px; background-color: #d32f2f; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: background 0.3s; }
-        button:hover { background-color: #b71c1c; }
-        button:disabled { background-color: #9e9e9e; cursor: wait; }
+        :root {
+            --primary: #d32f2f;
+            --secondary: #ffc107;
+            --bg: #f8f9fa;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
 
-        #status-area { margin-top: 20px; padding: 15px; border-radius: 6px; text-align: center; display: none; line-height: 1.5; font-size: 15px; }
-        .success { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
-        .fail { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
-        .loading { background-color: #e3f2fd; color: #0277bd; border: 1px solid #b3e5fc; }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #b71c1c 0%, #d32f2f 100%);
+            background-attachment: fixed;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            color: #333;
+        }
 
-        .lottery-table { width: 100%; border-collapse: collapse; margin-top: 25px; background: white; border: 1px solid #ddd; display: none; table-layout: fixed; }
-        .lottery-table td { border: 1px solid #ccc; padding: 10px 4px; text-align: center; font-size: 18px; font-weight: bold; color: #444; vertical-align: middle; word-wrap: break-word; }
-        .lottery-table .g-label { width: 50px; font-weight: normal; color: #666; font-size: 14px; background: #f9f9f9; }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 25px 20px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin: 0 0 20px 0;
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 3px solid var(--secondary);
+            display: block;
+            padding-bottom: 10px;
+        }
+
+        .form-group { margin-bottom: 15px; }
         
-        .text-red { color: #d32f2f !important; font-size: 22px !important; }
-        .highlight { background-color: #fff3cd; color: #d32f2f; border: 2px solid #ffc107 !important; }
-        .dev-note { font-size: 12px; color: #777; text-align: center; margin-top: 20px; font-style: italic;}
+        label { 
+            display: block; 
+            margin-bottom: 6px; 
+            font-weight: 600; 
+            font-size: 13px;
+            color: #666;
+            padding-left: 5px;
+        }
+
+        select, input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1.5px solid #eee; 
+            border-radius: 12px; 
+            box-sizing: border-box; 
+            font-size: 16px;
+            background: #fff;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+            outline: none;
+        }
+
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            background: linear-gradient(to right, #d32f2f, #f44336);
+            color: #fff; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3);
+            margin-top: 10px;
+        }
+
+        button:active { transform: scale(0.98); }
+
+        #status { 
+            margin-top: 20px; 
+            padding: 15px; 
+            display: none; 
+            border-radius: 12px; 
+            text-align: center; 
+            font-weight: 600;
+        }
+
+        .loading { background: #e3f2fd; color: #0d47a1; }
+        .success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .fail { background: #fff5f5; color: #c62828; border: 1px solid #fed7d7; }
+
+        .lottery-table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0 8px;
+            margin-top: 20px; 
+            display: none; 
+        }
+
+        .lottery-table td { 
+            background: #fff;
+            padding: 12px 8px; 
+            text-align: center; 
+            font-weight: 700;
+            font-size: 18px;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+
+        .g-label { 
+            background: #f8f8f8 !important; 
+            color: #999; 
+            width: 50px; 
+            font-size: 11px !important; 
+            border-radius: 8px 0 0 8px;
+            border-left: 1px solid #eee;
+        }
+
+        .val-cell {
+            border-radius: 0 8px 8px 0;
+            border-right: 1px solid #eee;
+        }
+
+        .text-red { color: var(--primary); font-size: 20px !important; }
+        
+        .highlight { 
+            background: #fff9c4 !important; 
+            color: #d32f2f !important;
+            border: 2px solid var(--secondary) !important;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Dò Số Online</h2>
+    <h2>Dò Số Miền Nam</h2>
     
-    <div class="control-group">
-        <label>1. Chọn ngày:</label>
+    <div class="form-group">
+        <label>Ngày quay số</label>
         <input type="date" id="dateInput">
     </div>
 
-    <div class="control-group">
-        <label>2. Chọn đài:</label>
-        <select id="stationSelect">
-            <option value="">-- Đang tải lịch... --</option>
-        </select>
+    <div class="form-group">
+        <label>Đài quay thưởng</label>
+        <select id="stationSelect"></select>
     </div>
 
-    <div class="control-group">
-        <label>3. Số vé:</label>
-        <input type="number" id="numberInput" placeholder="Nhập số (VD: 94, 123456)" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);">
+    <div class="form-group">
+        <label>Số cần dò</label>
+        <input type="number" id="numInput" placeholder="Nhập số vé của bạn" pattern="\d*">
     </div>
 
-    <button onclick="checkResult()" id="btnCheck">DÒ KẾT QUẢ NGAY</button>
+    <button onclick="checkResult()" id="btnAction">DÒ KẾT QUẢ</button>
 
-    <div id="status-area"></div>
+    <div id="status"></div>
 
     <table class="lottery-table" id="resultTable">
-        <tr><td class="g-label">ĐB</td><td colspan="12" class="text-red" id="g-db"></td></tr>
-        <tr><td class="g-label">G.1</td><td colspan="12" id="g-1"></td></tr>
-        <tr><td class="g-label">G.2</td><td colspan="12" id="g-2"></td></tr>
-        <tr><td class="g-label" rowspan="2">G.3</td><td colspan="12" id="g-3-1"></td></tr>
-        <tr><td colspan="12" id="g-3-2"></td></tr>
-        <tr><td class="g-label" rowspan="2">G.4</td><td colspan="12" id="g-4-1"></td></tr>
-        <tr><td colspan="12" id="g-4-2"></td></tr>
-        <tr><td class="g-label">G.5</td><td colspan="12" id="g-5"></td></tr>
-        <tr><td class="g-label">G.6</td><td colspan="12" id="g-6"></td></tr>
-        <tr><td class="g-label">G.7</td><td colspan="12" id="g-7"></td></tr>
-        <tr><td class="g-label">G.8</td><td colspan="12" class="text-red" id="g-8"></td></tr>
+        <tr><td class="g-label">ĐB</td><td id="g-db" class="val-cell text-red"></td></tr>
+        <tr><td class="g-label">G1</td><td id="g-1" class="val-cell"></td></tr>
+        <tr><td class="g-label">G2</td><td id="g-2" class="val-cell"></td></tr>
+        <tr><td class="g-label">G3</td><td id="g-3" class="val-cell"></td></tr>
+        <tr><td class="g-label">G4</td><td id="g-4" class="val-cell"></td></tr>
+        <tr><td class="g-label">G5</td><td id="g-5" class="val-cell"></td></tr>
+        <tr><td class="g-label">G6</td><td id="g-6" class="val-cell"></td></tr>
+        <tr><td class="g-label">G7</td><td id="g-7" class="val-cell"></td></tr>
+        <tr><td class="g-label">G8</td><td id="g-8" class="val-cell text-red"></td></tr>
     </table>
-
-    <div class="dev-note">Mẹo: Bấm F12 > Console để xem quá trình dò tìm nếu gặp lỗi.</div>
 </div>
 
 <script>
-    // --- 1. CẤU HÌNH DỮ LIỆU ---
-    const PROVINCE_SLUGS = {
-        'xshcm': 'ho-chi-minh', 'xsdt': 'dong-thap', 'xscm': 'ca-mau',
-        'xsbt': 'ben-tre', 'xsvt': 'vung-tau', 'xsbl': 'bac-lieu',
-        'xsdn': 'dong-nai', 'xsct': 'can-tho', 'xsst': 'soc-trang',
-        'xstn': 'tay-ninh', 'xsag': 'an-giang', 'xsbth': 'binh-thuan',
-        'xsvl': 'vinh-long', 'xsbd': 'binh-duong', 'xstv': 'tra-vinh',
-        'xsla': 'long-an', 'xsbp': 'binh-phuoc', 'xshg': 'hau-giang',
-        'xstg': 'tien-giang', 'xskg': 'kien-giang', 'xsld': 'lam-dong'
+    // Cập nhật Slug: Lâm Đồng -> lam-dong, xsld
+    const SLUGS = {
+        'xshcm':'ho-chi-minh', 'xsdt':'dong-thap', 'xscm':'ca-mau',
+        'xsbt':'ben-tre', 'xsvt':'vung-tau', 'xsbl':'bac-lieu',
+        'xsdn':'dong-nai', 'xsct':'can-tho', 'xsst':'soc-trang',
+        'xstn':'tay-ninh', 'xsag':'an-giang', 'xsbth':'binh-thuan',
+        'xsvl':'vinh-long', 'xsbd':'binh-duong', 'xstv':'tra-vinh',
+        'xsla':'long-an', 'xsbp':'binh-phuoc', 'xshg':'hau-giang',
+        'xstg':'tien-giang', 'xskg':'kien-giang', 'xsld':'lam-dong'
     };
 
-    const STATION_SCHEDULE = {
-        1: [{name: 'TP. HCM', code: 'xshcm'}, {name: 'Đồng Tháp', code: 'xsdt'}, {name: 'Cà Mau', code: 'xscm'}],
-        2: [{name: 'Bến Tre', code: 'xsbt'}, {name: 'Vũng Tàu', code: 'xsvt'}, {name: 'Bạc Liêu', code: 'xsbl'}],
-        3: [{name: 'Đồng Nai', code: 'xsdn'}, {name: 'Cần Thơ', code: 'xsct'}, {name: 'Sóc Trăng', code: 'xsst'}],
-        4: [{name: 'Tây Ninh', code: 'xstn'}, {name: 'An Giang', code: 'xsag'}, {name: 'Bình Thuận', code: 'xsbth'}],
-        5: [{name: 'Vĩnh Long', code: 'xsvl'}, {name: 'Bình Dương', code: 'xsbd'}, {name: 'Trà Vinh', code: 'xstv'}],
-        6: [{name: 'TP. HCM', code: 'xshcm'}, {name: 'Long An', code: 'xsla'}, {name: 'Bình Phước', code: 'xsbp'}, {name: 'Hậu Giang', code: 'xshg'}],
-        0: [{name: 'Tiền Giang', code: 'xstg'}, {name: 'Kiên Giang', code: 'xskg'}, {name: 'Đà Lạt', code: 'xsld'}]
+    const SCHEDULE = {
+        1: [{n:'TP. Hồ Chí Minh', c:'xshcm'}, {n:'Đồng Tháp', c:'xsdt'}, {n:'Cà Mau', c:'xscm'}],
+        2: [{n:'Bến Tre', c:'xsbt'}, {n:'Vũng Tàu', c:'xsvt'}, {n:'Bạc Liêu', c:'xsbl'}],
+        3: [{n:'Đồng Nai', c:'xsdn'}, {n:'Cần Thơ', c:'xsct'}, {n:'Sóc Trăng', c:'xsst'}],
+        4: [{n:'Tây Ninh', c:'xstn'}, {n:'An Giang', c:'xsag'}, {n:'Bình Thuận', c:'xsbth'}],
+        5: [{n:'Vĩnh Long', c:'xsvl'}, {n:'Bình Dương', c:'xsbd'}, {n:'Trà Vinh', c:'xstv'}],
+        6: [{n:'TP. Hồ Chí Minh', c:'xshcm'}, {n:'Long An', c:'xsla'}, {n:'Bình Phước', c:'xsbp'}, {n:'Hậu Giang', c:'xshg'}],
+        0: [{n:'Tiền Giang', c:'xstg'}, {n:'Kiên Giang', c:'xskg'}, {n:'Lâm Đồng', c:'xsld'}]
     };
 
-    // --- 2. LOGIC FETCH THÔNG MINH (RETRY) ---
-    async function fetchRSSWithRetry(rssUrl) {
-        // Danh sách Proxy để thử lần lượt
-        const strategies = [
-            {
-                // Cách 1: AllOrigins (Trả về JSON) - Rất ổn định
-                url: `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`,
-                type: 'json'
-            },
-            {
-                // Cách 2: CodeTabs (Trả về Text) - Backup tốt
-                url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(rssUrl)}`,
-                type: 'text'
-            }
-        ];
+    window.onload = () => {
+        const d = new Date();
+        document.getElementById('dateInput').valueAsDate = d;
+        updateStations(d);
+    };
 
-        for (let strategy of strategies) {
-            try {
-                console.log(`Đang thử tải qua Proxy: ${strategy.url}`);
-                const response = await fetch(strategy.url);
-                if (!response.ok) throw new Error('Network response was not ok');
-                
-                let content = '';
-                if (strategy.type === 'json') {
-                    const data = await response.json();
-                    content = data.contents;
-                } else {
-                    content = await response.text();
-                }
+    document.getElementById('dateInput').onchange = (e) => {
+        if(e.target.value) updateStations(new Date(e.target.value));
+    };
 
-                if (content && content.includes('<rss')) {
-                    console.log("-> Tải thành công!");
-                    return content;
-                }
-            } catch (err) {
-                console.warn(`Proxy thất bại, đang thử cái tiếp theo... (${err.message})`);
-            }
-        }
-        throw new Error("Không thể kết nối đến máy chủ xổ số. Vui lòng thử lại sau!");
+    function updateStations(date) {
+        const list = SCHEDULE[date.getDay()];
+        const sel = document.getElementById('stationSelect');
+        sel.innerHTML = list.map(s => `<option value="${s.c}">${s.n}</option>`).join('');
     }
 
-    // --- 3. XỬ LÝ CHÍNH ---
     async function checkResult() {
-        const userNum = document.getElementById('numberInput').value.trim();
-        const stationCode = document.getElementById('stationSelect').value;
-        const dateInput = document.getElementById('dateInput').value;
-        const btn = document.getElementById('btnCheck');
-        const statusArea = document.getElementById('status-area');
-        const resultTable = document.getElementById('resultTable');
+        const num = document.getElementById('numInput').value.trim();
+        const code = document.getElementById('stationSelect').value;
+        const dateRaw = document.getElementById('dateInput').value;
+        const btn = document.getElementById('btnAction');
+        const st = document.getElementById('status');
+        const table = document.getElementById('resultTable');
 
-        // Reset UI
-        statusArea.style.display = 'none';
-        resultTable.style.display = 'none';
-        resetTableColors();
-
-        if (!userNum || !stationCode || !dateInput) {
-            alert("Vui lòng nhập đầy đủ thông tin!");
-            return;
-        }
+        if(!num) { alert("Bạn chưa nhập số vé!"); return; }
 
         btn.disabled = true;
-        btn.innerText = "Đang kết nối...";
-        statusArea.style.display = 'block';
-        statusArea.className = 'loading';
-        statusArea.innerText = "Đang tải dữ liệu từ server...";
+        st.style.display = 'block';
+        st.className = 'loading';
+        st.innerText = "Đang lấy dữ liệu...";
+        table.style.display = 'none';
 
         try {
-            // Tạo link RSS
-            const slug = PROVINCE_SLUGS[stationCode];
-            const rssUrl = `https://xskt.com.vn/rss-feed/${slug}-${stationCode}.rss`;
-            console.log("RSS URL gốc:", rssUrl);
-
-            // Gọi hàm Fetch thông minh
-            const xmlStr = await fetchRSSWithRetry(rssUrl);
-
-            // Parse XML
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlStr, "text/xml");
-            const items = xmlDoc.querySelectorAll("item");
-            console.log(`Tìm thấy ${items.length} bản tin trong RSS.`);
-
-            // Xử lý ngày tháng để tìm kiếm
-            const [y, m, d] = dateInput.split('-');
-            const searchDate = `${d}/${m}`; // Format DD/MM (VD: 15/01)
-            console.log(`Đang tìm kết quả ngày: ${searchDate}`);
-
-            let targetDesc = null;
-            let foundTitle = "";
-
-            // Duyệt qua các item để tìm ngày đúng
-            for (let item of items) {
-                const title = item.querySelector("title").textContent;
-                // Log để debug xem nó đang đọc cái gì
-                console.log(`Checking: ${title}`); 
-                
-                if (title.includes(searchDate)) {
-                    targetDesc = item.querySelector("description").textContent;
-                    foundTitle = title;
-                    break;
-                }
-            }
-
-            if (!targetDesc) {
-                throw new Error(`Không tìm thấy kết quả ngày ${searchDate}. (Có thể chưa đến giờ quay hoặc RSS chưa cập nhật).`);
-            }
-
-            // Parse dữ liệu giải
-            const parsedData = parseDescription(targetDesc);
-            renderTable(parsedData);
+            const url = `https://xskt.com.vn/rss-feed/${SLUGS[code]}-${code}.rss`;
+            const proxy = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
             
-            // Dò số
-            let wonPrizes = [];
-            for (let key in parsedData) {
-                parsedData[key].forEach(winNum => {
-                    if (checkMatch(userNum, winNum)) {
-                        wonPrizes.push(getPrizeName(key));
-                        highlightWinner(key, winNum);
+            const resp = await fetch(proxy);
+            const xmlText = await resp.text();
+            
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, "text/xml");
+            const items = xml.querySelectorAll("item");
+
+            const [y, m, d] = dateRaw.split('-');
+            const dateFind = `${d}/${m}`; 
+
+            let dataRaw = null;
+            items.forEach(item => {
+                if(item.querySelector("title").textContent.includes(dateFind)) {
+                    dataRaw = item.querySelector("description").textContent;
+                }
+            });
+
+            if(!dataRaw) throw new Error("Chưa có kết quả " + dateFind);
+
+            const prizes = parseData(dataRaw);
+            displayTable(prizes);
+
+            let wins = [];
+            for(let k in prizes) {
+                prizes[k].forEach(v => {
+                    if(v.endsWith(num)) {
+                        wins.push(k === 'db' ? 'Đặc Biệt' : 'Giải ' + k.toUpperCase());
+                        document.getElementById('g-'+k).classList.add('highlight');
                     }
                 });
             }
 
-            // Thông báo
-            if (wonPrizes.length > 0) {
-                let uniquePrizes = [...new Set(wonPrizes)];
-                statusArea.className = 'success';
-                statusArea.innerHTML = `<strong>CHÚC MỪNG!</strong><br>Vé <b>${userNum}</b> trúng: ${uniquePrizes.join(', ')}<br><small>${foundTitle}</small>`;
-            } else {
-                statusArea.className = 'fail';
-                statusArea.innerHTML = `<strong>RẤT TIẾC!</strong><br>Vé <b>${userNum}</b> không trúng giải nào.<br><small>${foundTitle}</small>`;
-            }
+            st.className = wins.length ? 'success' : 'fail';
+            st.innerHTML = wins.length ? `🎉 TRÚNG THƯỞNG!<br>${wins.join(', ')}` : "❌ KHÔNG TRÚNG GIẢI";
 
-        } catch (error) {
-            console.error(error);
-            statusArea.className = 'fail';
-            statusArea.innerText = "Lỗi: " + error.message;
+        } catch (e) {
+            st.className = 'fail';
+            st.innerText = e.message;
         } finally {
             btn.disabled = false;
-            btn.innerText = "DÒ KẾT QUẢ NGAY";
         }
     }
 
-    // --- 4. CÁC HÀM PHỤ TRỢ (HELPER) ---
-    
-    // Tách chuỗi description thành object giải
-    function parseDescription(descText) {
-        let cleanText = descText.replace(/\s+/g, ' ').trim() + " END";
-        let results = { 'db': [], '1': [], '2': [], '3': [], '4': [], '5': [], '6': [], '7': [], '8': [] };
-        
-        const mapKeys = [
-            {key: 'db', label: 'ĐB:'}, {key: '1', label: '1:'}, {key: '2', label: '2:'},
-            {key: '3', label: '3:'}, {key: '4', label: '4:'}, {key: '5', label: '5:'},
-            {key: '6', label: '6:'}, {key: '7', label: '7:'}, {key: '8', label: '8:'}
-        ];
+    function parseData(txt) {
+        const parts = txt.replace(/\s+/g, ' ').split(/(ĐB:|1:|2:|3:|4:|5:|6:|7:|8:)/);
+        let res = {};
+        for(let i=1; i<parts.length; i+=2) {
+            let key = parts[i].replace(':','').toLowerCase();
+            res[key] = parts[i+1].trim().split(/[\s-]+/).filter(s => s.length > 1);
+        }
+        return res;
+    }
 
-        for (let i = 0; i < mapKeys.length; i++) {
-            let current = mapKeys[i];
-            let startIndex = cleanText.indexOf(current.label);
-            
-            if (startIndex !== -1) {
-                let tempStr = cleanText.substring(startIndex + current.label.length);
-                
-                // Tìm vị trí label tiếp theo gần nhất để cắt chuỗi
-                let nextIndices = [];
-                for(let j=i+1; j<mapKeys.length; j++) {
-                     let idx = tempStr.indexOf(mapKeys[j].label);
-                     if(idx !== -1) nextIndices.push(idx);
-                }
-                // Nếu không tìm thấy label nào phía sau, cắt đến chữ END
-                let endIndex = nextIndices.length > 0 ? Math.min(...nextIndices) : tempStr.indexOf("END");
-
-                let numStr = tempStr.substring(0, endIndex).trim();
-                // Tách số dựa trên khoảng trắng hoặc dấu gạch ngang
-                let numbers = numStr.split(/[\s-]+/).filter(n => n.length >= 2); 
-                results[current.key] = numbers;
+    function displayTable(data) {
+        document.getElementById('resultTable').style.display = 'table';
+        for(let k in data) {
+            const el = document.getElementById('g-'+k);
+            if(el) {
+                el.innerText = data[k].join(' - ');
+                el.classList.remove('highlight');
             }
         }
-        return results;
-    }
-
-    function checkMatch(userNum, resultNum) {
-        if (userNum.length > resultNum.length) return false;
-        return resultNum.endsWith(userNum);
-    }
-
-    function getPrizeName(key) {
-        return key === 'db' ? 'Giải Đặc Biệt' : `Giải ${key}`;
-    }
-
-    function renderTable(data) {
-        document.getElementById('resultTable').style.display = 'table';
-        const setText = (id, arr) => document.getElementById(id).innerText = arr.join(' - ');
-        
-        setText('g-db', data['db']);
-        setText('g-1', data['1']);
-        setText('g-2', data['2']);
-        fillSplitRow('g-3-1', 'g-3-2', data['3']);
-        fillSplitRow('g-4-1', 'g-4-2', data['4']);
-        setText('g-5', data['5']);
-        setText('g-6', data['6']);
-        setText('g-7', data['7']);
-        setText('g-8', data['8']);
-    }
-
-    function fillSplitRow(idRow1, idRow2, arr) {
-        let mid = Math.ceil(arr.length / 2);
-        document.getElementById(idRow1).innerText = arr.slice(0, mid).join(' - ');
-        document.getElementById(idRow2).innerText = arr.slice(mid).join(' - ');
-    }
-
-    function highlightWinner(prizeKey, winningNum) {
-        let rowIds = [];
-        if (prizeKey === '3') rowIds = ['g-3-1', 'g-3-2'];
-        else if (prizeKey === '4') rowIds = ['g-4-1', 'g-4-2'];
-        else rowIds = [`g-${prizeKey}`];
-
-        rowIds.forEach(id => {
-            let el = document.getElementById(id);
-            if(el && el.innerText.includes(winningNum)) el.classList.add('highlight');
-        });
-    }
-
-    function resetTableColors() {
-        document.querySelectorAll('.highlight').forEach(e => e.classList.remove('highlight'));
-    }
-
-    // Tự động load lịch hôm nay
-    window.onload = function() {
-        const today = new Date();
-        document.getElementById('dateInput').valueAsDate = today;
-        updateStations(today);
-    };
-
-    document.getElementById('dateInput').addEventListener('change', function() {
-        if(this.value) updateStations(new Date(this.value));
-    });
-
-    function updateStations(dateObj) {
-        const dayOfWeek = dateObj.getDay(); 
-        const stations = STATION_SCHEDULE[dayOfWeek] || [];
-        const select = document.getElementById('stationSelect');
-        select.innerHTML = "";
-        
-        stations.forEach(st => {
-            const option = document.createElement("option");
-            option.value = st.code;
-            option.text = st.name;
-            select.add(option);
-        });
     }
 </script>
-
 </body>
 </html>

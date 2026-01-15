@@ -1,7 +1,7 @@
 const publishersData = {
     "Nhã Nam": ["Diệt chủng", "Tận cùng thế giới", "Người Mỹ trầm lặng", "Ocean Vuong"],
     "Phụ Nữ": ["Tối đen gần như đêm", "Kẻ trộm cà chua", "Hồi ức geisha", "Cô bé nhìn mưa"],
-    "Trinh thám TQ": ["Kẻ tình nghi hoàn mỹ", "Lũng tây nổi gió", "Cái bóng trầm mặc", "Người ếch"],
+    "Trinh thám TQ": ["Kẻ tình nghi hoàn mỹ", "Lũng tây nổi gió", "Cái bóng trầm mặc", "Người ếch", "Một người nào đó tôi từng biết"],
     "Khác": ["Nghi can giấu mặt", "Án mạng trong tháp thủy tinh", "Chặng cuối", "Bất khuất", "Đường vinh quang"]
 };
 const chest = document.getElementById('main-chest');

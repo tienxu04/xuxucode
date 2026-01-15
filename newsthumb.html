@@ -3,278 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>News Thumbnail Generator</title>
+    <title>News Thumbnail Pro - Final Version</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Roboto', sans-serif; background-color: #f3f4f6; }
+        body { font-family: 'Roboto', sans-serif; background-color: #0f172a; color: #e2e8f0; }
         .serif { font-family: 'Merriweather', serif; }
         
-        /* Container cố định tỷ lệ 1200x630 nhưng scale nhỏ lại để vừa màn hình xem trước */
-        .preview-wrapper {
+        .preview-container {
             width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            border: 2px solid #334155;
+            background: #1e293b;
+            position: relative;
             overflow: hidden;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            background: white;
-            margin-bottom: 20px;
+            display: none; 
         }
 
-        /* Đây là khung hình gốc sẽ được xuất ra ảnh */
-        .design-canvas {
+        .canvas-area {
             width: 1200px;
             height: 630px;
             position: relative;
-            background-color: #eee;
+            transform-origin: top left;
+            background: #000;
             overflow: hidden;
-            /* Scale using CSS Transform for display purposes, but JS will capture full size */
-            transform-origin: top left; 
         }
 
-        /* Tiện ích ẩn hiện */
-        .hidden-input { display: none; }
+        .movable-img {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            min-width: 100%;
+            min-height: 100%;
+        }
+
+        .drop-zone {
+            border: 2px dashed #475569;
+            transition: all 0.3s;
+        }
+        .drop-zone.dragover { background: #334155; border-color: #38bdf8; }
+        .logo-box { pointer-events: none; z-index: 50; }
     </style>
 </head>
-<body class="p-6">
+<body class="p-4 md:p-10">
 
-    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        <div class="lg:col-span-4 space-y-6 bg-white p-6 rounded-xl shadow-lg h-fit sticky top-6">
-            <h1 class="text-2xl font-bold text-gray-800 border-b pb-4">🛠 Editor</h1>
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8 border-b border-slate-700 pb-4 flex justify-between items-center">
+            <h1 class="text-3xl font-black text-white tracking-tighter italic">NEWS <span class="text-blue-500 underline">EDITOR</span></h1>
+            <div id="statusTag" class="bg-yellow-500 text-black px-3 py-1 rounded text-xs font-bold uppercase tracking-widest">Editing</div>
+        </header>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">1. Upload Image</label>
-                <div class="flex items-center justify-center w-full">
-                    <label for="imageInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                            <svg class="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                            </svg>
-                            <p class="text-xs text-gray-500">Click to upload (JPG, PNG)</p>
-                        </div>
-                        <input id="imageInput" type="file" class="hidden-input" accept="image/*" />
-                    </label>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">2. Headline</label>
-                <textarea id="headlineInput" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nhập tiêu đề bài viết tại đây...">Vietnam welcomes millions of international tourists in 2024</textarea>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">3. Short Description (Optional)</label>
-                <textarea id="descInput" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Mô tả ngắn...">The tourism sector has seen significant growth thanks to new visa policies.</textarea>
-            </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <div class="text-xs text-gray-500 italic mt-4">
-                * Scroll xuống bên phải để xem các mẫu và tải về.
-            </div>
-        </div>
-
-        <div class="lg:col-span-8 space-y-10">
-            
-            <div>
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-lg font-bold text-gray-700">Style 1: Immersive Overlay</h3>
-                    <button onclick="downloadImage('canvas1')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        Download PNG
-                    </button>
+            <div class="lg:col-span-4 space-y-6">
+                <div id="dropZone" class="drop-zone p-8 rounded-xl text-center cursor-pointer hover:bg-slate-800">
+                    <input type="file" id="imageInput" class="hidden" accept="image/*">
+                    <p class="text-slate-400">Kéo thả hoặc <span class="text-blue-400 font-bold underline">chọn ảnh</span></p>
                 </div>
-                <div class="preview-wrapper" id="wrapper1">
-                    <div id="canvas1" class="design-canvas relative">
-                        <img id="imgPreview1" src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=2073&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover" alt="Background">
+
+                <div class="space-y-4 bg-slate-800 p-6 rounded-xl shadow-2xl border border-slate-700">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tiêu đề (Headline)</label>
+                        <textarea id="headlineInput" rows="2" class="w-full bg-slate-900 border border-slate-700 p-3 rounded text-white focus:ring-2 focus:ring-blue-500 outline-none">Vietnam welcomes millions of international tourists in 2024</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Mô tả vắn tắt</label>
+                        <input id="descInput" type="text" class="w-full bg-slate-900 border border-slate-700 p-3 rounded text-white outline-none" placeholder="Mô tả..." value="The tourism sector has seen significant growth.">
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Màu nền nội dung</label>
+                            <input type="color" id="colorPicker" value="#cc0000" class="w-full h-10 rounded cursor-pointer bg-slate-900 border-none">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Kiểu thiết kế</label>
+                            <select id="styleSelect" class="w-full h-10 bg-slate-900 rounded border border-slate-700 px-2 outline-none">
+                                <option value="1">Style 1: Phủ mờ (Overlay)</option>
+                                <option value="2">Style 2: Chia đôi (Split)</option>
+                                <option value="3">Style 3: Banner Dưới</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="previewBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg shadow-lg transition transform hover:-translate-y-1">XEM TRƯỚC</button>
+                    <button id="downloadBtn" class="hidden flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-lg shadow-lg transition">TẢI PNG</button>
+                    <button id="editBtn" class="hidden flex-1 bg-slate-600 hover:bg-slate-700 text-white font-bold py-4 rounded-lg transition">SỬA LẠI</button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8 flex flex-col items-center justify-start min-h-[500px] border-2 border-slate-800 rounded-2xl bg-slate-900/50 p-4 overflow-hidden">
+                <div id="previewContainer" class="preview-container">
+                    <div id="mainCanvas" class="canvas-area">
+                        <img id="movableImg" src="" class="movable-img" draggable="false">
                         
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
-
-                        <div class="absolute bottom-0 left-0 w-full p-12">
-                            <span class="inline-block bg-[#cc0000] text-white text-lg font-bold px-3 py-1 mb-4 uppercase tracking-wider rounded-sm">News</span>
-                            <h1 id="textHeadline1" class="text-white text-5xl font-black leading-tight mb-4 drop-shadow-lg" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
-                                Vietnam welcomes millions of international tourists in 2024
-                            </h1>
-                            <p id="textDesc1" class="text-gray-200 text-2xl font-light max-w-4xl line-clamp-2">
-                                The tourism sector has seen significant growth thanks to new visa policies.
-                            </p>
-                        </div>
-
-                        <div class="absolute top-8 right-8 bg-white/90 backdrop-blur px-4 py-2 rounded-lg shadow-lg">
-                            <img src="https://static-tuoitre.tuoitre.vn/tuoitrenews/images/logo-header.svg" class="h-8 w-auto">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-lg font-bold text-gray-700">Style 2: Split Magazine</h3>
-                    <button onclick="downloadImage('canvas2')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        Download PNG
-                    </button>
-                </div>
-                <div class="preview-wrapper" id="wrapper2">
-                    <div id="canvas2" class="design-canvas flex bg-white">
-                        <div class="w-1/2 p-12 flex flex-col justify-center relative bg-slate-900">
-                            <div class="absolute top-10 left-12 bg-white px-3 py-2 rounded">
-                                <img src="https://static-tuoitre.tuoitre.vn/tuoitrenews/images/logo-header.svg" class="h-6 w-auto">
-                            </div>
-                            
-                            <div class="mt-8">
-                                <div class="w-16 h-2 bg-[#cc0000] mb-6"></div>
-                                <h1 id="textHeadline2" class="text-white text-5xl font-bold leading-snug mb-6 serif">
-                                    Vietnam welcomes millions of international tourists in 2024
-                                </h1>
-                                <p id="textDesc2" class="text-gray-400 text-xl font-normal leading-relaxed">
-                                    The tourism sector has seen significant growth thanks to new visa policies.
-                                </p>
-                            </div>
-                        </div>
+                        <div id="styleContent" class="absolute inset-0 w-full h-full pointer-events-none"></div>
                         
-                        <div class="w-1/2 h-full relative">
-                            <img id="imgPreview2" src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=2073&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover">
-                             <div class="absolute left-0 top-0 bottom-0 w-2 bg-[#cc0000]"></div>
+                        <div class="logo-box absolute top-6 right-8">
+                            <img src="https://static.mediacdn.vn/tuoitre/web_images/icon-ttnews.png" class="h-16 drop-shadow-lg">
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div>
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-lg font-bold text-gray-700">Style 3: Breaking/Social Card</h3>
-                    <button onclick="downloadImage('canvas3')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        Download PNG
-                    </button>
-                </div>
-                <div class="preview-wrapper" id="wrapper3">
-                    <div id="canvas3" class="design-canvas relative flex flex-col">
-                        <div class="h-[65%] w-full relative overflow-hidden">
-                            <img id="imgPreview3" src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=2073&auto=format&fit=crop" class="w-full h-full object-cover">
-                            <div class="absolute bottom-0 right-0 bg-[#cc0000] px-6 py-3 rounded-tl-xl">
-                                <img src="https://static-tuoitre.tuoitre.vn/tuoitrenews/images/logo-header.svg" class="h-6 w-auto brightness-0 invert filter">
-                            </div>
-                        </div>
-
-                        <div class="h-[35%] w-full bg-white p-8 border-t-4 border-[#cc0000] flex flex-col justify-center">
-                            <h1 id="textHeadline3" class="text-gray-900 text-4xl font-black leading-tight line-clamp-2 uppercase">
-                                Vietnam welcomes millions of international tourists in 2024
-                            </h1>
-                            <p id="textDesc3" class="text-gray-500 text-xl mt-2 line-clamp-1 truncate">
-                                The tourism sector has seen significant growth thanks to new visa policies.
-                            </p>
-                        </div>
-                    </div>
+                <div id="emptyMsg" class="mt-20 text-slate-500 text-center">
+                    <p>Hãy tải ảnh lên để bắt đầu thiết kế</p>
                 </div>
             </div>
-
         </div>
     </div>
 
     <script>
-        // 1. Elements Selection
+        const dropZone = document.getElementById('dropZone');
         const imageInput = document.getElementById('imageInput');
-        const headlineInput = document.getElementById('headlineInput');
-        const descInput = document.getElementById('descInput');
+        const movableImg = document.getElementById('movableImg');
+        const mainCanvas = document.getElementById('mainCanvas');
+        const previewContainer = document.getElementById('previewContainer');
+        const styleContent = document.getElementById('styleContent');
+        const emptyMsg = document.getElementById('emptyMsg');
 
-        // Target Elements in 3 styles
-        const previews = [
-            { img: 'imgPreview1', title: 'textHeadline1', desc: 'textDesc1' },
-            { img: 'imgPreview2', title: 'textHeadline2', desc: 'textDesc2' },
-            { img: 'imgPreview3', title: 'textHeadline3', desc: 'textDesc3' }
-        ];
+        let isDragging = false;
+        let startX, startY, imgX = 0, imgY = 0;
+        let currentMode = 'editing';
 
-        // 2. Handle Text Updates
-        function updateText() {
-            const headline = headlineInput.value || "Headline Example";
-            const desc = descInput.value || "";
+        // 1. Upload & Fit Image
+        dropZone.onclick = () => imageInput.click();
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+        dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); };
+        imageInput.onchange = (e) => handleFiles(e.target.files);
 
-            previews.forEach(p => {
-                document.getElementById(p.title).innerText = headline;
-                // Handle optional description visibility
-                const descEl = document.getElementById(p.desc);
-                if(descEl) {
-                    descEl.innerText = desc;
-                    descEl.style.display = desc === "" ? 'none' : 'block';
-                }
-            });
-        }
-
-        headlineInput.addEventListener('input', updateText);
-        descInput.addEventListener('input', updateText);
-
-        // 3. Handle Image Upload
-        imageInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
+        function handleFiles(files) {
+            if (files.length > 0) {
                 const reader = new FileReader();
-                reader.onload = function(event) {
-                    previews.forEach(p => {
-                        document.getElementById(p.img).src = event.target.result;
-                    });
-                }
-                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    movableImg.src = e.target.result;
+                    movableImg.onload = () => {
+                        autoFitImage();
+                        previewContainer.style.display = 'block';
+                        emptyMsg.style.display = 'none';
+                        updateDesign();
+                        resizePreviewUI();
+                    };
+                };
+                reader.readAsDataURL(files[0]);
             }
-        });
-
-        // 4. Handle Scale for Preview (Responsive Look)
-        function resizePreviews() {
-            const wrappers = document.querySelectorAll('.preview-wrapper');
-            const baseWidth = 1200;
-            
-            wrappers.forEach(wrapper => {
-                const containerWidth = wrapper.offsetWidth;
-                const scale = containerWidth / baseWidth;
-                const canvas = wrapper.querySelector('.design-canvas');
-                
-                // Set scale transform
-                canvas.style.transform = `scale(${scale})`;
-                // Adjust height of wrapper to match scaled height
-                wrapper.style.height = `${630 * scale}px`;
-            });
         }
 
-        window.addEventListener('resize', resizePreviews);
-        window.addEventListener('load', resizePreviews);
-        // Call immediately just in case
-        resizePreviews();
+        function autoFitImage() {
+            const canvasW = 1200; const canvasH = 630;
+            const imgW = movableImg.naturalWidth; const imgH = movableImg.naturalHeight;
+            const canvasRatio = canvasW / canvasH; const imgRatio = imgW / imgH;
 
+            if (imgRatio > canvasRatio) {
+                movableImg.style.height = canvasH + 'px';
+                movableImg.style.width = 'auto';
+                imgX = -( (imgW * (canvasH / imgH)) - canvasW ) / 2;
+                imgY = 0;
+            } else {
+                movableImg.style.width = canvasW + 'px';
+                movableImg.style.height = 'auto';
+                imgX = 0;
+                imgY = -( (imgH * (canvasW / imgW)) - canvasH ) / 2;
+            }
+            movableImg.style.left = imgX + 'px';
+            movableImg.style.top = imgY + 'px';
+        }
 
-        // 5. Download Logic (High Resolution)
-        function downloadImage(elementId) {
-            const element = document.getElementById(elementId);
-            
-            // Tạm thời reset transform để capture đúng kích thước gốc
-            const originalTransform = element.style.transform;
-            element.style.transform = 'none';
-            
-            // html2canvas options
-            html2canvas(element, {
-                width: 1200,
-                height: 630,
-                scale: 1, // Đảm bảo đúng tỉ lệ pixel 1:1
-                useCORS: true, // Cho phép load ảnh cross-origin (nếu server ảnh cho phép)
-                allowTaint: true,
-                backgroundColor: null
+        // 2. Drag Logic
+        mainCanvas.onmousedown = (e) => {
+            if (currentMode !== 'editing') return;
+            isDragging = true;
+            const scale = mainCanvas.getBoundingClientRect().width / 1200;
+            startX = e.clientX / scale - imgX;
+            startY = e.clientY / scale - imgY;
+        };
+        window.onmousemove = (e) => {
+            if (!isDragging) return;
+            const scale = mainCanvas.getBoundingClientRect().width / 1200;
+            imgX = e.clientX / scale - startX;
+            imgY = e.clientY / scale - startY;
+            movableImg.style.left = imgX + 'px';
+            movableImg.style.top = imgY + 'px';
+        };
+        window.onmouseup = () => isDragging = false;
+
+        // 3. Update Design & Màu sắc (Fix override)
+        const inputs = ['headlineInput', 'descInput', 'colorPicker', 'styleSelect'];
+        inputs.forEach(id => document.getElementById(id).addEventListener('input', updateDesign));
+
+         function updateDesign() {
+    const h = document.getElementById('headlineInput').value;
+    const d = document.getElementById('descInput').value;
+    const c = document.getElementById('colorPicker').value;
+    const s = document.getElementById('styleSelect').value;
+
+    let html = '';
+    if (s === "1") {
+        // Style 1: Overlay - Màu picker dùng cho tag "TIN NÓNG"
+        html = `<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent"></div>
+                <div class="absolute bottom-0 left-0 p-12 w-full">
+                    <span class="inline-block text-white text-lg font-bold px-4 py-1 mb-4 rounded-sm shadow-lg" style="background:${c}">NEWS</span>
+                    <h1 class="text-white text-6xl font-black leading-[1.1] mb-4 drop-shadow-2xl">${h}</h1>
+                    <p class="text-gray-200 text-2xl font-light">${d}</p>
+                </div>`;
+    } else if (s === "2") {
+        // Style 2: Split - ĐÃ FIX: Màu picker đổ vào nền bên trái
+        html = `<div class="absolute inset-0 flex">
+                    <div class="w-5/12 h-full p-12 flex flex-col justify-center border-r-[12px] border-white/20" style="background-color: ${c}">
+                        <h1 class="text-white text-5xl font-bold leading-tight mb-6 serif drop-shadow-sm">${h}</h1>
+                        <p class="text-white/80 text-xl font-light">${d}</p>
+                    </div>
+                </div>`;
+    } else {
+        // Style 3: Banner Dưới - Màu picker đổ vào nền banner ngang
+        html = `<div class="absolute bottom-0 left-0 w-full p-10 border-t-4 border-white/20" style="background-color: ${c}">
+                    <h1 class="text-white text-5xl font-black uppercase tracking-tighter mb-2 drop-shadow-md">${h}</h1>
+                    <p class="text-white/80 text-2xl font-light">${d}</p>
+                </div>`;
+    }
+    styleContent.innerHTML = html;
+}
+
+        function resizePreviewUI() {
+            const containerWidth = previewContainer.parentElement.offsetWidth - 32;
+            const scale = Math.min(containerWidth / 1200, 1);
+            mainCanvas.style.transform = `scale(${scale})`;
+            previewContainer.style.height = (630 * scale) + 'px';
+        }
+        window.onresize = resizePreviewUI;
+
+        // 4. Mode Switch
+        const previewBtn = document.getElementById('previewBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const editBtn = document.getElementById('editBtn');
+        const statusTag = document.getElementById('statusTag');
+
+        previewBtn.onclick = () => {
+            if (!movableImg.src) return alert("Vui lòng chọn ảnh!");
+            currentMode = 'preview';
+            statusTag.innerText = "Chế độ Preview";
+            statusTag.classList.replace('bg-yellow-500', 'bg-emerald-500');
+            statusTag.classList.add('text-white');
+            movableImg.style.cursor = 'default';
+            [previewBtn, downloadBtn, editBtn].forEach(b => b.classList.toggle('hidden'));
+        };
+
+        editBtn.onclick = () => {
+            currentMode = 'editing';
+            statusTag.innerText = "Đang chỉnh sửa";
+            statusTag.classList.replace('bg-emerald-500', 'bg-yellow-500');
+            statusTag.classList.remove('text-white');
+            movableImg.style.cursor = 'move';
+            [previewBtn, downloadBtn, editBtn].forEach(b => b.classList.toggle('hidden'));
+        };
+
+        downloadBtn.onclick = () => {
+            const originalTransform = mainCanvas.style.transform;
+            mainCanvas.style.transform = 'none';
+            // Cấu hình html2canvas để không bị mờ và hỗ trợ load ảnh từ link ngoài
+            html2canvas(mainCanvas, { 
+                width: 1200, height: 630, scale: 1, useCORS: true, allowTaint: true 
             }).then(canvas => {
-                // Restore transform for UI
-                element.style.transform = originalTransform;
-
-                // Create download link
+                mainCanvas.style.transform = originalTransform;
                 const link = document.createElement('a');
-                const timestamp = new Date().getTime();
-                link.download = `tuoitre-thumb-${timestamp}.png`;
+                link.download = `tuoitre-news-${Date.now()}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-            }).catch(err => {
-                console.error("Error generating image:", err);
-                alert("Lỗi khi tạo ảnh. Hãy thử lại.");
-                element.style.transform = originalTransform;
             });
-        }
+        };
     </script>
 </body>
 </html>

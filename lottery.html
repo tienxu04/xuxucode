@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tra Cứu Xổ Số Miền Nam (Live RSS)</title>
+    <title>Tra Cứu Xổ Số Miền Nam (GitHub Version)</title>
     <style>
-        /* --- CSS GIAO DIỆN --- */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        /* CSS GIAO DIỆN */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #d32f2f; margin-bottom: 25px; text-transform: uppercase; border-bottom: 2px solid #eee; padding-bottom: 15px;}
         
@@ -17,24 +17,20 @@
         
         button { width: 100%; padding: 14px; background-color: #d32f2f; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: background 0.3s; }
         button:hover { background-color: #b71c1c; }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        button:disabled { background-color: #9e9e9e; cursor: wait; }
 
-        /* Thông báo kết quả */
-        #status-area { margin-top: 20px; padding: 15px; border-radius: 6px; text-align: center; display: none; line-height: 1.5; }
+        #status-area { margin-top: 20px; padding: 15px; border-radius: 6px; text-align: center; display: none; line-height: 1.5; font-size: 15px; }
         .success { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
         .fail { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
         .loading { background-color: #e3f2fd; color: #0277bd; border: 1px solid #b3e5fc; }
 
-        /* Bảng kết quả */
         .lottery-table { width: 100%; border-collapse: collapse; margin-top: 25px; background: white; border: 1px solid #ddd; display: none; table-layout: fixed; }
-        .lottery-table td { border: 1px solid #ccc; padding: 12px 5px; text-align: center; font-size: 18px; font-weight: bold; color: #444; vertical-align: middle; word-wrap: break-word;}
+        .lottery-table td { border: 1px solid #ccc; padding: 10px 4px; text-align: center; font-size: 18px; font-weight: bold; color: #444; vertical-align: middle; word-wrap: break-word; }
         .lottery-table .g-label { width: 50px; font-weight: normal; color: #666; font-size: 14px; background: #f9f9f9; }
         
-        /* Style số */
-        .text-red { color: #d32f2f !important; font-size: 24px !important; }
-        .highlight { background-color: #fff3cd; color: #d32f2f; border: 2px solid #ffc107 !important; animation: blink 1.5s infinite; }
-        
-        @keyframes blink { 50% { background-color: #ffecb3; } }
+        .text-red { color: #d32f2f !important; font-size: 22px !important; }
+        .highlight { background-color: #fff3cd; color: #d32f2f; border: 2px solid #ffc107 !important; }
+        .dev-note { font-size: 12px; color: #777; text-align: center; margin-top: 20px; font-style: italic;}
     </style>
 </head>
 <body>
@@ -56,7 +52,7 @@
 
     <div class="control-group">
         <label>3. Số vé:</label>
-        <input type="number" id="numberInput" placeholder="Nhập số muốn dò (VD: 94, 123456)" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);">
+        <input type="number" id="numberInput" placeholder="Nhập số (VD: 94, 123456)" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);">
     </div>
 
     <button onclick="checkResult()" id="btnCheck">DÒ KẾT QUẢ NGAY</button>
@@ -76,19 +72,20 @@
         <tr><td class="g-label">G.7</td><td colspan="12" id="g-7"></td></tr>
         <tr><td class="g-label">G.8</td><td colspan="12" class="text-red" id="g-8"></td></tr>
     </table>
+
+    <div class="dev-note">Mẹo: Bấm F12 > Console để xem quá trình dò tìm nếu gặp lỗi.</div>
 </div>
 
 <script>
     // --- 1. CẤU HÌNH DỮ LIỆU ---
-    // Mapping từ mã đài sang slug để tạo URL RSS
     const PROVINCE_SLUGS = {
-        'xshcm': 'ho-chi-minh', 'xsdt': 'dong-thap', 'xscm': 'ca-mau', // T2
-        'xsbt': 'ben-tre', 'xsvt': 'vung-tau', 'xsbl': 'bac-lieu',     // T3
-        'xsdn': 'dong-nai', 'xsct': 'can-tho', 'xsst': 'soc-trang',    // T4
-        'xstn': 'tay-ninh', 'xsag': 'an-giang', 'xsbth': 'binh-thuan', // T5
-        'xsvl': 'vinh-long', 'xsbd': 'binh-duong', 'xstv': 'tra-vinh', // T6
-        'xsla': 'long-an', 'xsbp': 'binh-phuoc', 'xshg': 'hau-giang',  // T7 (HCM lặp lại)
-        'xstg': 'tien-giang', 'xskg': 'kien-giang', 'xsdl': 'lam-dong-da-lat' // CN
+        'xshcm': 'ho-chi-minh', 'xsdt': 'dong-thap', 'xscm': 'ca-mau',
+        'xsbt': 'ben-tre', 'xsvt': 'vung-tau', 'xsbl': 'bac-lieu',
+        'xsdn': 'dong-nai', 'xsct': 'can-tho', 'xsst': 'soc-trang',
+        'xstn': 'tay-ninh', 'xsag': 'an-giang', 'xsbth': 'binh-thuan',
+        'xsvl': 'vinh-long', 'xsbd': 'binh-duong', 'xstv': 'tra-vinh',
+        'xsla': 'long-an', 'xsbp': 'binh-phuoc', 'xshg': 'hau-giang',
+        'xstg': 'tien-giang', 'xskg': 'kien-giang', 'xsdl': 'lam-dong-da-lat'
     };
 
     const STATION_SCHEDULE = {
@@ -101,60 +98,151 @@
         0: [{name: 'Tiền Giang', code: 'xstg'}, {name: 'Kiên Giang', code: 'xskg'}, {name: 'Đà Lạt (Lâm Đồng)', code: 'xsdl'}]
     };
 
-    // --- 2. LOGIC GIAO DIỆN ---
-    window.onload = function() {
-        const today = new Date();
-        document.getElementById('dateInput').valueAsDate = today;
-        updateStations(today);
-    };
+    // --- 2. LOGIC FETCH THÔNG MINH (RETRY) ---
+    async function fetchRSSWithRetry(rssUrl) {
+        // Danh sách Proxy để thử lần lượt
+        const strategies = [
+            {
+                // Cách 1: AllOrigins (Trả về JSON) - Rất ổn định
+                url: `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`,
+                type: 'json'
+            },
+            {
+                // Cách 2: CodeTabs (Trả về Text) - Backup tốt
+                url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(rssUrl)}`,
+                type: 'text'
+            }
+        ];
 
-    document.getElementById('dateInput').addEventListener('change', function() {
-        if(this.value) updateStations(new Date(this.value));
-    });
+        for (let strategy of strategies) {
+            try {
+                console.log(`Đang thử tải qua Proxy: ${strategy.url}`);
+                const response = await fetch(strategy.url);
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                let content = '';
+                if (strategy.type === 'json') {
+                    const data = await response.json();
+                    content = data.contents;
+                } else {
+                    content = await response.text();
+                }
 
-    function updateStations(dateObj) {
-        const dayOfWeek = dateObj.getDay(); 
-        const stations = STATION_SCHEDULE[dayOfWeek];
-        const select = document.getElementById('stationSelect');
-        select.innerHTML = "";
-        
-        if (stations) {
-            stations.forEach(st => {
-                const option = document.createElement("option");
-                option.value = st.code;
-                option.text = st.name;
-                select.add(option);
-            });
+                if (content && content.includes('<rss')) {
+                    console.log("-> Tải thành công!");
+                    return content;
+                }
+            } catch (err) {
+                console.warn(`Proxy thất bại, đang thử cái tiếp theo... (${err.message})`);
+            }
         }
+        throw new Error("Không thể kết nối đến máy chủ xổ số. Vui lòng thử lại sau!");
     }
 
-    // --- 3. LOGIC LẤY VÀ XỬ LÝ RSS (QUAN TRỌNG) ---
-    // Thay đổi hàm checkResult đoạn fetch dữ liệu
-async function fetchRSSWithRetry(rssUrl) {
-    // Danh sách các Proxy dự phòng
-    const proxies = [
-        url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-        url => `https://hexarss.vercel.app/api/proxy?url=${encodeURIComponent(url)}` // Một proxy dự phòng khác
-    ];
+    // --- 3. XỬ LÝ CHÍNH ---
+    async function checkResult() {
+        const userNum = document.getElementById('numberInput').value.trim();
+        const stationCode = document.getElementById('stationSelect').value;
+        const dateInput = document.getElementById('dateInput').value;
+        const btn = document.getElementById('btnCheck');
+        const statusArea = document.getElementById('status-area');
+        const resultTable = document.getElementById('resultTable');
 
-    for (let proxyFn of proxies) {
+        // Reset UI
+        statusArea.style.display = 'none';
+        resultTable.style.display = 'none';
+        resetTableColors();
+
+        if (!userNum || !stationCode || !dateInput) {
+            alert("Vui lòng nhập đầy đủ thông tin!");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Đang kết nối...";
+        statusArea.style.display = 'block';
+        statusArea.className = 'loading';
+        statusArea.innerText = "Đang tải dữ liệu từ server...";
+
         try {
-            const response = await fetch(proxyFn(rssUrl));
-            if (!response.ok) continue;
-            const data = await response.json();
-            // allorigins trả về data.contents, các proxy khác có thể trả về thẳng hoặc khác đi
-            return data.contents || data; 
-        } catch (e) {
-            console.warn("Proxy failed, trying next...");
+            // Tạo link RSS
+            const slug = PROVINCE_SLUGS[stationCode];
+            const rssUrl = `https://xskt.com.vn/rss-online/${slug}-${stationCode}.rss`;
+            console.log("RSS URL gốc:", rssUrl);
+
+            // Gọi hàm Fetch thông minh
+            const xmlStr = await fetchRSSWithRetry(rssUrl);
+
+            // Parse XML
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlStr, "text/xml");
+            const items = xmlDoc.querySelectorAll("item");
+            console.log(`Tìm thấy ${items.length} bản tin trong RSS.`);
+
+            // Xử lý ngày tháng để tìm kiếm
+            const [y, m, d] = dateInput.split('-');
+            const searchDate = `${d}/${m}`; // Format DD/MM (VD: 15/01)
+            console.log(`Đang tìm kết quả ngày: ${searchDate}`);
+
+            let targetDesc = null;
+            let foundTitle = "";
+
+            // Duyệt qua các item để tìm ngày đúng
+            for (let item of items) {
+                const title = item.querySelector("title").textContent;
+                // Log để debug xem nó đang đọc cái gì
+                console.log(`Checking: ${title}`); 
+                
+                if (title.includes(searchDate)) {
+                    targetDesc = item.querySelector("description").textContent;
+                    foundTitle = title;
+                    break;
+                }
+            }
+
+            if (!targetDesc) {
+                throw new Error(`Không tìm thấy kết quả ngày ${searchDate}. (Có thể chưa đến giờ quay hoặc RSS chưa cập nhật).`);
+            }
+
+            // Parse dữ liệu giải
+            const parsedData = parseDescription(targetDesc);
+            renderTable(parsedData);
+            
+            // Dò số
+            let wonPrizes = [];
+            for (let key in parsedData) {
+                parsedData[key].forEach(winNum => {
+                    if (checkMatch(userNum, winNum)) {
+                        wonPrizes.push(getPrizeName(key));
+                        highlightWinner(key, winNum);
+                    }
+                });
+            }
+
+            // Thông báo
+            if (wonPrizes.length > 0) {
+                let uniquePrizes = [...new Set(wonPrizes)];
+                statusArea.className = 'success';
+                statusArea.innerHTML = `<strong>CHÚC MỪNG!</strong><br>Vé <b>${userNum}</b> trúng: ${uniquePrizes.join(', ')}<br><small>${foundTitle}</small>`;
+            } else {
+                statusArea.className = 'fail';
+                statusArea.innerHTML = `<strong>RẤT TIẾC!</strong><br>Vé <b>${userNum}</b> không trúng giải nào.<br><small>${foundTitle}</small>`;
+            }
+
+        } catch (error) {
+            console.error(error);
+            statusArea.className = 'fail';
+            statusArea.innerText = "Lỗi: " + error.message;
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "DÒ KẾT QUẢ NGAY";
         }
     }
-    throw new Error("Tất cả các server trung gian đều bận, vui lòng thử lại sau!");
-}
 
-    // --- 4. CÁC HÀM XỬ LÝ PHỤ TRỢ ---
-
+    // --- 4. CÁC HÀM PHỤ TRỢ (HELPER) ---
+    
+    // Tách chuỗi description thành object giải
     function parseDescription(descText) {
-        // Làm sạch chuỗi
         let cleanText = descText.replace(/\s+/g, ' ').trim() + " END";
         let results = { 'db': [], '1': [], '2': [], '3': [], '4': [], '5': [], '6': [], '7': [], '8': [] };
         
@@ -166,23 +254,22 @@ async function fetchRSSWithRetry(rssUrl) {
 
         for (let i = 0; i < mapKeys.length; i++) {
             let current = mapKeys[i];
-            let next = mapKeys[i+1] ? mapKeys[i+1].label : "END";
-            
             let startIndex = cleanText.indexOf(current.label);
+            
             if (startIndex !== -1) {
                 let tempStr = cleanText.substring(startIndex + current.label.length);
                 
-                // Cắt đến label tiếp theo gần nhất
-                let indices = [];
-                // Tìm vị trí của tất cả các label tiếp theo có thể có
+                // Tìm vị trí label tiếp theo gần nhất để cắt chuỗi
+                let nextIndices = [];
                 for(let j=i+1; j<mapKeys.length; j++) {
                      let idx = tempStr.indexOf(mapKeys[j].label);
-                     if(idx !== -1) indices.push(idx);
+                     if(idx !== -1) nextIndices.push(idx);
                 }
-                let endIndex = indices.length > 0 ? Math.min(...indices) : tempStr.indexOf("END");
+                // Nếu không tìm thấy label nào phía sau, cắt đến chữ END
+                let endIndex = nextIndices.length > 0 ? Math.min(...nextIndices) : tempStr.indexOf("END");
 
                 let numStr = tempStr.substring(0, endIndex).trim();
-                // Tách số: RSS có thể dùng dấu gạch ngang hoặc khoảng trắng
+                // Tách số dựa trên khoảng trắng hoặc dấu gạch ngang
                 let numbers = numStr.split(/[\s-]+/).filter(n => n.length >= 2); 
                 results[current.key] = numbers;
             }
@@ -196,27 +283,22 @@ async function fetchRSSWithRetry(rssUrl) {
     }
 
     function getPrizeName(key) {
-        if (key === 'db') return 'Giải Đặc Biệt';
-        return `Giải ${key}`;
+        return key === 'db' ? 'Giải Đặc Biệt' : `Giải ${key}`;
     }
 
     function renderTable(data) {
         document.getElementById('resultTable').style.display = 'table';
-        
-        // Helper điền text
         const setText = (id, arr) => document.getElementById(id).innerText = arr.join(' - ');
         
         setText('g-db', data['db']);
         setText('g-1', data['1']);
         setText('g-2', data['2']);
+        fillSplitRow('g-3-1', 'g-3-2', data['3']);
+        fillSplitRow('g-4-1', 'g-4-2', data['4']);
         setText('g-5', data['5']);
         setText('g-6', data['6']);
         setText('g-7', data['7']);
         setText('g-8', data['8']);
-
-        // G3 và G4 chia đôi dòng
-        fillSplitRow('g-3-1', 'g-3-2', data['3']);
-        fillSplitRow('g-4-1', 'g-4-2', data['4']);
     }
 
     function fillSplitRow(idRow1, idRow2, arr) {
@@ -226,7 +308,6 @@ async function fetchRSSWithRetry(rssUrl) {
     }
 
     function highlightWinner(prizeKey, winningNum) {
-        // Highlight dựa trên text content (đơn giản nhưng hiệu quả cho case này)
         let rowIds = [];
         if (prizeKey === '3') rowIds = ['g-3-1', 'g-3-2'];
         else if (prizeKey === '4') rowIds = ['g-4-1', 'g-4-2'];
@@ -234,15 +315,37 @@ async function fetchRSSWithRetry(rssUrl) {
 
         rowIds.forEach(id => {
             let el = document.getElementById(id);
-            // Highlight nếu ô đó chứa số trúng (lưu ý có thể highlight nhầm nếu số trúng là 2 số đuôi của số khác dài hơn trong cùng ô, nhưng với data xổ số thì hiếm gặp)
-            if(el && el.innerText.includes(winningNum)) {
-                el.classList.add('highlight');
-            }
+            if(el && el.innerText.includes(winningNum)) el.classList.add('highlight');
         });
     }
 
     function resetTableColors() {
         document.querySelectorAll('.highlight').forEach(e => e.classList.remove('highlight'));
+    }
+
+    // Tự động load lịch hôm nay
+    window.onload = function() {
+        const today = new Date();
+        document.getElementById('dateInput').valueAsDate = today;
+        updateStations(today);
+    };
+
+    document.getElementById('dateInput').addEventListener('change', function() {
+        if(this.value) updateStations(new Date(this.value));
+    });
+
+    function updateStations(dateObj) {
+        const dayOfWeek = dateObj.getDay(); 
+        const stations = STATION_SCHEDULE[dayOfWeek] || [];
+        const select = document.getElementById('stationSelect');
+        select.innerHTML = "";
+        
+        stations.forEach(st => {
+            const option = document.createElement("option");
+            option.value = st.code;
+            option.text = st.name;
+            select.add(option);
+        });
     }
 </script>
 

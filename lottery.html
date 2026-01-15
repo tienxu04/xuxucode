@@ -129,106 +129,27 @@
     }
 
     // --- 3. LOGIC LẤY VÀ XỬ LÝ RSS (QUAN TRỌNG) ---
-    async function checkResult() {
-        const userNum = document.getElementById('numberInput').value.trim();
-        const stationCode = document.getElementById('stationSelect').value;
-        const dateInput = document.getElementById('dateInput').value; // YYYY-MM-DD
-        const btn = document.getElementById('btnCheck');
-        const statusArea = document.getElementById('status-area');
-        const resultTable = document.getElementById('resultTable');
+    // Thay đổi hàm checkResult đoạn fetch dữ liệu
+async function fetchRSSWithRetry(rssUrl) {
+    // Danh sách các Proxy dự phòng
+    const proxies = [
+        url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+        url => `https://hexarss.vercel.app/api/proxy?url=${encodeURIComponent(url)}` // Một proxy dự phòng khác
+    ];
 
-        // Reset UI
-        statusArea.style.display = 'none';
-        resultTable.style.display = 'none';
-        resetTableColors();
-
-        if (!userNum || !stationCode || !dateInput) {
-            alert("Vui lòng nhập đầy đủ thông tin!");
-            return;
-        }
-
-        // Báo đang tải
-        btn.disabled = true;
-        btn.innerText = "Đang tải dữ liệu...";
-        statusArea.style.display = 'block';
-        statusArea.className = 'loading';
-        statusArea.innerText = "Đang kết nối đến server xổ số...";
-
+    for (let proxyFn of proxies) {
         try {
-            // 1. Tạo Link RSS và Proxy URL
-            const slug = PROVINCE_SLUGS[stationCode];
-            const rssUrl = `https://xskt.com.vn/rss-online/${slug}-${stationCode}.rss`;
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
-
-            // 2. Fetch dữ liệu
-            const response = await fetch(proxyUrl);
+            const response = await fetch(proxyFn(rssUrl));
+            if (!response.ok) continue;
             const data = await response.json();
-            
-            if (!data.contents) throw new Error("Không lấy được dữ liệu");
-
-            // 3. Parse XML
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(data.contents, "text/xml");
-            const items = xmlDoc.querySelectorAll("item");
-
-            // 4. Tìm item đúng ngày (Quan trọng vì RSS có nhiều ngày)
-            // Định dạng ngày cần tìm: dd/mm (từ input YYYY-MM-DD)
-            const [y, m, d] = dateInput.split('-');
-            const targetDateStr = `${d}/${m}`; // Chuỗi cần tìm trong title, vd: "13/01"
-
-            let targetDescription = null;
-            let foundTitle = "";
-
-            for (let item of items) {
-                const title = item.querySelector("title").textContent;
-                // Title mẫu: "KẾT QUẢ XỔ SỐ BẠC LIÊU NGÀY 13/01 (Thứ Ba)"
-                if (title.includes(targetDateStr)) {
-                    targetDescription = item.querySelector("description").textContent;
-                    foundTitle = title;
-                    break;
-                }
-            }
-
-            if (!targetDescription) {
-                throw new Error(`Chưa có kết quả xổ số ngày ${d}/${m} cho đài này.`);
-            }
-
-            // 5. Xử lý dữ liệu và hiển thị
-            const parsedData = parseDescription(targetDescription);
-            renderTable(parsedData);
-            
-            // 6. Dò số
-            let wonPrizes = [];
-            for (let prizeKey in parsedData) {
-                let numbers = parsedData[prizeKey];
-                numbers.forEach(winningNum => {
-                    if (checkMatch(userNum, winningNum)) {
-                        wonPrizes.push(getPrizeName(prizeKey));
-                        highlightWinner(prizeKey, winningNum);
-                    }
-                });
-            }
-
-            // 7. Thông báo cuối cùng
-            if (wonPrizes.length > 0) {
-                // Loại bỏ trùng lặp giải (nếu có)
-                let uniquePrizes = [...new Set(wonPrizes)];
-                statusArea.className = 'success';
-                statusArea.innerHTML = `<strong>CHÚC MỪNG! BẠN ĐÃ TRÚNG THƯỞNG</strong><br>Vé <b>${userNum}</b> trúng: ${uniquePrizes.join(', ')}<br><small>(${foundTitle})</small>`;
-            } else {
-                statusArea.className = 'fail';
-                statusArea.innerHTML = `<strong>RẤT TIẾC! CHÚC MAY MẮN LẦN SAU</strong><br>Vé <b>${userNum}</b> không trúng giải nào.<br><small>(${foundTitle})</small>`;
-            }
-
-        } catch (error) {
-            statusArea.className = 'fail';
-            statusArea.innerText = "Lỗi: " + error.message;
-            console.error(error);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "DÒ KẾT QUẢ NGAY";
+            // allorigins trả về data.contents, các proxy khác có thể trả về thẳng hoặc khác đi
+            return data.contents || data; 
+        } catch (e) {
+            console.warn("Proxy failed, trying next...");
         }
     }
+    throw new Error("Tất cả các server trung gian đều bận, vui lòng thử lại sau!");
+}
 
     // --- 4. CÁC HÀM XỬ LÝ PHỤ TRỢ ---
 

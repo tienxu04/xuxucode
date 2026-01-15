@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xu-VibeCoding</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        h1 {
+            font-size: 4rem;
+            color: white;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: rgba(255,255,255,0.9);
+            font-weight: 300;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .project-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            animation: fadeInUp 0.6s ease backwards;
+        }
+
+        .project-card:nth-child(1) { animation-delay: 0.1s; }
+        .project-card:nth-child(2) { animation-delay: 0.2s; }
+        .project-card:nth-child(3) { animation-delay: 0.3s; }
+        .project-card:nth-child(4) { animation-delay: 0.4s; }
+        .project-card:nth-child(5) { animation-delay: 0.5s; }
+        .project-card:nth-child(6) { animation-delay: 0.6s; }
+        .project-card:nth-child(7) { animation-delay: 0.7s; }
+        .project-card:nth-child(8) { animation-delay: 0.8s; }
+        .project-card:nth-child(9) { animation-delay: 0.9s; }
+        .project-card:nth-child(10) { animation-delay: 1s; }
+
+        .project-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 220px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s;
+        }
+
+        .project-card:hover .card-image::before {
+            left: 100%;
+        }
+
+        .card-number {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255,255,255,0.95);
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .card-content {
+            padding: 1.8rem;
+        }
+
+        .card-title {
+            font-size: 1.6rem;
+            color: #333;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+
+        .card-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1.2rem;
+            font-size: 0.95rem;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .card-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .card-link::after {
+            content: '→';
+            margin-left: 0.5rem;
+            transition: margin-left 0.3s;
+        }
+
+        .card-link:hover {
+            color: #764ba2;
+        }
+
+        .card-link:hover::after {
+            margin-left: 1rem;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            bottom: 15%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-30px) rotate(180deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Xu-VibeCoding</h1>
+            <p class="subtitle">Bộ sưu tập những dự án sáng tạo</p>
+        </header>
+
+        <div class="projects-grid">
+            <div class="project-card">
+                <div class="card-image">
+                    <div class="card-number">#01</div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Project 1</h2>
+                    <p class="card-description">Mô tả ngắn gọn về dự án, công nghệ sử dụng và mục tiêu chính của project này.</p>
+                    <div class="card-tags">
+                        <span class="tag">HTML</span>
+                        <span class="tag">CSS</span>
+                        <span class="tag">JavaScript</span>
+                    </div>
+                    <a href="#" class="card-link">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="card-image">
+                    <div class="card-number">#02</div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Project 2</h2>
+                    <p class="card-description">Mô tả ngắn gọn về dự án, công nghệ sử dụng và mục tiêu chính của project này.</p>
+                    <div class="card-tags">
+                        <span class="tag">React</span>
+                        <span class="tag">Animation</span>
+                        <span class="tag">API</span>
+                    </div>
+                    <a href="#" class="card-link">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="card-image">
+                    <div class="card-number">#03</div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Project 3</h2>
+                    <p class="card-description">Mô tả ngắn gọn về dự án, công nghệ sử dụng và mục tiêu chính của project này.</p>
+                    <div class="card-tags">
+                        <span class="tag">UI/UX</span>
+                        <span class="tag">Responsive</span>
+                    </div>
+                    <a href="#" class="card-link">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="card-image">
+                    <div class="card-number">#04</div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Project 4</h2>
+                    <p class="card-description">Mô tả ngắn gọn về dự án, công nghệ sử dụng và mục tiêu chính của project này.</p>
+                    <div class="card-tags">
+                        <span class="tag">WebGL</span>
+                        <span class="tag">3D</span>
+                    </div>
+                    <a href="#" class="card-link">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="card-image">
+                    <div class="card-number">#05</div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Project 5</h2>
+                    <p class="card-description">Mô tả ngắn gọn về dự án, công nghệ sử dụng và mục tiêu chính của project này.</p>
+                    <div class="card-tags">
+                        <span class="tag">Vue.js</span>
+                        <span class="tag">Firebase</span>
+                    </div>
+                    <a href="#" class="card-link">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="card-image">
+                    <div class="card-number">#06</div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Project 6</h2>
+                    <p class="card-description">Mô tả ngắn gọn về dự án, công nghệ sử dụng và mục tiêu chính của project này.</p>
+                    <div class="card-tags">
+                        <span class="tag">TypeScript</span>
+                        <span class="tag">Node.js</span>
+                    </div>
+                    <a href="#" class="card-link">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="card-image">
+                    <div class="card-number">#07</div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Project 7</h2>
+                    <p class="card-description">Mô tả ngắn gọn về dự án, công nghệ sử dụng và mục tiêu chính của project này.</p>
+                    <div class="card-tags">
+                        <span class="tag">D3.js</span>
+                        <span class="tag">Data Viz</span>
+                    </div>
+                    <a href="#" class="card-link">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="card-image">
+                    <div class="card-number">#08</div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Project 8</h2>
+                    <p class="card-description">Mô tả ngắn gọn về dự án, công nghệ sử dụng và mục tiêu chính của project này.</p>
+                    <div class="card-tags">
+                        <span class="tag">Canvas</span>
+                        <span class="tag">Game</span>
+                    </div>
+                    <a href="#" class="card-link">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="card-image">
+                    <div class="card-number">#09</div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Project 9</h2>
+                    <p class="card-description">Mô tả ngắn gọn về dự án, công nghệ sử dụng và mục tiêu chính của project này.</p>
+                    <div class="card-tags">
+                        <span class="tag">PWA</span>
+                        <span class="tag">Mobile</span>
+                    </div>
+                    <a href="#" class="card-link">Xem chi tiết</a>
+                </div>
+            </div>
+
+            <div class="project-card">
+                <div class="card-image">
+                    <div class="card-number">#10</div>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Project 10</h2>
+                    <p class="card-description">Mô tả ngắn gọn về dự án, công nghệ sử dụng và mục tiêu chính của project này.</p>
+                    <div class="card-tags">
+                        <span class="tag">AI/ML</span>
+                        <span class="tag">TensorFlow</span>
+                    </div>
+                    <a href="#" class="card-link">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

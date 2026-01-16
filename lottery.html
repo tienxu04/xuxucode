@@ -282,14 +282,24 @@
     }
 
     function parseData(txt) {
-        const parts = txt.replace(/\s+/g, ' ').split(/(ĐB:|1:|2:|3:|4:|5:|6:|7:|8:)/);
-        let res = {};
-        for(let i=1; i<parts.length; i+=2) {
-            let key = parts[i].replace(':','').toLowerCase();
-            res[key] = parts[i+1].trim().split(/[\s-]+/).filter(s => s.length > 1);
+    // Tách chuỗi dựa trên các nhãn giải trong RSS (ĐB:, 1:, 2:...)
+    const parts = txt.replace(/\s+/g, ' ').split(/(ĐB:|1:|2:|3:|4:|5:|6:|7:|8:)/);
+    let res = {};
+    
+    for(let i = 1; i < parts.length; i += 2) {
+        let label = parts[i].replace(':', '').trim().toLowerCase();
+        
+        // --- BƯỚC QUY HOẠCH KEY ---
+        let key = label;
+        if (label === 'đb') {
+            key = 'db'; // Dù RSS viết ĐB hay đb, code mình vẫn dùng 'db'
         }
-        return res;
+        
+        // Tách các con số sau mỗi label
+        res[key] = parts[i+1].trim().split(/[\s-]+/).filter(s => s.length > 1);
     }
+    return res;
+}
 
     function displayTable(data) {
         document.getElementById('resultTable').style.display = 'table';

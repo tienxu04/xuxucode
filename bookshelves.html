@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thư Viện (c) @xuxudocsach</title>
+    <title>Thư Viện Sách</title>
     <style>
         * {
             margin: 0;
@@ -459,6 +459,7 @@
         <h1 id="top">📚 Thư Viện Sách</h1>
         
         <div class="controls">
+            <button class="search-btn" onclick="openSearchModal()">🔍 Tìm kiếm</button>
             <button class="btn active" onclick="changeGroupBy('genre')">Theo Thể Loại</button>
             <button class="btn" onclick="changeGroupBy('author')">Theo Tác Giả</button>
             <button class="btn" onclick="changeGroupBy('country')">Theo Quốc Gia</button>
@@ -481,12 +482,137 @@
 
     <button class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</button>
 
+    <div class="modal" id="searchModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🔍 Tìm kiếm sách</div>
+                <button class="modal-close" onclick="closeSearchModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        id="searchInput" 
+                        placeholder="Nhập từ khóa tìm kiếm..."
+                        oninput="performSearch()"
+                    >
+                </div>
+                <div class="search-filters">
+                    <div class="filter-chip active" data-filter="all" onclick="setSearchFilter('all')">Tất cả</div>
+                    <div class="filter-chip" data-filter="title" onclick="setSearchFilter('title')">Tựa sách</div>
+                    <div class="filter-chip" data-filter="author" onclick="setSearchFilter('author')">Tác giả</div>
+                    <div class="filter-chip" data-filter="genre" onclick="setSearchFilter('genre')">Thể loại</div>
+                    <div class="filter-chip" data-filter="country" onclick="setSearchFilter('country')">Quốc gia</div>
+                </div>
+                <div class="search-results" id="searchResults">
+                    <div class="no-results">Nhập từ khóa để bắt đầu tìm kiếm</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
         let booksData = [];
         let currentGroupBy = 'genre';
+        let searchFilter = 'all';
 
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTl4QUkDw2-np7Nc8jxJcbtXeDuFDnnXV85ClQENI-uR9UBicTGyD76rgnUlv-kCH8n5xBR49-92ky/pub?output=csv';
+
+        function openSearchModal() {
+            document.getElementById('searchModal').classList.add('show');
+            document.getElementById('searchInput').focus();
+        }
+
+        function closeSearchModal() {
+            document.getElementById('searchModal').classList.remove('show');
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').innerHTML = '<div class="no-results">Nhập từ khóa để bắt đầu tìm kiếm</div>';
+        }
+
+        function setSearchFilter(filter) {
+            searchFilter = filter;
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            performSearch();
+        }
+
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const resultsDiv = document.getElementById('searchResults');
+
+            if (!query) {
+                resultsDiv.innerHTML = '<div class="no-results">Nhập từ khóa để bắt đầu tìm kiếm</div>';
+                return;
+            }
+
+            let filteredBooks = booksData.filter(book => {
+                if (searchFilter === 'all') {
+                    return (
+                        (book['Tựa'] || '').toLowerCase().includes(query) ||
+                        (book['Tác giả'] || '').toLowerCase().includes(query) ||
+                        (book['Thể loại'] || '').toLowerCase().includes(query) ||
+                        (book['Quốc gia'] || '').toLowerCase().includes(query)
+                    );
+                } else if (searchFilter === 'title') {
+                    return (book['Tựa'] || '').toLowerCase().includes(query);
+                } else if (searchFilter === 'author') {
+                    return (book['Tác giả'] || '').toLowerCase().includes(query);
+                } else if (searchFilter === 'genre') {
+                    return (book['Thể loại'] || '').toLowerCase().includes(query);
+                } else if (searchFilter === 'country') {
+                    return (book['Quốc gia'] || '').toLowerCase().includes(query);
+                }
+                return false;
+            });
+
+            if (filteredBooks.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results">Không tìm thấy kết quả nào</div>';
+                return;
+            }
+
+            let html = `<div class="search-results-header">Tìm thấy ${filteredBooks.length} kết quả</div>`;
+            
+            filteredBooks.forEach(book => {
+                html += `
+                    <div class="search-book-card">
+                        <div class="book-title">${book['Tựa'] || 'Không có tựa đề'}</div>
+                        <div class="book-info">
+                            <div class="book-detail">
+                                <strong>Tác giả:</strong>
+                                <span>${book['Tác giả'] || 'N/A'}</span>
+                            </div>
+                            <div class="book-detail">
+                                <strong>Thể loại:</strong>
+                                <span>${book['Thể loại'] || 'N/A'}</span>
+                            </div>
+                            <div class="book-detail">
+                                <strong>Quốc gia:</strong>
+                                <span>${book['Quốc gia'] || 'N/A'}</span>
+                            </div>
+                        </div>
+                        ${book['xuxu review'] ? `<a href="${book['xuxu review']}" class="book-link" target="_blank">Xem chi tiết</a>` : ''}
+                    </div>
+                `;
+            });
+
+            resultsDiv.innerHTML = html;
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSearchModal();
+            }
+        });
+
+        document.getElementById('searchModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSearchModal();
+            }
+        });
 
         window.addEventListener('scroll', function() {
             const backToTop = document.getElementById('backToTop');

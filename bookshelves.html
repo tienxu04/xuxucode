@@ -190,7 +190,7 @@
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
-                    booksData = results.data.filter(row => row.Title && row.Title.trim());
+                    booksData = results.data.filter(row => row['Tựa'] && row['Tựa'].trim());
                     renderBooks();
                 },
                 error: function(error) {
@@ -217,8 +217,8 @@
                 return;
             }
 
-            const groupField = currentGroupBy === 'genre' ? 'Genre' : 
-                              currentGroupBy === 'author' ? 'Author' : 'Country';
+            const groupField = currentGroupBy === 'genre' ? 'Thể loại' : 
+                              currentGroupBy === 'author' ? 'Tác giả' : 'Quốc gia';
 
             const grouped = {};
             booksData.forEach(book => {
@@ -239,22 +239,22 @@
                         <div class="books-grid">
                             ${grouped[key].map(book => `
                                 <div class="book-card">
-                                    <div class="book-title">${book.Title || 'Không có tựa đề'}</div>
+                                    <div class="book-title">${book['Tựa'] || 'Không có tựa đề'}</div>
                                     <div class="book-info">
                                         <div class="book-detail">
                                             <strong>Tác giả:</strong>
-                                            <span>${book.Author || 'N/A'}</span>
+                                            <span>${book['Tác giả'] || 'N/A'}</span>
                                         </div>
                                         <div class="book-detail">
                                             <strong>Thể loại:</strong>
-                                            <span>${book.Genre || 'N/A'}</span>
+                                            <span>${book['Thể loại'] || 'N/A'}</span>
                                         </div>
                                         <div class="book-detail">
                                             <strong>Quốc gia:</strong>
-                                            <span>${book.Country || 'N/A'}</span>
+                                            <span>${book['Quốc gia'] || 'N/A'}</span>
                                         </div>
                                     </div>
-                                    ${book.Link ? `<a href="${book.Link}" class="book-link" target="_blank">Xem chi tiết</a>` : ''}
+                                    ${book['xuxu review'] ? `<a href="${book['xuxu review']}" class="book-link" target="_blank">Xem chi tiết</a>` : ''}
                                 </div>
                             `).join('')}
                         </div>

@@ -38,7 +38,7 @@
             display: flex;
             justify-content: center;
             gap: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
 
@@ -64,6 +64,104 @@
             color: white;
         }
 
+        .quick-nav-container {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .quick-nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .quick-nav-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .quick-nav-toggle {
+            font-size: 1.5em;
+            color: #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .quick-nav-toggle.open {
+            transform: rotate(180deg);
+        }
+
+        .quick-nav-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .quick-nav-content.open {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .quick-nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .quick-nav-item {
+            padding: 10px 15px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .quick-nav-item:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .back-to-top.show {
+            display: flex;
+        }
+
         .loading {
             text-align: center;
             padding: 40px;
@@ -73,6 +171,7 @@
 
         .category-section {
             margin-bottom: 40px;
+            scroll-margin-top: 20px;
         }
 
         .category-title {
@@ -159,12 +258,23 @@
             .books-grid {
                 grid-template-columns: 1fr;
             }
+
+            .quick-nav-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .back-to-top {
+                bottom: 20px;
+                right: 20px;
+                width: 45px;
+                height: 45px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📚 Thư Viện Sách</h1>
+        <h1 id="top">📚 Thư Viện @xuxudocsach</h1>
         
         <div class="controls">
             <button class="btn active" onclick="changeGroupBy('genre')">Theo Thể Loại</button>
@@ -172,10 +282,22 @@
             <button class="btn" onclick="changeGroupBy('country')">Theo Quốc Gia</button>
         </div>
 
+        <div id="quickNav" class="quick-nav-container" style="display: none;">
+            <div class="quick-nav-header" onclick="toggleQuickNav()">
+                <div class="quick-nav-title">🔍 Danh mục nhanh</div>
+                <div class="quick-nav-toggle" id="navToggle">▼</div>
+            </div>
+            <div class="quick-nav-content" id="navContent">
+                <div class="quick-nav-grid" id="navGrid"></div>
+            </div>
+        </div>
+
         <div id="content">
             <div class="loading">Đang tải dữ liệu...</div>
         </div>
     </div>
+
+    <button class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</button>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
@@ -183,6 +305,36 @@
         let currentGroupBy = 'genre';
 
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTl4QUkDw2-np7Nc8jxJcbtXeDuFDnnXV85ClQENI-uR9UBicTGyD76rgnUlv-kCH8n5xBR49-92ky/pub?output=csv';
+
+        window.addEventListener('scroll', function() {
+            const backToTop = document.getElementById('backToTop');
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('show');
+            } else {
+                backToTop.classList.remove('show');
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        function toggleQuickNav() {
+            const content = document.getElementById('navContent');
+            const toggle = document.getElementById('navToggle');
+            content.classList.toggle('open');
+            toggle.classList.toggle('open');
+        }
+
+        function scrollToCategory(categoryName) {
+            const element = document.getElementById('cat-' + encodeURIComponent(categoryName));
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
 
         function loadData() {
             Papa.parse(CSV_URL, {
@@ -231,10 +383,12 @@
 
             const sortedKeys = Object.keys(grouped).sort();
 
+            renderQuickNav(sortedKeys);
+
             let html = '';
             sortedKeys.forEach(key => {
                 html += `
-                    <div class="category-section">
+                    <div class="category-section" id="cat-${encodeURIComponent(key)}">
                         <h2 class="category-title">${key}</h2>
                         <div class="books-grid">
                             ${grouped[key].map(book => `
@@ -263,6 +417,28 @@
             });
 
             contentDiv.innerHTML = html;
+        }
+
+        function renderQuickNav(categories) {
+            const quickNavContainer = document.getElementById('quickNav');
+            const navGrid = document.getElementById('navGrid');
+            
+            if (categories.length === 0) {
+                quickNavContainer.style.display = 'none';
+                return;
+            }
+
+            quickNavContainer.style.display = 'block';
+            
+            const categoryLabel = currentGroupBy === 'genre' ? 'thể loại' : 
+                                 currentGroupBy === 'author' ? 'tác giả' : 'quốc gia';
+            
+            document.querySelector('.quick-nav-title').textContent = 
+                `🔍 Chọn nhanh ${categoryLabel} (${categories.length})`;
+
+            navGrid.innerHTML = categories.map(cat => 
+                `<div class="quick-nav-item" onclick="scrollToCategory('${cat}')">${cat}</div>`
+            ).join('');
         }
 
         loadData();

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>News Thumbnail Pro - Final Version</title>
+    <title>News Thumbnail Pro - Full Features</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
@@ -11,41 +11,12 @@
     <style>
         body { font-family: 'Roboto', sans-serif; background-color: #0f172a; color: #e2e8f0; }
         .serif { font-family: 'Merriweather', serif; }
-        
-        .preview-container {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            border: 2px solid #334155;
-            background: #1e293b;
-            position: relative;
-            overflow: hidden;
-            display: none; 
-        }
-
-        .canvas-area {
-            width: 1200px;
-            height: 630px;
-            position: relative;
-            transform-origin: top left;
-            background: #000;
-            overflow: hidden;
-        }
-
-        .movable-img {
-            position: absolute;
-            cursor: move;
-            user-select: none;
-            min-width: 100%;
-            min-height: 100%;
-        }
-
-        .drop-zone {
-            border: 2px dashed #475569;
-            transition: all 0.3s;
-        }
+        .preview-container { width: 100%; max-width: 800px; margin: 0 auto; border: 2px solid #334155; background: #1e293b; position: relative; overflow: hidden; display: none; }
+        .canvas-area { width: 1200px; height: 630px; position: relative; transform-origin: top left; background: #000; overflow: hidden; }
+        .movable-img { position: absolute; cursor: move; user-select: none; min-width: 100%; min-height: 100%; }
+        .drop-zone { border: 2px dashed #475569; transition: all 0.3s; }
         .drop-zone.dragover { background: #334155; border-color: #38bdf8; }
-        .logo-box { pointer-events: none; z-index: 50; }
+        .logo-box { pointer-events: none; z-index: 50; transition: opacity 0.2s; }
     </style>
 </head>
 <body class="p-4 md:p-10">
@@ -53,63 +24,78 @@
     <div class="max-w-6xl mx-auto">
         <header class="mb-8 border-b border-slate-700 pb-4 flex justify-between items-center">
             <h1 class="text-3xl font-black text-white tracking-tighter italic">NEWS <span class="text-blue-500 underline">EDITOR</span></h1>
-            <div id="statusTag" class="bg-yellow-500 text-black px-3 py-1 rounded text-xs font-bold uppercase tracking-widest">Editing</div>
+            <div id="statusTagUI" class="bg-yellow-500 text-black px-3 py-1 rounded text-xs font-bold uppercase tracking-widest">Editing</div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <div class="lg:col-span-4 space-y-6">
-                <div id="dropZone" class="drop-zone p-8 rounded-xl text-center cursor-pointer hover:bg-slate-800">
+            <div class="lg:col-span-4 space-y-5">
+                <div id="dropZone" class="drop-zone p-6 rounded-xl text-center cursor-pointer hover:bg-slate-800">
                     <input type="file" id="imageInput" class="hidden" accept="image/*">
-                    <p class="text-slate-400">Kéo thả hoặc <span class="text-blue-400 font-bold underline">chọn ảnh</span></p>
+                    <p class="text-slate-400 text-sm">Kéo thả hoặc <span class="text-blue-400 font-bold underline">chọn ảnh</span></p>
                 </div>
 
-                <div class="space-y-4 bg-slate-800 p-6 rounded-xl shadow-2xl border border-slate-700">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tiêu đề (Headline)</label>
-                        <textarea id="headlineInput" rows="2" class="w-full bg-slate-900 border border-slate-700 p-3 rounded text-white focus:ring-2 focus:ring-blue-500 outline-none">Vietnam welcomes millions of international tourists in 2024</textarea>
+                <div class="space-y-4 bg-slate-800 p-5 rounded-xl shadow-2xl border border-slate-700">
+                    <div class="flex items-center gap-2 pb-2 border-b border-slate-700">
+                        <input type="checkbox" id="logoToggle" checked class="w-4 h-4 accent-blue-500 cursor-pointer">
+                        <label for="logoToggle" class="text-sm font-bold text-slate-300 cursor-pointer">Hiển thị Logo Tuổi Trẻ</label>
                     </div>
+
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Mô tả vắn tắt</label>
-                        <input id="descInput" type="text" class="w-full bg-slate-900 border border-slate-700 p-3 rounded text-white outline-none" placeholder="Mô tả..." value="The tourism sector has seen significant growth.">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tiêu đề</label>
+                        <textarea id="headlineInput" rows="2" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none focus:ring-1 focus:ring-blue-500">Vietnam welcomes millions of international tourists in 2024</textarea>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <div class="flex-1">
-                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Màu nền nội dung</label>
-                            <input type="color" id="colorPicker" value="#cc0000" class="w-full h-10 rounded cursor-pointer bg-slate-900 border-none">
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nhãn (Tag)</label>
+                            <select id="tagSelect" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none">
+                                <option value="NEWS">NEWS</option>
+                                <option value="FOOD">FOOD</option>
+                                <option value="OTHER">KHÁC...</option>
+                            </select>
                         </div>
-                        <div class="flex-1">
-                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Kiểu thiết kế</label>
-                            <select id="styleSelect" class="w-full h-10 bg-slate-900 rounded border border-slate-700 px-2 outline-none">
-                                <option value="1">Style 1: Phủ mờ (Overlay)</option>
-                                <option value="2">Style 2: Chia đôi (Split)</option>
-                                <option value="3">Style 3: Banner Dưới</option>
+                        <div id="customTagWrap" class="hidden">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nhập nhãn</label>
+                            <input id="customTagInput" type="text" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none" placeholder="...">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Màu nền</label>
+                            <input type="color" id="colorPicker" value="#cc0000" class="w-full h-9 rounded cursor-pointer bg-slate-900 border-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kiểu</label>
+                            <select id="styleSelect" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none">
+                                <option value="1">Style 1: Overlay</option>
+                                <option value="2">Style 2: Split</option>
+                                <option value="3">Style 3: Bottom</option>
                             </select>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex gap-2">
-                    <button id="previewBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg shadow-lg transition transform hover:-translate-y-1">XEM TRƯỚC</button>
-                    <button id="downloadBtn" class="hidden flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-lg shadow-lg transition">TẢI PNG</button>
-                    <button id="editBtn" class="hidden flex-1 bg-slate-600 hover:bg-slate-700 text-white font-bold py-4 rounded-lg transition">SỬA LẠI</button>
+                    <button id="previewBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg transition transform hover:-translate-y-1">PREVIEW</button>
+                    <button id="downloadBtn" class="hidden flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow-lg transition">DOWNLOAD PNG</button>
+                    <button id="editBtn" class="hidden flex-1 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 rounded-lg transition">EDIT</button>
                 </div>
             </div>
 
             <div class="lg:col-span-8 flex flex-col items-center justify-start min-h-[500px] border-2 border-slate-800 rounded-2xl bg-slate-900/50 p-4 overflow-hidden">
-                <div id="previewContainer" class="preview-container">
+                <div id="previewContainer" class="preview-container shadow-2xl">
                     <div id="mainCanvas" class="canvas-area">
                         <img id="movableImg" src="" class="movable-img" draggable="false">
-                        
                         <div id="styleContent" class="absolute inset-0 w-full h-full pointer-events-none"></div>
-                        
-                        <div class="logo-box absolute top-6 right-8">
-                            <img src="logo_ttn.png" class="h-16 drop-shadow-lg">
+                        <div id="logoBox" class="logo-box absolute top-6 right-8">
+                            <img src="https://static-mediacdn.vn/tuoitre/web_images/icon-ttnews.png" class="h-16 drop-shadow-lg">
                         </div>
                     </div>
                 </div>
                 <div id="emptyMsg" class="mt-20 text-slate-500 text-center">
-                    <p>Hãy tải ảnh lên để bắt đầu thiết kế</p>
+                    <p>Chưa có ảnh được chọn</p>
                 </div>
             </div>
         </div>
@@ -122,17 +108,36 @@
         const mainCanvas = document.getElementById('mainCanvas');
         const previewContainer = document.getElementById('previewContainer');
         const styleContent = document.getElementById('styleContent');
-        const emptyMsg = document.getElementById('emptyMsg');
+        const logoBox = document.getElementById('logoBox');
+        const logoToggle = document.getElementById('logoToggle');
+        const tagSelect = document.getElementById('tagSelect');
+        const customTagWrap = document.getElementById('customTagWrap');
+        const customTagInput = document.getElementById('customTagInput');
 
         let isDragging = false;
         let startX, startY, imgX = 0, imgY = 0;
         let currentMode = 'editing';
 
-        // 1. Upload & Fit Image
+        // 1. Logo Toggle Logic
+        logoToggle.addEventListener('change', () => {
+            logoBox.style.opacity = logoToggle.checked ? "1" : "0";
+        });
+
+        // 2. Tag Selection Logic
+        tagSelect.addEventListener('change', () => {
+            customTagWrap.style.display = tagSelect.value === 'OTHER' ? 'block' : 'none';
+            updateDesign();
+        });
+
+        function getActiveTag() {
+            if (tagSelect.value === 'OTHER') return customTagInput.value || 'TITLE';
+            return tagSelect.value;
+        }
+
+        // 3. Upload & Fit
         dropZone.onclick = () => imageInput.click();
         dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
-        dropZone.ondragleave = () => dropZone.classList.remove('dragover');
-        dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); };
+        dropZone.ondrop = (e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); };
         imageInput.onchange = (e) => handleFiles(e.target.files);
 
         function handleFiles(files) {
@@ -143,7 +148,7 @@
                     movableImg.onload = () => {
                         autoFitImage();
                         previewContainer.style.display = 'block';
-                        emptyMsg.style.display = 'none';
+                        document.getElementById('emptyMsg').style.display = 'none';
                         updateDesign();
                         resizePreviewUI();
                     };
@@ -153,79 +158,66 @@
         }
 
         function autoFitImage() {
-            const canvasW = 1200; const canvasH = 630;
-            const imgW = movableImg.naturalWidth; const imgH = movableImg.naturalHeight;
-            const canvasRatio = canvasW / canvasH; const imgRatio = imgW / imgH;
-
+            const canvasW = 1200, canvasH = 630;
+            const imgW = movableImg.naturalWidth, imgH = movableImg.naturalHeight;
+            const canvasRatio = canvasW / canvasH, imgRatio = imgW / imgH;
             if (imgRatio > canvasRatio) {
-                movableImg.style.height = canvasH + 'px';
-                movableImg.style.width = 'auto';
-                imgX = -( (imgW * (canvasH / imgH)) - canvasW ) / 2;
-                imgY = 0;
+                movableImg.style.height = canvasH + 'px'; movableImg.style.width = 'auto';
+                imgX = -( (imgW * (canvasH / imgH)) - canvasW ) / 2; imgY = 0;
             } else {
-                movableImg.style.width = canvasW + 'px';
-                movableImg.style.height = 'auto';
-                imgX = 0;
-                imgY = -( (imgH * (canvasW / imgW)) - canvasH ) / 2;
+                movableImg.style.width = canvasW + 'px'; movableImg.style.height = 'auto';
+                imgX = 0; imgY = -( (imgH * (canvasW / imgW)) - canvasH ) / 2;
             }
-            movableImg.style.left = imgX + 'px';
-            movableImg.style.top = imgY + 'px';
+            movableImg.style.left = imgX + 'px'; movableImg.style.top = imgY + 'px';
         }
 
-        // 2. Drag Logic
+        // 4. Drag reposition
         mainCanvas.onmousedown = (e) => {
             if (currentMode !== 'editing') return;
             isDragging = true;
             const scale = mainCanvas.getBoundingClientRect().width / 1200;
-            startX = e.clientX / scale - imgX;
-            startY = e.clientY / scale - imgY;
+            startX = e.clientX / scale - imgX; startY = e.clientY / scale - imgY;
         };
         window.onmousemove = (e) => {
             if (!isDragging) return;
             const scale = mainCanvas.getBoundingClientRect().width / 1200;
-            imgX = e.clientX / scale - startX;
-            imgY = e.clientY / scale - startY;
-            movableImg.style.left = imgX + 'px';
-            movableImg.style.top = imgY + 'px';
+            imgX = e.clientX / scale - startX; imgY = e.clientY / scale - startY;
+            movableImg.style.left = imgX + 'px'; movableImg.style.top = imgY + 'px';
         };
         window.onmouseup = () => isDragging = false;
 
-        // 3. Update Design & Màu sắc (Fix override)
-        const inputs = ['headlineInput', 'descInput', 'colorPicker', 'styleSelect'];
+        // 5. Render Design
+        const inputs = ['headlineInput', 'customTagInput', 'colorPicker', 'styleSelect'];
         inputs.forEach(id => document.getElementById(id).addEventListener('input', updateDesign));
 
-         function updateDesign() {
-    const h = document.getElementById('headlineInput').value;
-    const d = document.getElementById('descInput').value;
-    const c = document.getElementById('colorPicker').value;
-    const s = document.getElementById('styleSelect').value;
+        function updateDesign() {
+            const h = document.getElementById('headlineInput').value;
+            const c = document.getElementById('colorPicker').value;
+            const s = document.getElementById('styleSelect').value;
+            const tag = getActiveTag();
 
-    let html = '';
-    if (s === "1") {
-        // Style 1: Overlay - Màu picker dùng cho tag "TIN NÓNG"
-        html = `<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent"></div>
-                <div class="absolute bottom-0 left-0 p-12 w-full">
-                    <span class="inline-block text-white text-lg font-bold px-4 py-1 mb-4 rounded-sm shadow-lg" style="background:${c}">NEWS</span>
-                    <h1 class="text-white text-6xl font-black leading-[1.1] mb-4 drop-shadow-2xl">${h}</h1>
-                    <p class="text-gray-200 text-2xl font-light">${d}</p>
-                </div>`;
-    } else if (s === "2") {
-        // Style 2: Split - ĐÃ FIX: Màu picker đổ vào nền bên trái
-        html = `<div class="absolute inset-0 flex">
-                    <div class="w-5/12 h-full p-12 flex flex-col justify-center border-r-[12px] border-white/20" style="background-color: ${c}">
-                        <h1 class="text-white text-5xl font-bold leading-tight mb-6 serif drop-shadow-sm">${h}</h1>
-                        <p class="text-white/80 text-xl font-light">${d}</p>
-                    </div>
-                </div>`;
-    } else {
-        // Style 3: Banner Dưới - Màu picker đổ vào nền banner ngang
-        html = `<div class="absolute bottom-0 left-0 w-full p-10 border-t-4 border-white/20" style="background-color: ${c}">
-                    <h1 class="text-white text-5xl font-black uppercase tracking-tighter mb-2 drop-shadow-md">${h}</h1>
-                    <p class="text-white/80 text-2xl font-light">${d}</p>
-                </div>`;
-    }
-    styleContent.innerHTML = html;
-}
+            let html = '';
+            if (s === "1") {
+                html = `<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 p-12 w-full">
+                            <span class="inline-block text-white text-lg font-bold px-4 py-1 mb-4 rounded-sm shadow-lg" style="background:${c}">${tag}</span>
+                            <h1 class="text-white text-6xl font-black leading-[1.1] mb-2 drop-shadow-2xl">${h}</h1>
+                        </div>`;
+            } else if (s === "2") {
+                html = `<div class="absolute inset-0 flex">
+                            <div class="w-5/12 h-full p-12 flex flex-col justify-center border-r-[15px] border-white/20" style="background-color: ${c}">
+                                <span class="inline-block text-white/60 text-sm font-bold tracking-widest mb-4 border-b border-white/30 w-fit pb-1 uppercase">${tag}</span>
+                                <h1 class="text-white text-5xl font-bold leading-tight serif drop-shadow-sm">${h}</h1>
+                            </div>
+                        </div>`;
+            } else {
+                html = `<div class="absolute bottom-0 left-0 w-full p-10 border-t-4 border-white/20" style="background-color: ${c}">
+                            <span class="inline-block bg-white text-[${c}] text-xs font-black px-2 py-0.5 mb-3 rounded-sm" style="color: ${c}">${tag}</span>
+                            <h1 class="text-white text-5xl font-black uppercase tracking-tighter drop-shadow-md">${h}</h1>
+                        </div>`;
+            }
+            styleContent.innerHTML = html;
+        }
 
         function resizePreviewUI() {
             const containerWidth = previewContainer.parentElement.offsetWidth - 32;
@@ -235,27 +227,27 @@
         }
         window.onresize = resizePreviewUI;
 
-        // 4. Mode Switch
+        // 6. Preview & Download
         const previewBtn = document.getElementById('previewBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         const editBtn = document.getElementById('editBtn');
-        const statusTag = document.getElementById('statusTag');
+        const statusTagUI = document.getElementById('statusTagUI');
 
         previewBtn.onclick = () => {
             if (!movableImg.src) return alert("Vui lòng chọn ảnh!");
             currentMode = 'preview';
-            statusTag.innerText = "Chế độ Preview";
-            statusTag.classList.replace('bg-yellow-500', 'bg-emerald-500');
-            statusTag.classList.add('text-white');
+            statusTagUI.innerText = "Chế độ Preview";
+            statusTagUI.classList.replace('bg-yellow-500', 'bg-emerald-500');
+            statusTagUI.classList.add('text-white');
             movableImg.style.cursor = 'default';
             [previewBtn, downloadBtn, editBtn].forEach(b => b.classList.toggle('hidden'));
         };
 
         editBtn.onclick = () => {
             currentMode = 'editing';
-            statusTag.innerText = "Đang chỉnh sửa";
-            statusTag.classList.replace('bg-emerald-500', 'bg-yellow-500');
-            statusTag.classList.remove('text-white');
+            statusTagUI.innerText = "Đang chỉnh sửa";
+            statusTagUI.classList.replace('bg-emerald-500', 'bg-yellow-500');
+            statusTagUI.classList.remove('text-white');
             movableImg.style.cursor = 'move';
             [previewBtn, downloadBtn, editBtn].forEach(b => b.classList.toggle('hidden'));
         };
@@ -263,13 +255,12 @@
         downloadBtn.onclick = () => {
             const originalTransform = mainCanvas.style.transform;
             mainCanvas.style.transform = 'none';
-            // Cấu hình html2canvas để không bị mờ và hỗ trợ load ảnh từ link ngoài
             html2canvas(mainCanvas, { 
                 width: 1200, height: 630, scale: 1, useCORS: true, allowTaint: true 
             }).then(canvas => {
                 mainCanvas.style.transform = originalTransform;
                 const link = document.createElement('a');
-                link.download = `tuoitre-news-${Date.now()}.png`;
+                link.download = `thumb-${getActiveTag()}-${Date.now()}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });

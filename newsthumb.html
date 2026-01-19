@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>News Thumbnail Pro - Full Features</title>
+    <title>News Thumbnail Pro - Final Fixed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Roboto', sans-serif; background-color: #0f172a; color: #e2e8f0; }
@@ -29,21 +29,26 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            <div class="lg:col-span-4 space-y-5">
-                <div id="dropZone" class="drop-zone p-6 rounded-xl text-center cursor-pointer hover:bg-slate-800">
+            <div class="lg:col-span-4 space-y-4">
+                <div id="dropZone" class="drop-zone p-5 rounded-xl text-center cursor-pointer hover:bg-slate-800">
                     <input type="file" id="imageInput" class="hidden" accept="image/*">
-                    <p class="text-slate-400 text-sm">Kéo thả hoặc <span class="text-blue-400 font-bold underline">chọn ảnh</span></p>
+                    <p class="text-slate-400 text-sm italic">Kéo thả ảnh hoặc bấm để chọn</p>
                 </div>
 
                 <div class="space-y-4 bg-slate-800 p-5 rounded-xl shadow-2xl border border-slate-700">
                     <div class="flex items-center gap-2 pb-2 border-b border-slate-700">
                         <input type="checkbox" id="logoToggle" checked class="w-4 h-4 accent-blue-500 cursor-pointer">
-                        <label for="logoToggle" class="text-sm font-bold text-slate-300 cursor-pointer">Hiển thị Logo Tuổi Trẻ</label>
+                        <label for="logoToggle" class="text-xs font-bold text-slate-300 cursor-pointer uppercase">Hiển thị Logo</label>
                     </div>
 
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tiêu đề</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tiêu đề (Headline)</label>
                         <textarea id="headlineInput" rows="2" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none focus:ring-1 focus:ring-blue-500">Vietnam welcomes millions of international tourists in 2024</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Mô tả (Short Description)</label>
+                        <textarea id="descInput" rows="2" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none focus:ring-1 focus:ring-blue-500" placeholder="Nhập mô tả ngắn gọn...">The tourism sector has seen significant growth thanks to new visa policies.</textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -63,11 +68,11 @@
 
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Màu nền</label>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Màu chủ đạo</label>
                             <input type="color" id="colorPicker" value="#cc0000" class="w-full h-9 rounded cursor-pointer bg-slate-900 border-none">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kiểu</label>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kiểu dáng</label>
                             <select id="styleSelect" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none">
                                 <option value="1">Style 1: Overlay</option>
                                 <option value="2">Style 2: Split</option>
@@ -78,9 +83,9 @@
                 </div>
 
                 <div class="flex gap-2">
-                    <button id="previewBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg transition transform hover:-translate-y-1">PREVIEW</button>
-                    <button id="downloadBtn" class="hidden flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow-lg transition">DOWNLOAD PNG</button>
-                    <button id="editBtn" class="hidden flex-1 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 rounded-lg transition">EDIT</button>
+                    <button id="previewBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg transition transform hover:-translate-y-1">XEM TRƯỚC</button>
+                    <button id="downloadBtn" class="hidden flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow-lg transition">TẢI PNG</button>
+                    <button id="editBtn" class="hidden flex-1 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 rounded-lg transition">SỬA LẠI</button>
                 </div>
             </div>
 
@@ -90,12 +95,12 @@
                         <img id="movableImg" src="" class="movable-img" draggable="false">
                         <div id="styleContent" class="absolute inset-0 w-full h-full pointer-events-none"></div>
                         <div id="logoBox" class="logo-box absolute top-6 right-8">
-                            <img src="https://static-mediacdn.vn/tuoitre/web_images/icon-ttnews.png" class="h-16 drop-shadow-lg">
+                            <img src="https://tienxu04.github.io/xuxucode/logo_ttn.png" class="h-16 drop-shadow-lg">
                         </div>
                     </div>
                 </div>
-                <div id="emptyMsg" class="mt-20 text-slate-500 text-center">
-                    <p>Chưa có ảnh được chọn</p>
+                <div id="emptyMsg" class="mt-20 text-slate-500 text-center italic">
+                    <p>Vui lòng tải ảnh lên để hiển thị preview</p>
                 </div>
             </div>
         </div>
@@ -113,17 +118,17 @@
         const tagSelect = document.getElementById('tagSelect');
         const customTagWrap = document.getElementById('customTagWrap');
         const customTagInput = document.getElementById('customTagInput');
+        const headlineInput = document.getElementById('headlineInput');
+        const descInput = document.getElementById('descInput');
+        const colorPicker = document.getElementById('colorPicker');
+        const styleSelect = document.getElementById('styleSelect');
 
         let isDragging = false;
         let startX, startY, imgX = 0, imgY = 0;
         let currentMode = 'editing';
 
-        // 1. Logo Toggle Logic
-        logoToggle.addEventListener('change', () => {
-            logoBox.style.opacity = logoToggle.checked ? "1" : "0";
-        });
-
-        // 2. Tag Selection Logic
+        // 1. UI Logic
+        logoToggle.addEventListener('change', () => logoBox.style.opacity = logoToggle.checked ? "1" : "0");
         tagSelect.addEventListener('change', () => {
             customTagWrap.style.display = tagSelect.value === 'OTHER' ? 'block' : 'none';
             updateDesign();
@@ -134,7 +139,7 @@
             return tagSelect.value;
         }
 
-        // 3. Upload & Fit
+        // 2. Upload & Fit
         dropZone.onclick = () => imageInput.click();
         dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
         dropZone.ondrop = (e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); };
@@ -171,7 +176,7 @@
             movableImg.style.left = imgX + 'px'; movableImg.style.top = imgY + 'px';
         }
 
-        // 4. Drag reposition
+        // 3. Drag reposition
         mainCanvas.onmousedown = (e) => {
             if (currentMode !== 'editing') return;
             isDragging = true;
@@ -186,34 +191,37 @@
         };
         window.onmouseup = () => isDragging = false;
 
-        // 5. Render Design
-        const inputs = ['headlineInput', 'customTagInput', 'colorPicker', 'styleSelect'];
-        inputs.forEach(id => document.getElementById(id).addEventListener('input', updateDesign));
+        // 4. Render Design
+        [headlineInput, descInput, customTagInput, colorPicker, styleSelect].forEach(el => el.addEventListener('input', updateDesign));
 
         function updateDesign() {
-            const h = document.getElementById('headlineInput').value;
-            const c = document.getElementById('colorPicker').value;
-            const s = document.getElementById('styleSelect').value;
+            const h = headlineInput.value;
+            const d = descInput.value;
+            const c = colorPicker.value;
+            const s = styleSelect.value;
             const tag = getActiveTag();
 
             let html = '';
             if (s === "1") {
-                html = `<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent"></div>
+                html = `<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent"></div>
                         <div class="absolute bottom-0 left-0 p-12 w-full">
                             <span class="inline-block text-white text-lg font-bold px-4 py-1 mb-4 rounded-sm shadow-lg" style="background:${c}">${tag}</span>
-                            <h1 class="text-white text-6xl font-black leading-[1.1] mb-2 drop-shadow-2xl">${h}</h1>
+                            <h1 class="text-white text-6xl font-black leading-[1.1] mb-3 drop-shadow-2xl">${h}</h1>
+                            <p class="text-gray-300 text-2xl font-light line-clamp-2">${d}</p>
                         </div>`;
             } else if (s === "2") {
                 html = `<div class="absolute inset-0 flex">
-                            <div class="w-5/12 h-full p-12 flex flex-col justify-center border-r-[15px] border-white/20" style="background-color: ${c}">
-                                <span class="inline-block text-white/60 text-sm font-bold tracking-widest mb-4 border-b border-white/30 w-fit pb-1 uppercase">${tag}</span>
-                                <h1 class="text-white text-5xl font-bold leading-tight serif drop-shadow-sm">${h}</h1>
+                            <div class="w-5/12 h-full p-12 flex flex-col justify-center border-r-[15px] border-white/10" style="background-color: ${c}">
+                                <span class="inline-block text-white/60 text-sm font-bold tracking-widest mb-6 border-b border-white/30 w-fit pb-1 uppercase">${tag}</span>
+                                <h1 class="text-white text-5xl font-bold leading-tight serif drop-shadow-sm mb-6">${h}</h1>
+                                <p class="text-white/70 text-xl font-light line-clamp-3 leading-relaxed">${d}</p>
                             </div>
                         </div>`;
             } else {
                 html = `<div class="absolute bottom-0 left-0 w-full p-10 border-t-4 border-white/20" style="background-color: ${c}">
-                            <span class="inline-block bg-white text-[${c}] text-xs font-black px-2 py-0.5 mb-3 rounded-sm" style="color: ${c}">${tag}</span>
-                            <h1 class="text-white text-5xl font-black uppercase tracking-tighter drop-shadow-md">${h}</h1>
+                            <span class="inline-block bg-white text-xs font-black px-2 py-0.5 mb-3 rounded-sm" style="color: ${c}">${tag}</span>
+                            <h1 class="text-white text-5xl font-black uppercase tracking-tighter mb-2 drop-shadow-md">${h}</h1>
+                            <p class="text-white/80 text-2xl font-light line-clamp-1">${d}</p>
                         </div>`;
             }
             styleContent.innerHTML = html;
@@ -227,18 +235,17 @@
         }
         window.onresize = resizePreviewUI;
 
-        // 6. Preview & Download
+        // 5. Buttons Mode Logic
         const previewBtn = document.getElementById('previewBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         const editBtn = document.getElementById('editBtn');
         const statusTagUI = document.getElementById('statusTagUI');
 
         previewBtn.onclick = () => {
-            if (!movableImg.src) return alert("Vui lòng chọn ảnh!");
+            if (!movableImg.src) return alert("Vui lòng tải ảnh lên trước!");
             currentMode = 'preview';
             statusTagUI.innerText = "Chế độ Preview";
-            statusTagUI.classList.replace('bg-yellow-500', 'bg-emerald-500');
-            statusTagUI.classList.add('text-white');
+            statusTagUI.className = "bg-emerald-500 text-white px-3 py-1 rounded text-xs font-bold uppercase tracking-widest";
             movableImg.style.cursor = 'default';
             [previewBtn, downloadBtn, editBtn].forEach(b => b.classList.toggle('hidden'));
         };
@@ -246,8 +253,7 @@
         editBtn.onclick = () => {
             currentMode = 'editing';
             statusTagUI.innerText = "Đang chỉnh sửa";
-            statusTagUI.classList.replace('bg-emerald-500', 'bg-yellow-500');
-            statusTagUI.classList.remove('text-white');
+            statusTagUI.className = "bg-yellow-500 text-black px-3 py-1 rounded text-xs font-bold uppercase tracking-widest";
             movableImg.style.cursor = 'move';
             [previewBtn, downloadBtn, editBtn].forEach(b => b.classList.toggle('hidden'));
         };

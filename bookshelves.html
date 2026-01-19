@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thư Viện Sách</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: #f0f0f0;
+            color: #555;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .category-section {
+            margin-bottom: 40px;
+        }
+
+        .category-title {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .book-card {
+            background: #f9f9f9;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .book-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .book-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .book-detail {
+            display: flex;
+            align-items: center;
+            font-size: 0.95em;
+            color: #666;
+        }
+
+        .book-detail strong {
+            color: #667eea;
+            margin-right: 8px;
+            min-width: 80px;
+        }
+
+        .book-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .book-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .books-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Thư Viện Sách</h1>
+        
+        <div class="controls">
+            <button class="btn active" onclick="changeGroupBy('genre')">Theo Thể Loại</button>
+            <button class="btn" onclick="changeGroupBy('author')">Theo Tác Giả</button>
+            <button class="btn" onclick="changeGroupBy('country')">Theo Quốc Gia</button>
+        </div>
+
+        <div id="content">
+            <div class="loading">Đang tải dữ liệu...</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script>
+        let booksData = [];
+        let currentGroupBy = 'genre';
+
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTl4QUkDw2-np7Nc8jxJcbtXeDuFDnnXV85ClQENI-uR9UBicTGyD76rgnUlv-kCH8n5xBR49-92ky/pub?output=csv';
+
+        function loadData() {
+            Papa.parse(CSV_URL, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    booksData = results.data.filter(row => row.Title && row.Title.trim());
+                    renderBooks();
+                },
+                error: function(error) {
+                    document.getElementById('content').innerHTML = 
+                        '<div class="loading">Lỗi khi tải dữ liệu: ' + error.message + '</div>';
+                }
+            });
+        }
+
+        function changeGroupBy(groupBy) {
+            currentGroupBy = groupBy;
+            
+            document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            renderBooks();
+        }
+
+        function renderBooks() {
+            const contentDiv = document.getElementById('content');
+            
+            if (booksData.length === 0) {
+                contentDiv.innerHTML = '<div class="loading">Không có dữ liệu</div>';
+                return;
+            }
+
+            const groupField = currentGroupBy === 'genre' ? 'Genre' : 
+                              currentGroupBy === 'author' ? 'Author' : 'Country';
+
+            const grouped = {};
+            booksData.forEach(book => {
+                const key = (book[groupField] || 'Khác').trim();
+                if (!grouped[key]) {
+                    grouped[key] = [];
+                }
+                grouped[key].push(book);
+            });
+
+            const sortedKeys = Object.keys(grouped).sort();
+
+            let html = '';
+            sortedKeys.forEach(key => {
+                html += `
+                    <div class="category-section">
+                        <h2 class="category-title">${key}</h2>
+                        <div class="books-grid">
+                            ${grouped[key].map(book => `
+                                <div class="book-card">
+                                    <div class="book-title">${book.Title || 'Không có tựa đề'}</div>
+                                    <div class="book-info">
+                                        <div class="book-detail">
+                                            <strong>Tác giả:</strong>
+                                            <span>${book.Author || 'N/A'}</span>
+                                        </div>
+                                        <div class="book-detail">
+                                            <strong>Thể loại:</strong>
+                                            <span>${book.Genre || 'N/A'}</span>
+                                        </div>
+                                        <div class="book-detail">
+                                            <strong>Quốc gia:</strong>
+                                            <span>${book.Country || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                    ${book.Link ? `<a href="${book.Link}" class="book-link" target="_blank">Xem chi tiết</a>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            contentDiv.innerHTML = html;
+        }
+
+        loadData();
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Book Tracker</title>
+    <title>My Keigo's Book Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes fadeIn {
@@ -89,10 +89,9 @@
             const total = state.books.length;
             const purchased = state.books.filter(b => b.purchased).length;
             const read = state.books.filter(b => b.read).length;
-            const pileOfShame = state.books.filter(b => b.purchased && !b.read).length;
             const readPercentage = total > 0 ? (read / total) * 100 : 0;
             
-            return { total, purchased, read, pileOfShame, readPercentage };
+            return { total, purchased, read, readPercentage };
         }
 
         // Filter books
@@ -103,8 +102,7 @@
                     state.filter === 'all' ? true :
                     state.filter === 'purchased' ? book.purchased :
                     state.filter === 'unread' ? !book.read :
-                    state.filter === 'read' ? book.read :
-                    state.filter === 'shame' ? (book.purchased && !book.read) : true;
+                    state.filter === 'read' ? book.read : true;
                 
                 return matchesSearch && matchesFilter;
             });
@@ -166,6 +164,11 @@
             const stats = getStats();
             const filteredBooks = getFilteredBooks();
             const liquidY = 185 - (135 * stats.readPercentage / 100);
+
+            // Save current search input value and focus state
+            const searchInput = document.getElementById('searchInput');
+            const hadFocus = searchInput && document.activeElement === searchInput;
+            const cursorPosition = searchInput ? searchInput.selectionStart : 0;
 
             const app = document.getElementById('app');
             app.innerHTML = `
@@ -244,7 +247,7 @@
                         </div>
 
                         <!-- Stats -->
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                             <div class="${state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} p-4 rounded-xl shadow-md border">
                                 <p class="text-sm ${state.darkMode ? 'text-gray-400' : 'text-gray-600'}">Total Books</p>
                                 <p class="text-3xl font-bold ${state.darkMode ? 'text-white' : 'text-gray-800'}">${stats.total}</p>
@@ -257,10 +260,6 @@
                                 <p class="text-sm ${state.darkMode ? 'text-gray-400' : 'text-gray-600'}">Read</p>
                                 <p class="text-3xl font-bold text-green-600">${stats.read}</p>
                             </div>
-                            <div class="${state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} p-4 rounded-xl shadow-md border">
-                                <p class="text-sm ${state.darkMode ? 'text-gray-400' : 'text-gray-600'}">Pile of Shame</p>
-                                <p class="text-3xl font-bold text-yellow-600">${stats.pileOfShame}</p>
-                            </div>
                         </div>
 
                         <!-- Search and Filters -->
@@ -268,13 +267,13 @@
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
                                 <input type="text" placeholder="Search books..." 
+                                    id="searchInput"
                                     value="${state.searchTerm}"
-                                    oninput="state.searchTerm = this.value; render();"
                                     class="w-full pl-10 pr-4 py-3 rounded-xl border ${state.darkMode ? 'border-gray-600 bg-gray-800' : 'border-gray-300 bg-white'} focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none">
                             </div>
                             <div class="flex flex-wrap gap-2">
-                                ${['all', 'purchased', 'read', 'unread', 'shame'].map(f => {
-                                    const labels = { all: 'All Books', purchased: 'Purchased', read: 'Read', unread: 'Unread', shame: 'Pile of Shame' };
+                                ${['all', 'purchased', 'read', 'unread'].map(f => {
+                                    const labels = { all: 'All Books', purchased: 'Purchased', read: 'Read', unread: 'Unread' };
                                     return `
                                         <button onclick="state.filter = '${f}'; render();"
                                             class="px-4 py-2 rounded-lg font-medium transition-all ${
@@ -323,6 +322,24 @@
                     `}
                 </div>
             `;
+
+            // Restore focus and cursor position if search had focus
+            if (hadFocus) {
+                const newSearchInput = document.getElementById('searchInput');
+                if (newSearchInput) {
+                    newSearchInput.focus();
+                    newSearchInput.setSelectionRange(cursorPosition, cursorPosition);
+                }
+            }
+
+            // Add search input listener
+            const searchInputEl = document.getElementById('searchInput');
+            if (searchInputEl) {
+                searchInputEl.addEventListener('input', (e) => {
+                    state.searchTerm = e.target.value;
+                    render();
+                });
+            }
         }
 
         // Initialize

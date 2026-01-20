@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Book Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out;
+        }
+        .dark-mode {
+            background: #111827;
+            color: white;
+        }
+        .dark-mode .bg-white {
+            background: #1f2937 !important;
+        }
+        .dark-mode .border-gray-200 {
+            border-color: #374151 !important;
+        }
+        .dark-mode .text-gray-800 {
+            color: white !important;
+        }
+        .dark-mode .text-gray-600 {
+            color: #9ca3af !important;
+        }
+        .dark-mode .bg-gray-50 {
+            background: #1f2937 !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen transition-colors duration-300 bg-gradient-to-br from-red-50 via-white to-orange-50">
+    <div id="app"></div>
+
+    <script>
+        // State
+        let state = {
+            books: [],
+            loading: true,
+            searchTerm: '',
+            filter: 'all',
+            darkMode: false,
+            randomBook: null,
+            isPickingRandom: false
+        };
+
+        // Fetch books
+        async function fetchBooks() {
+            try {
+                const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vR6ehnlyNVaI936s5xpV5ln9qI3DYxKT5ckAYFPz_jxE24AwcJlj7-ByG4QbxFzSB7ex8qQaXtoQAkM/pub?gid=0&single=true&output=csv');
+                const text = await response.text();
+                
+                const lines = text.split('\n');
+                const parsedBooks = lines.slice(1)
+                    .filter(line => line.trim())
+                    .map(line => {
+                        const values = line.split(',').map(v => v.trim());
+                        return {
+                            title: values[0] || '',
+                            purchased: values[1]?.toUpperCase() === 'TRUE',
+                            read: values[2]?.toUpperCase() === 'TRUE'
+                        };
+                    })
+                    .filter(book => book.title);
+                
+                state.books = parsedBooks;
+                state.loading = false;
+                render();
+            } catch (error) {
+                console.error('Error fetching books:', error);
+                state.loading = false;
+                render();
+            }
+        }
+
+        // Calculate stats
+        function getStats() {
+            const total = state.books.length;
+            const purchased = state.books.filter(b => b.purchased).length;
+            const read = state.books.filter(b => b.read).length;
+            const pileOfShame = state.books.filter(b => b.purchased && !b.read).length;
+            const readPercentage = total > 0 ? (read / total) * 100 : 0;
+            
+            return { total, purchased, read, pileOfShame, readPercentage };
+        }
+
+        // Filter books
+        function getFilteredBooks() {
+            return state.books.filter(book => {
+                const matchesSearch = book.title.toLowerCase().includes(state.searchTerm.toLowerCase());
+                const matchesFilter = 
+                    state.filter === 'all' ? true :
+                    state.filter === 'purchased' ? book.purchased :
+                    state.filter === 'unread' ? !book.read :
+                    state.filter === 'read' ? book.read :
+                    state.filter === 'shame' ? (book.purchased && !book.read) : true;
+                
+                return matchesSearch && matchesFilter;
+            });
+        }
+
+        // Pick random book
+        function pickRandomBook() {
+            const unreadBooks = state.books.filter(b => !b.read);
+            if (unreadBooks.length === 0) {
+                alert('Congrats! You\'ve read all your books! 🎉');
+                return;
+            }
+
+            state.isPickingRandom = true;
+            render();
+            
+            let counter = 0;
+            const interval = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * unreadBooks.length);
+                state.randomBook = unreadBooks[randomIndex];
+                render();
+                counter++;
+                
+                if (counter > 15) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        const finalIndex = Math.floor(Math.random() * unreadBooks.length);
+                        state.randomBook = unreadBooks[finalIndex];
+                        state.isPickingRandom = false;
+                        render();
+                    }, 100);
+                }
+            }, 100);
+        }
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            state.darkMode = !state.darkMode;
+            document.body.classList.toggle('dark-mode');
+            render();
+        }
+
+        // Get book color classes
+        function getBookColor(book) {
+            if (book.read) return state.darkMode ? 'bg-green-900/30 border-green-600' : 'bg-green-50 border-green-400';
+            if (book.purchased) return state.darkMode ? 'bg-yellow-900/30 border-yellow-600' : 'bg-yellow-50 border-yellow-400';
+            return state.darkMode ? 'bg-gray-800 border-gray-600' : 'bg-gray-50 border-gray-300';
+        }
+
+        // Get book badge
+        function getBookBadge(book) {
+            if (book.read) return { text: 'Read', color: 'bg-green-500' };
+            if (book.purchased) return { text: 'Unread', color: 'bg-yellow-500' };
+            return { text: 'Not Purchased', color: 'bg-gray-400' };
+        }
+
+        // Render
+        function render() {
+            const stats = getStats();
+            const filteredBooks = getFilteredBooks();
+            const liquidY = 185 - (135 * stats.readPercentage / 100);
+
+            const app = document.getElementById('app');
+            app.innerHTML = `
+                <!-- Header -->
+                <div class="sticky top-0 z-50 backdrop-blur-lg ${state.darkMode ? 'bg-gray-900/80' : 'bg-white/80'} border-b ${state.darkMode ? 'border-gray-700' : 'border-gray-200'}">
+                    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+                            📚 My Book Tracker
+                        </h1>
+                        <button onclick="toggleDarkMode()" class="p-2 rounded-lg ${state.darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors">
+                            ${state.darkMode ? '☀️' : '🌙'}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="max-w-6xl mx-auto px-4 py-8">
+                    ${state.loading ? `
+                        <div class="text-center py-20">
+                            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600 mx-auto"></div>
+                            <p class="mt-4 ${state.darkMode ? 'text-gray-400' : 'text-gray-600'}">Loading your books...</p>
+                        </div>
+                    ` : `
+                        <!-- Coca-Cola Bottle -->
+                        <div class="mb-12 flex justify-center">
+                            <div class="text-center">
+                                <div class="relative w-40 h-80 mx-auto">
+                                    <svg viewBox="0 0 100 200" class="w-full h-full">
+                                        <path d="M 35 20 L 35 35 Q 30 40 30 50 L 30 170 Q 30 180 35 185 L 65 185 Q 70 180 70 170 L 70 50 Q 70 40 65 35 L 65 20 Q 65 15 60 15 L 40 15 Q 35 15 35 20 Z"
+                                            fill="none" stroke="${state.darkMode ? '#666' : '#333'}" stroke-width="2"/>
+                                        <rect x="38" y="10" width="24" height="8" rx="2" fill="${state.darkMode ? '#666' : '#8B0000'}"/>
+                                        <defs>
+                                            <clipPath id="bottleClip">
+                                                <path d="M 30 50 L 30 170 Q 30 180 35 185 L 65 185 Q 70 180 70 170 L 70 50 Z"/>
+                                            </clipPath>
+                                            <linearGradient id="cokeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                <stop offset="0%" stop-color="#F40009"/>
+                                                <stop offset="100%" stop-color="#8B0000"/>
+                                            </linearGradient>
+                                        </defs>
+                                        <g clip-path="url(#bottleClip)">
+                                            <rect x="30" y="${liquidY}" width="40" height="${135 * stats.readPercentage / 100}" fill="url(#cokeGradient)"/>
+                                            <path d="M 30 ${liquidY} Q 40 ${liquidY - 3} 50 ${liquidY} T 70 ${liquidY}" fill="none" stroke="#FF6B6B" stroke-width="1" opacity="0.5">
+                                                <animate attributeName="d" 
+                                                    values="M 30 ${liquidY} Q 40 ${liquidY - 3} 50 ${liquidY} T 70 ${liquidY};M 30 ${liquidY} Q 40 ${liquidY + 3} 50 ${liquidY} T 70 ${liquidY};M 30 ${liquidY} Q 40 ${liquidY - 3} 50 ${liquidY} T 70 ${liquidY}"
+                                                    dur="2s" repeatCount="indefinite"/>
+                                            </path>
+                                            ${[...Array(5)].map((_, i) => `
+                                                <circle cx="${35 + i * 8}" cy="${liquidY + 20}" r="1.5" fill="white" opacity="0.6">
+                                                    <animate attributeName="cy" values="${liquidY + 20};${liquidY - 10}" dur="${2 + i * 0.3}s" repeatCount="indefinite"/>
+                                                    <animate attributeName="opacity" values="0.6;0;0.6" dur="${2 + i * 0.3}s" repeatCount="indefinite"/>
+                                                </circle>
+                                            `).join('')}
+                                        </g>
+                                    </svg>
+                                </div>
+                                <div class="mt-6 space-y-2">
+                                    <p class="text-3xl font-bold text-red-600">${Math.round(stats.readPercentage)}%</p>
+                                    <p class="text-lg font-semibold">${stats.read} / ${stats.total} books read</p>
+                                    <p class="text-sm ${state.darkMode ? 'text-gray-400' : 'text-gray-600'}">Keep going! 🚀</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Random Picker -->
+                        <div class="mb-8">
+                            <button onclick="pickRandomBook()" ${state.isPickingRandom ? 'disabled' : ''}
+                                class="w-full py-6 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-2xl font-bold text-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                                🔀 ${state.isPickingRandom ? 'Picking...' : '📚 Pick My Next Read'}
+                            </button>
+                            ${state.randomBook ? `
+                                <div class="mt-4 p-6 bg-gradient-to-r ${state.darkMode ? 'from-purple-900/30 to-pink-900/30 border-purple-600' : 'from-purple-100 to-pink-100 border-purple-400'} rounded-xl border-2 animate-fadeIn">
+                                    <p class="text-sm font-semibold ${state.darkMode ? 'text-purple-400' : 'text-purple-600'} mb-2">Your next read:</p>
+                                    <p class="text-2xl font-bold ${state.darkMode ? 'text-white' : 'text-gray-800'}">${state.randomBook.title}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                            <div class="${state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} p-4 rounded-xl shadow-md border">
+                                <p class="text-sm ${state.darkMode ? 'text-gray-400' : 'text-gray-600'}">Total Books</p>
+                                <p class="text-3xl font-bold ${state.darkMode ? 'text-white' : 'text-gray-800'}">${stats.total}</p>
+                            </div>
+                            <div class="${state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} p-4 rounded-xl shadow-md border">
+                                <p class="text-sm ${state.darkMode ? 'text-gray-400' : 'text-gray-600'}">Purchased</p>
+                                <p class="text-3xl font-bold text-blue-600">${stats.purchased}</p>
+                            </div>
+                            <div class="${state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} p-4 rounded-xl shadow-md border">
+                                <p class="text-sm ${state.darkMode ? 'text-gray-400' : 'text-gray-600'}">Read</p>
+                                <p class="text-3xl font-bold text-green-600">${stats.read}</p>
+                            </div>
+                            <div class="${state.darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} p-4 rounded-xl shadow-md border">
+                                <p class="text-sm ${state.darkMode ? 'text-gray-400' : 'text-gray-600'}">Pile of Shame</p>
+                                <p class="text-3xl font-bold text-yellow-600">${stats.pileOfShame}</p>
+                            </div>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="mb-6 space-y-4">
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
+                                <input type="text" placeholder="Search books..." 
+                                    value="${state.searchTerm}"
+                                    oninput="state.searchTerm = this.value; render();"
+                                    class="w-full pl-10 pr-4 py-3 rounded-xl border ${state.darkMode ? 'border-gray-600 bg-gray-800' : 'border-gray-300 bg-white'} focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none">
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${['all', 'purchased', 'read', 'unread', 'shame'].map(f => {
+                                    const labels = { all: 'All Books', purchased: 'Purchased', read: 'Read', unread: 'Unread', shame: 'Pile of Shame' };
+                                    return `
+                                        <button onclick="state.filter = '${f}'; render();"
+                                            class="px-4 py-2 rounded-lg font-medium transition-all ${
+                                                state.filter === f
+                                                    ? 'bg-red-600 text-white shadow-md'
+                                                    : `${state.darkMode ? 'bg-gray-800 text-gray-300 border-gray-600' : 'bg-white text-gray-700 border-gray-300'} border hover:border-red-400`
+                                            }">
+                                            ${labels[f]}
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Book List -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            ${filteredBooks.map(book => {
+                                const badge = getBookBadge(book);
+                                return `
+                                    <div class="p-4 rounded-xl border-2 transition-all hover:shadow-lg ${getBookColor(book)}">
+                                        <div class="flex items-start justify-between mb-2">
+                                            <h3 class="font-semibold ${state.darkMode ? 'text-white' : 'text-gray-800'} flex-1 pr-2">${book.title}</h3>
+                                            <span class="${badge.color} text-white text-xs px-2 py-1 rounded-full whitespace-nowrap">${badge.text}</span>
+                                        </div>
+                                        <div class="flex gap-3 text-sm">
+                                            <div class="flex items-center gap-1">
+                                                <span>${book.purchased ? '✅' : '❌'}</span>
+                                                <span class="${state.darkMode ? 'text-gray-400' : 'text-gray-600'}">Purchased</span>
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <span>${book.read ? '✅' : '❌'}</span>
+                                                <span class="${state.darkMode ? 'text-gray-400' : 'text-gray-600'}">Read</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+
+                        ${filteredBooks.length === 0 ? `
+                            <div class="text-center py-12">
+                                <p class="text-6xl mb-4">📖</p>
+                                <p class="${state.darkMode ? 'text-gray-400' : 'text-gray-600'}">No books found</p>
+                            </div>
+                        ` : ''}
+                    `}
+                </div>
+            `;
+        }
+
+        // Initialize
+        fetchBooks();
+    </script>
+</body>
+</html>

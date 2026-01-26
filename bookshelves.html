@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thư Viện Sách</title>
+    <title>Mục lục @xuxudocsach</title>
     <style>
         * {
             margin: 0;
@@ -456,11 +456,12 @@
 </head>
 <body>
     <div class="container">
-        <h1 id="top">📚 Thư Viện Sách</h1>
+        <h1 id="top">📚 Mục lục các bài review @xuxudocsach</h1>
         
         <div class="controls">
             <button class="search-btn" onclick="openSearchModal()">🔍 Tìm kiếm</button>
-            <button class="btn active" onclick="changeGroupBy('genre')">Theo Thể Loại</button>
+            <button class="btn active" onclick="changeGroupBy('timeline')">Theo Thời Gian</button>
+            <button class="btn" onclick="changeGroupBy('genre')">Theo Thể Loại</button>
             <button class="btn" onclick="changeGroupBy('author')">Theo Tác Giả</button>
             <button class="btn" onclick="changeGroupBy('country')">Theo Quốc Gia</button>
         </div>
@@ -515,7 +516,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script>
         let booksData = [];
-        let currentGroupBy = 'genre';
+        let currentGroupBy = 'timeline'; // Mặc định là timeline
         let searchFilter = 'all';
 
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTTl4QUkDw2-np7Nc8jxJcbtXeDuFDnnXV85ClQENI-uR9UBicTGyD76rgnUlv-kCH8n5xBR49-92ky/pub?output=csv';
@@ -671,12 +672,49 @@
 
         function renderBooks() {
             const contentDiv = document.getElementById('content');
+            const quickNavContainer = document.getElementById('quickNav');
             
             if (booksData.length === 0) {
                 contentDiv.innerHTML = '<div class="loading">Không có dữ liệu</div>';
                 return;
             }
 
+            // Nếu chế độ timeline, hiển thị tất cả theo thứ tự
+            if (currentGroupBy === 'timeline') {
+                quickNavContainer.style.display = 'none';
+                
+                let html = `
+                    <div class="category-section">
+                        <h2 class="category-title">📅 Danh sách mới nhất</h2>
+                        <div class="books-grid">
+                            ${booksData.map(book => `
+                                <div class="book-card">
+                                    <div class="book-title">${book['Tựa'] || 'Không có tựa đề'}</div>
+                                    <div class="book-info">
+                                        <div class="book-detail">
+                                            <strong>Tác giả:</strong>
+                                            <span>${book['Tác giả'] || 'N/A'}</span>
+                                        </div>
+                                        <div class="book-detail">
+                                            <strong>Thể loại:</strong>
+                                            <span>${book['Thể loại'] || 'N/A'}</span>
+                                        </div>
+                                        <div class="book-detail">
+                                            <strong>Quốc gia:</strong>
+                                            <span>${book['Quốc gia'] || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                    ${book['xuxu review'] ? `<a href="${book['xuxu review']}" class="book-link" target="_blank">Xem chi tiết</a>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                contentDiv.innerHTML = html;
+                return;
+            }
+
+            // Còn lại là nhóm theo thể loại/tác giả/quốc gia
             const groupField = currentGroupBy === 'genre' ? 'Thể loại' : 
                               currentGroupBy === 'author' ? 'Tác giả' : 'Quốc gia';
 

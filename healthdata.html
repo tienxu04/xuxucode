@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết Quả Khám Sức Khỏe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        /* Header with cover image */
+        .header {
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        .header img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Table of Contents */
+        .toc {
+            background-color: #fff;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .toc h1 {
+            font-size: 28px;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+
+        .toc-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .toc-button {
+            padding: 15px 40px;
+            font-size: 18px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            font-weight: 500;
+        }
+
+        .toc-button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Main content container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Section styling */
+        .section {
+            background-color: #fff;
+            margin: 30px 0;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .section h3 {
+            font-size: 20px;
+            margin: 25px 0 15px 0;
+            color: #34495e;
+        }
+
+        /* Video container */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* PDF container */
+        .pdf-container {
+            width: 100%;
+            height: 600px;
+            margin: 20px 0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .pdf-container iframe {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        /* Download button */
+        .download-button {
+            display: inline-block;
+            padding: 12px 30px;
+            margin: 20px 0;
+            background-color: #27ae60;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .download-button:hover {
+            background-color: #229954;
+        }
+
+        /* Video grid for multiple videos */
+        .video-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        @media (min-width: 768px) {
+            .video-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .video-item h4 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .section {
+                padding: 25px 20px;
+            }
+
+            .section h2 {
+                font-size: 26px;
+            }
+
+            .toc h1 {
+                font-size: 24px;
+            }
+
+            .toc-button {
+                padding: 12px 30px;
+                font-size: 16px;
+            }
+
+            .pdf-container {
+                height: 400px;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header with cover image -->
+    <div class="header">
+        <img src="https://tienxu04.github.io/xuxucode/RMI-Key%20image.png" alt="RMI Key Image">
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="toc">
+        <h1>Kết Quả Khám Sức Khỏe</h1>
+        <div class="toc-buttons">
+            <a href="#ct-section" class="toc-button">CT</a>
+            <a href="#rmi-section" class="toc-button">RMI</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+
+        <!-- CT Section -->
+        <div id="ct-section" class="section">
+            <h2>CT (Computed Tomography)</h2>
+            
+            <h3>Video</h3>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/is6go0RTLTs" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                </iframe>
+            </div>
+
+            <h3>Báo Cáo PDF</h3>
+            <div class="pdf-container">
+                <iframe src="https://drive.google.com/file/d/1PrE0K4v1YRHmTnVaqFD1RX4YNxdmal1z/preview">
+                </iframe>
+            </div>
+
+            <a href="https://drive.google.com/uc?export=download&id=1PrE0K4v1YRHmTnVaqFD1RX4YNxdmal1z" 
+               class="download-button" 
+               target="_blank">
+                📥 Tải Báo Cáo CT
+            </a>
+        </div>
+
+        <!-- RMI Section -->
+        <div id="rmi-section" class="section">
+            <h2>RMI (Resonance Magnetic Imaging)</h2>
+            
+            <h3>Videos</h3>
+            <div class="video-grid">
+                <div class="video-item">
+                    <h4>📅 January 30</h4>
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/NmPVJR7qtMk" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+                <div class="video-item">
+                    <h4>📅 January 31</h4>
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/3BQyc3lNao8" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Báo Cáo PDF</h3>
+            <div class="pdf-container">
+                <iframe src="https://drive.google.com/file/d/1xIfQhhb0H7KJL0Yex-mtW9ktLr0OLD1D/preview">
+                </iframe>
+            </div>
+
+            <a href="https://drive.google.com/uc?export=download&id=1xIfQhhb0H7KJL0Yex-mtW9ktLr0OLD1D" 
+               class="download-button" 
+               target="_blank">
+                📥 Tải Báo Cáo RMI
+            </a>
+        </div>
+
+    </div>
+
+</body>
+</html>

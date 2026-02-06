@@ -243,17 +243,23 @@
             
             const parser = new DOMParser();
             const xml = parser.parseFromString(xmlText, "text/xml");
-            const items = xml.querySelectorAll("item");
+
+            // Thay vì dùng querySelectorAll (kén XML), hãy dùng getElementsByTagName (chuyên trị XML)
+            const items = xml.getElementsByTagName("item");
+            
+            //const items = xml.querySelectorAll("item");
 
             const [y, m, d] = dateRaw.split('-');
             const dateFind = `${d}/${m}`; 
 
-            let dataRaw = null;
-            items.forEach(item => {
-                if(item.querySelector("title").textContent.includes(dateFind)) {
-                    dataRaw = item.querySelector("description").textContent;
-                }
-            });
+           let dataRaw = null;
+Array.from(items).forEach(item => {
+    // Dùng getElementsByTagName cho cả title và description để đồng bộ
+    const title = item.getElementsByTagName("title")[0].textContent;
+    if (title.includes(dateFind)) {
+        dataRaw = item.getElementsByTagName("description")[0].textContent;
+    }
+});
 
             if(!dataRaw) throw new Error("Chưa có kết quả " + dateFind);
 

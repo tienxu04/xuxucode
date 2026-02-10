@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dò Số Miền Nam @ xuxukun </title>
+    <title>Dò Số Miền Nam v3 @ xuxukun </title>
     <style>
         :root {
             --primary: #d32f2f;
@@ -218,20 +218,20 @@
         sel.innerHTML = list.map(s => `<option value="${s.c}">${s.n}</option>`).join('');
     }
 
-  async function checkResult() {
+async function checkResult() {
     const num = document.getElementById('numInput').value.trim();
     const code = document.getElementById('stationSelect').value;
-    const dateRaw = document.getElementById('dateInput').value;
+    const dateRaw = document.getElementById('dateInput').value; // Ví dụ: "2026-02-09"
     const btn = document.getElementById('btnAction');
     const st = document.getElementById('status');
     const table = document.getElementById('resultTable');
 
-    if(!num) { alert("Bạn chưa nhập số vé!"); return; }
+    if(!num) return alert("Bạn chưa nhập số vé!");
 
     btn.disabled = true;
     st.style.display = 'block';
     st.className = 'loading';
-    st.innerText = "Đang kết nối server...";
+    st.innerText = "Đang lấy dữ liệu...";
     table.style.display = 'none';
 
     try {
@@ -241,38 +241,29 @@
         const resp = await fetch(proxy);
         const xmlText = await resp.text();
         
+        // Dùng DOMParser là cách an toàn nhất để duyệt XML như HTML
         const parser = new DOMParser();
         const xml = parser.parseFromString(xmlText, "text/xml");
-        
-        // Dùng getElementsByTagName để an toàn tuyệt đối với XML
         const items = xml.getElementsByTagName("item");
-        
-        if (items.length === 0) throw new Error("Không thể đọc dữ liệu từ RSS.");
 
+        if (items.length === 0) throw new Error("Server bảo trì hoặc Link lỗi. Thử lại sau!");
+
+        // XỬ LÝ NGÀY: Chấp nhận cả "09/02" và "9/2"
         const [y, m, d] = dateRaw.split('-');
-        const dateFind = `${d}/${m}`; // Kết quả: "09/02"
-        console.log("Đang tìm ngày:", dateFind);
+        const dateFull = `${d}/${m}`;      // "09/02"
+        const dateShort = `${parseInt(d)}/${parseInt(m)}`; // "9/2"
 
         let dataRaw = null;
-        for (let i = 0; i < items.length; i++) {
-            let item = items[i];
-            let titleEl = item.getElementsByTagName("title")[0];
-            let descEl = item.getElementsByTagName("description")[0];
-            
-            if (titleEl && descEl) {
-                // Chuẩn hóa title: xóa khoảng trắng thừa, chuyển về chữ thường để so khớp
-                let titleText = titleEl.textContent.replace(/\s+/g, ' ').trim();
-                console.log("Checking RSS Title:", titleText);
-                
-                if (titleText.includes(dateFind)) {
-                    dataRaw = descEl.textContent;
-                    console.log("=> ĐÃ THẤY DỮ LIỆU!");
-                    break;
-                }
+        for (let item of items) {
+            const title = item.getElementsByTagName("title")[0]?.textContent || "";
+            // Kiểm tra nếu tiêu đề chứa "09/02" HOẶC "9/2"
+            if (title.includes(dateFull) || title.includes(dateShort)) {
+                dataRaw = item.getElementsByTagName("description")[0]?.textContent || "";
+                break;
             }
         }
 
-        if(!dataRaw) throw new Error(`Chưa có kết quả ngày ${dateFind}`);
+        if(!dataRaw) throw new Error(`Chưa có kết quả cho ngày ${dateFull}`);
 
         const prizes = parseData(dataRaw);
         displayTable(prizes);
@@ -282,8 +273,7 @@
             prizes[k].forEach(v => {
                 if(v.endsWith(num)) {
                     wins.push(k === 'db' ? 'Đặc Biệt' : 'Giải ' + k.toUpperCase());
-                    const cell = document.getElementById('g-' + k);
-                    if(cell) cell.classList.add('highlight');
+                    document.getElementById('g-'+k)?.classList.add('highlight');
                 }
             });
         }
@@ -294,12 +284,10 @@
     } catch (e) {
         st.className = 'fail';
         st.innerText = e.message;
-        console.error("Lỗi chi tiết:", e);
     } finally {
         btn.disabled = false;
     }
 }
-
 function parseData(txt) {
     // Regex này sẽ tách dựa trên nhãn giải, chấp nhận cả ĐB: lẫn ĐB (không dấu :)
     const parts = txt.replace(/\s+/g, ' ').split(/(ĐB:?|1:?|2:?|3:?|4:?|5:?|6:?|7:?|8:?)/i);

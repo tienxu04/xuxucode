@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dò Số Miền Nam v3 @ xuxukun </title>
+    <title>Dò Số Miền Nam v3.1 @ xuxukun </title>
     <style>
         :root {
             --primary: #d32f2f;
@@ -221,7 +221,7 @@
 async function checkResult() {
     const num = document.getElementById('numInput').value.trim();
     const code = document.getElementById('stationSelect').value;
-    const dateRaw = document.getElementById('dateInput').value; // Ví dụ: "2026-02-09"
+    const dateRaw = document.getElementById('dateInput').value;
     const btn = document.getElementById('btnAction');
     const st = document.getElementById('status');
     const table = document.getElementById('resultTable');
@@ -231,49 +231,68 @@ async function checkResult() {
     btn.disabled = true;
     st.style.display = 'block';
     st.className = 'loading';
-    st.innerText = "Đang lấy dữ liệu...";
+    st.innerText = "Đang kết nối server...";
     table.style.display = 'none';
 
     try {
         const url = `https://xskt.com.vn/rss-feed/${SLUGS[code]}-${code}.rss`;
         const proxy = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
         
+        console.log("%c--- 1. ĐANG FETCH ---", "color: cyan; font-weight: bold;");
+        console.log("URL gốc:", url);
+
         const resp = await fetch(proxy);
-        const xmlText = await resp.text();
+        const rawText = await resp.text(); 
         
-        // Dùng DOMParser là cách an toàn nhất để duyệt XML như HTML
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(xmlText, "text/xml");
-        const items = xml.getElementsByTagName("item");
-
-        if (items.length === 0) throw new Error("Server bảo trì hoặc Link lỗi. Thử lại sau!");
-
-        // XỬ LÝ NGÀY: Chấp nhận cả "09/02" và "9/2"
+        // Soi dữ liệu thô ngay khi Proxy vừa trả về
+        console.log("%c--- 2. DỮ LIỆU THÔ TỪ PROXY ---", "color: yellow; font-weight: bold;");
+        console.log(rawText); 
+        
         const [y, m, d] = dateRaw.split('-');
-        const dateFull = `${d}/${m}`;      // "09/02"
-        const dateShort = `${parseInt(d)}/${parseInt(m)}`; // "9/2"
+        const dateFull = `${d}/${m}`; 
+        const dateShort = `${parseInt(d)}/${parseInt(m)}`;
+        console.log(`%c--- 3. TÌM KIẾM NGÀY: ${dateFull} hoặc ${dateShort} ---`, "color: magenta;");
+
+        // Regex thần thánh: Cắt lát từng thẻ <item>
+        const itemMatches = rawText.match(/<item>[\s\S]*?<\/item>/g);
+        
+        if (!itemMatches) {
+            console.error("LỖI: Không tìm thấy thẻ <item> nào trong rawText!");
+            throw new Error("Dữ liệu từ máy chủ không đúng cấu trúc RSS.");
+        }
 
         let dataRaw = null;
-        for (let item of items) {
-            const title = item.getElementsByTagName("title")[0]?.textContent || "";
-            // Kiểm tra nếu tiêu đề chứa "09/02" HOẶC "9/2"
+        for (const itemStr of itemMatches) {
+            const title = (itemStr.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || "";
+            console.log("Đang check Title:", title);
+
             if (title.includes(dateFull) || title.includes(dateShort)) {
-                dataRaw = item.getElementsByTagName("description")[0]?.textContent || "";
+                dataRaw = (itemStr.match(/<description>([\s\S]*?)<\/description>/) || [])[1] || "";
+                console.log("%c=> KHỚP NGÀY! Nội dung giải:", "color: green; font-weight: bold;", dataRaw);
                 break;
             }
         }
 
-        if(!dataRaw) throw new Error(`Chưa có kết quả cho ngày ${dateFull}`);
+        if(!dataRaw) throw new Error(`Không tìm thấy kết quả ngày ${dateFull}`);
+
+        // Xử lý sạch CDATA
+        dataRaw = dataRaw.replace(/<!\[CDATA\[|\]\]>/g, "").trim();
 
         const prizes = parseData(dataRaw);
+        console.log("--- 4. DỮ LIỆU ĐÃ PARSE XONG ---", prizes);
+        
         displayTable(prizes);
 
         let wins = [];
+        // Reset highlight cũ trước khi dò mới
+        document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+
         for(let k in prizes) {
             prizes[k].forEach(v => {
                 if(v.endsWith(num)) {
                     wins.push(k === 'db' ? 'Đặc Biệt' : 'Giải ' + k.toUpperCase());
-                    document.getElementById('g-'+k)?.classList.add('highlight');
+                    const cell = document.getElementById('g-' + k);
+                    if(cell) cell.classList.add('highlight');
                 }
             });
         }
@@ -284,23 +303,37 @@ async function checkResult() {
     } catch (e) {
         st.className = 'fail';
         st.innerText = e.message;
+        console.error("%c--- LỖI XẢY RA ---", "color: red;", e);
     } finally {
         btn.disabled = false;
     }
 }
-function parseData(txt) {
-    // Regex này sẽ tách dựa trên nhãn giải, chấp nhận cả ĐB: lẫn ĐB (không dấu :)
-    const parts = txt.replace(/\s+/g, ' ').split(/(ĐB:?|1:?|2:?|3:?|4:?|5:?|6:?|7:?|8:?)/i);
+
+    function parseData(txt) {
+    console.log("%c--- 4. ĐANG PHÂN TÍCH CHUỖI ---", "color: orange;");
+    
+    // Bước 1: Chuẩn hóa khoảng trắng và xóa các ký tự lạ
+    let cleanTxt = txt.replace(/\s+/g, ' ').trim();
+    
+    // Bước 2: Regex tách dựa trên nhãn giải. 
+    // Dùng :? để chấp nhận cả "ĐB:" và "ĐB"
+    const parts = cleanTxt.split(/(ĐB:?|1:?|2:?|3:?|4:?|5:?|6:?|7:?|8:?)/i);
+    
     let res = {};
-    for(let i=1; i<parts.length; i+=2) {
-        let label = parts[i].toLowerCase().replace(':','').trim();
+    for(let i = 1; i < parts.length; i += 2) {
+        // Chuẩn hóa key: "ĐB:" -> "db", "1:" -> "1"
+        let label = parts[i].toLowerCase().replace(':', '').trim();
         let key = (label === 'đb') ? 'db' : label;
-        // Lấy chuỗi số, lọc bỏ các ký tự không phải số nếu cần
-        res[key] = parts[i+1].trim().split(/[\s-]+/).filter(s => s.length >= 2);
+        
+        // Lấy giá trị sau nhãn, tách thành mảng các số (ví dụ: "123456 - 789012" -> ["123456", "789012"])
+        let values = parts[i+1].trim().split(/[\s-]+/).filter(s => s.length >= 2);
+        
+        res[key] = values;
     }
+    
+    console.log("Kết quả parse cuối cùng:", res);
     return res;
 }
-
     function displayTable(data) {
         document.getElementById('resultTable').style.display = 'table';
         for(let k in data) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dò Số Miền Nam v3.1 @ xuxukun </title>
+    <title>Dò Số Miền Nam @ xuxukun </title>
     <style>
         :root {
             --primary: #d32f2f;
@@ -218,122 +218,95 @@
         sel.innerHTML = list.map(s => `<option value="${s.c}">${s.n}</option>`).join('');
     }
 
-async function checkResult() {
-    const num = document.getElementById('numInput').value.trim();
-    const code = document.getElementById('stationSelect').value;
-    const dateRaw = document.getElementById('dateInput').value;
-    const btn = document.getElementById('btnAction');
-    const st = document.getElementById('status');
-    const table = document.getElementById('resultTable');
+    async function checkResult() {
+        const num = document.getElementById('numInput').value.trim();
+        const code = document.getElementById('stationSelect').value;
+        const dateRaw = document.getElementById('dateInput').value;
+        const btn = document.getElementById('btnAction');
+        const st = document.getElementById('status');
+        const table = document.getElementById('resultTable');
 
-    if(!num) return alert("Bạn chưa nhập số vé!");
+        if(!num) { alert("Bạn chưa nhập số vé!"); return; }
 
-    btn.disabled = true;
-    st.style.display = 'block';
-    st.className = 'loading';
-    st.innerText = "Đang kết nối server...";
-    table.style.display = 'none';
+        btn.disabled = true;
+        st.style.display = 'block';
+        st.className = 'loading';
+        st.innerText = "Đang lấy dữ liệu...";
+        table.style.display = 'none';
 
-    try {
-        const url = `https://xskt.com.vn/rss-feed/${SLUGS[code]}-${code}.rss`;
-        const proxy = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
-        
-        console.log("%c--- 1. ĐANG FETCH ---", "color: cyan; font-weight: bold;");
-        console.log("URL gốc:", url);
+        try {
+            const url = `https://xskt.com.vn/rss-feed/${SLUGS[code]}-${code}.rss`;
+            const proxy = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
+            
+            const resp = await fetch(proxy);
+            const xmlText = await resp.text();
+            
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(xmlText, "text/xml");
 
-        const resp = await fetch(proxy);
-        const rawText = await resp.text(); 
-        
-        // Soi dữ liệu thô ngay khi Proxy vừa trả về
-        console.log("%c--- 2. DỮ LIỆU THÔ TỪ PROXY ---", "color: yellow; font-weight: bold;");
-        console.log(rawText); 
-        
-        const [y, m, d] = dateRaw.split('-');
-        const dateFull = `${d}/${m}`; 
-        const dateShort = `${parseInt(d)}/${parseInt(m)}`;
-        console.log(`%c--- 3. TÌM KIẾM NGÀY: ${dateFull} hoặc ${dateShort} ---`, "color: magenta;");
+            // Thay vì dùng querySelectorAll (kén XML), hãy dùng getElementsByTagName (chuyên trị XML)
+            const items = xml.getElementsByTagName("item");
+            
+            //const items = xml.querySelectorAll("item");
 
-        // Regex thần thánh: Cắt lát từng thẻ <item>
-        const itemMatches = rawText.match(/<item>[\s\S]*?<\/item>/g);
-        
-        if (!itemMatches) {
-            console.error("LỖI: Không tìm thấy thẻ <item> nào trong rawText!");
-            throw new Error("Dữ liệu từ máy chủ không đúng cấu trúc RSS.");
-        }
+            const [y, m, d] = dateRaw.split('-');
+            const dateFind = `${d}/${m}`; 
 
-        let dataRaw = null;
-        for (const itemStr of itemMatches) {
-            const title = (itemStr.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || "";
-            console.log("Đang check Title:", title);
-
-            if (title.includes(dateFull) || title.includes(dateShort)) {
-                dataRaw = (itemStr.match(/<description>([\s\S]*?)<\/description>/) || [])[1] || "";
-                console.log("%c=> KHỚP NGÀY! Nội dung giải:", "color: green; font-weight: bold;", dataRaw);
-                break;
-            }
-        }
-
-        if(!dataRaw) throw new Error(`Không tìm thấy kết quả ngày ${dateFull}`);
-
-        // Xử lý sạch CDATA
-        dataRaw = dataRaw.replace(/<!\[CDATA\[|\]\]>/g, "").trim();
-
-        const prizes = parseData(dataRaw);
-        console.log("--- 4. DỮ LIỆU ĐÃ PARSE XONG ---", prizes);
-        
-        displayTable(prizes);
-
-        let wins = [];
-        // Reset highlight cũ trước khi dò mới
-        document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
-
-        for(let k in prizes) {
-            prizes[k].forEach(v => {
-                if(v.endsWith(num)) {
-                    wins.push(k === 'db' ? 'Đặc Biệt' : 'Giải ' + k.toUpperCase());
-                    const cell = document.getElementById('g-' + k);
-                    if(cell) cell.classList.add('highlight');
-                }
-            });
-        }
-
-        st.className = wins.length ? 'success' : 'fail';
-        st.innerHTML = wins.length ? `🎉 TRÚNG THƯỞNG!<br>${wins.join(', ')}` : "❌ KHÔNG TRÚNG GIẢI";
-
-    } catch (e) {
-        st.className = 'fail';
-        st.innerText = e.message;
-        console.error("%c--- LỖI XẢY RA ---", "color: red;", e);
-    } finally {
-        btn.disabled = false;
+           let dataRaw = null;
+Array.from(items).forEach(item => {
+    // Dùng getElementsByTagName cho cả title và description để đồng bộ
+    const title = item.getElementsByTagName("title")[0].textContent;
+    if (title.includes(dateFind)) {
+        dataRaw = item.getElementsByTagName("description")[0].textContent;
     }
-}
+});
+
+            if(!dataRaw) throw new Error("Chưa có kết quả " + dateFind);
+
+            const prizes = parseData(dataRaw);
+            displayTable(prizes);
+
+            let wins = [];
+            for(let k in prizes) {
+                prizes[k].forEach(v => {
+                    if(v.endsWith(num)) {
+                        wins.push(k === 'db' ? 'Đặc Biệt' : 'Giải ' + k.toUpperCase());
+                        document.getElementById('g-'+k).classList.add('highlight');
+                    }
+                });
+            }
+
+            st.className = wins.length ? 'success' : 'fail';
+            st.innerHTML = wins.length ? `🎉 TRÚNG THƯỞNG!<br>${wins.join(', ')}` : "❌ KHÔNG TRÚNG GIẢI";
+
+        } catch (e) {
+            st.className = 'fail';
+            st.innerText = e.message;
+        } finally {
+            btn.disabled = false;
+        }
+    }
 
     function parseData(txt) {
-    console.log("%c--- 4. ĐANG PHÂN TÍCH CHUỖI ---", "color: orange;");
-    
-    // Bước 1: Chuẩn hóa khoảng trắng và xóa các ký tự lạ
-    let cleanTxt = txt.replace(/\s+/g, ' ').trim();
-    
-    // Bước 2: Regex tách dựa trên nhãn giải. 
-    // Dùng :? để chấp nhận cả "ĐB:" và "ĐB"
-    const parts = cleanTxt.split(/(ĐB:?|1:?|2:?|3:?|4:?|5:?|6:?|7:?|8:?)/i);
-    
+    // Tách chuỗi dựa trên các nhãn giải trong RSS (ĐB:, 1:, 2:...)
+    const parts = txt.replace(/\s+/g, ' ').split(/(ĐB:|1:|2:|3:|4:|5:|6:|7:|8:)/);
     let res = {};
-    for(let i = 1; i < parts.length; i += 2) {
-        // Chuẩn hóa key: "ĐB:" -> "db", "1:" -> "1"
-        let label = parts[i].toLowerCase().replace(':', '').trim();
-        let key = (label === 'đb') ? 'db' : label;
-        
-        // Lấy giá trị sau nhãn, tách thành mảng các số (ví dụ: "123456 - 789012" -> ["123456", "789012"])
-        let values = parts[i+1].trim().split(/[\s-]+/).filter(s => s.length >= 2);
-        
-        res[key] = values;
-    }
     
-    console.log("Kết quả parse cuối cùng:", res);
+    for(let i = 1; i < parts.length; i += 2) {
+        let label = parts[i].replace(':', '').trim().toLowerCase();
+        
+        // --- BƯỚC QUY HOẠCH KEY ---
+        let key = label;
+        if (label === 'đb') {
+            key = 'db'; // Dù RSS viết ĐB hay đb, code mình vẫn dùng 'db'
+        }
+        
+        // Tách các con số sau mỗi label
+        res[key] = parts[i+1].trim().split(/[\s-]+/).filter(s => s.length > 1);
+    }
     return res;
 }
+
     function displayTable(data) {
         document.getElementById('resultTable').style.display = 'table';
         for(let k in data) {

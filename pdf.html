@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PDF Merger</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,7 +35,6 @@
     overflow-x: hidden;
   }
 
-  /* Ambient background */
   body::before {
     content: '';
     position: fixed;
@@ -46,58 +46,36 @@
     z-index: 0;
   }
 
-  .wrapper {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 760px;
-  }
+  .wrapper { position: relative; z-index: 1; width: 100%; max-width: 760px; }
 
-  /* Header */
-  header {
-    text-align: center;
-    margin-bottom: 48px;
-  }
+  header { text-align: center; margin-bottom: 48px; }
 
-  .logo-mark {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 20px;
     margin-bottom: 20px;
   }
 
-  .logo-icon {
-    width: 40px; height: 40px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-  }
-
-  h1 {
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1;
-  }
+  h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
 
   h1 span {
     background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
 
-  .subtitle {
-    color: var(--muted);
-    font-size: 0.95rem;
-    margin-top: 10px;
-    font-weight: 400;
-    font-family: 'DM Mono', monospace;
-    letter-spacing: 0.02em;
-  }
+  .subtitle { color: var(--muted); font-size: 0.95rem; margin-top: 10px; font-family: 'DM Mono', monospace; }
 
-  /* Drop Zone */
+  .format-pills { display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+
+  .pill { font-family: 'DM Mono', monospace; font-size: 0.7rem; font-weight: 500; padding: 4px 12px; border-radius: 20px; letter-spacing: 0.05em; }
+  .pill-pdf  { background: rgba(255,101,132,0.12); color: #ff6584; border: 1px solid rgba(255,101,132,0.25); }
+  .pill-jpg  { background: rgba(247,151,30,0.12);  color: #f7971e; border: 1px solid rgba(247,151,30,0.25); }
+  .pill-png  { background: rgba(67,233,123,0.1);   color: #43e97b; border: 1px solid rgba(67,233,123,0.2); }
+  .pill-heic { background: rgba(167,139,250,0.12); color: #a78bfa; border: 1px solid rgba(167,139,250,0.25); }
+
   .drop-zone {
     border: 2px dashed var(--border);
     border-radius: 20px;
@@ -112,443 +90,149 @@
   }
 
   .drop-zone::after {
-    content: '';
-    position: absolute;
-    inset: 0;
+    content: ''; position: absolute; inset: 0;
     background: radial-gradient(ellipse at center, rgba(108,99,255,0.06), transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s;
+    opacity: 0; transition: opacity 0.3s;
   }
 
-  .drop-zone:hover, .drop-zone.active {
-    border-color: var(--accent);
-    background: rgba(108,99,255,0.05);
-  }
-
+  .drop-zone:hover, .drop-zone.active { border-color: var(--accent); background: rgba(108,99,255,0.05); }
   .drop-zone:hover::after, .drop-zone.active::after { opacity: 1; }
+  .drop-zone.active { border-style: solid; transform: scale(1.01); }
 
-  .drop-zone.active {
-    border-style: solid;
-    transform: scale(1.01);
-  }
-
-  .drop-icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-    display: block;
-    filter: grayscale(0.3);
-    transition: transform 0.3s ease;
-  }
-
+  .drop-icon { font-size: 48px; margin-bottom: 16px; display: block; transition: transform 0.3s ease; }
   .drop-zone:hover .drop-icon { transform: translateY(-4px) scale(1.1); }
 
-  .drop-zone h3 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-
-  .drop-zone p {
-    color: var(--muted);
-    font-size: 0.85rem;
-    font-family: 'DM Mono', monospace;
-  }
+  .drop-zone h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 8px; }
+  .drop-zone p { color: var(--muted); font-size: 0.85rem; font-family: 'DM Mono', monospace; }
 
   .browse-btn {
-    display: inline-block;
-    margin-top: 18px;
-    padding: 10px 24px;
-    background: rgba(108,99,255,0.15);
-    border: 1px solid rgba(108,99,255,0.4);
-    border-radius: 40px;
-    color: var(--accent);
-    font-family: 'Syne', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.03em;
+    display: inline-block; margin-top: 18px; padding: 10px 24px;
+    background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.4);
+    border-radius: 40px; color: var(--accent);
+    font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; letter-spacing: 0.03em;
   }
-
-  .browse-btn:hover {
-    background: rgba(108,99,255,0.25);
-    border-color: var(--accent);
-  }
-
+  .browse-btn:hover { background: rgba(108,99,255,0.25); border-color: var(--accent); }
   #file-input { display: none; }
 
-  /* Files List */
-  .files-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-  }
+  .files-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .files-label { font-size: 0.8rem; font-family: 'DM Mono', monospace; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .file-count { background: rgba(108,99,255,0.15); color: var(--accent); font-family: 'DM Mono', monospace; font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(108,99,255,0.25); }
 
-  .files-label {
-    font-size: 0.8rem;
-    font-family: 'DM Mono', monospace;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
+  .files-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
 
-  .file-count {
-    background: rgba(108,99,255,0.15);
-    color: var(--accent);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    padding: 3px 10px;
-    border-radius: 20px;
-    border: 1px solid rgba(108,99,255,0.25);
-  }
-
-  .files-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 32px;
-    min-height: 10px;
-  }
-
-  /* File Item */
   .file-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 18px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    cursor: grab;
-    transition: all 0.2s ease;
-    position: relative;
-    user-select: none;
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 18px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    cursor: grab; transition: all 0.2s ease; user-select: none;
+    animation: fadeUp 0.22s ease forwards;
   }
-
   .file-item:active { cursor: grabbing; }
+  .file-item.dragging { opacity: 0.35; border-color: var(--accent); transform: scale(0.98); }
+  .file-item.drag-over { border-color: var(--accent); background: rgba(108,99,255,0.08); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(108,99,255,0.2); }
+  .file-item:hover { border-color: rgba(108,99,255,0.35); background: var(--surface2); }
 
-  .file-item.dragging {
-    opacity: 0.4;
-    border-color: var(--accent);
-    transform: scale(0.98);
-  }
+  .drag-handle { color: var(--muted); cursor: grab; flex-shrink: 0; display: flex; flex-direction: column; gap: 3px; padding: 2px; }
+  .drag-handle span { display: block; width: 18px; height: 2px; background: currentColor; border-radius: 2px; }
 
-  .file-item.drag-over {
-    border-color: var(--accent);
-    background: rgba(108,99,255,0.08);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(108,99,255,0.2);
-  }
-
-  .file-item:hover {
-    border-color: rgba(108,99,255,0.35);
-    background: var(--surface2);
-  }
-
-  .drag-handle {
-    color: var(--muted);
-    font-size: 16px;
-    cursor: grab;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    padding: 2px;
-  }
-
-  .drag-handle span {
-    display: block;
-    width: 18px;
-    height: 2px;
-    background: currentColor;
-    border-radius: 2px;
-  }
-
-  .file-order {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--muted);
-    min-width: 22px;
-    text-align: center;
-    font-weight: 500;
-  }
+  .file-order { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--muted); min-width: 22px; text-align: center; font-weight: 500; }
 
   .file-icon {
-    width: 36px; height: 42px;
-    background: linear-gradient(135deg, #ff6584, #ff4757);
-    border-radius: 6px 8px 8px 6px;
+    width: 38px; height: 44px; border-radius: 7px 9px 9px 7px;
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    font-size: 11px;
-    font-weight: 700;
-    color: white;
-    letter-spacing: 0.02em;
-    position: relative;
+    flex-shrink: 0; font-size: 10px; font-weight: 700; color: white;
+    letter-spacing: 0.02em; position: relative; overflow: hidden;
   }
+  .file-icon::before { content: ''; position: absolute; top: 0; right: 0; width: 10px; height: 10px; background: rgba(255,255,255,0.25); border-radius: 0 7px 0 7px; }
+  .file-icon.type-pdf  { background: linear-gradient(135deg, #ff6584, #ff4757); }
+  .file-icon.type-jpg  { background: linear-gradient(135deg, #f7971e, #f0671a); }
+  .file-icon.type-png  { background: linear-gradient(135deg, #43e97b, #1fa65c); }
+  .file-icon.type-heic { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
+  .file-icon.has-thumb::before { display: none; }
+  .file-icon.has-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 7px 9px 9px 7px; }
 
-  .file-icon::before {
-    content: '';
-    position: absolute;
-    top: 0; right: 0;
-    width: 10px; height: 10px;
-    background: rgba(255,255,255,0.25);
-    border-radius: 0 6px 0 6px;
-  }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+  .file-meta { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--muted); display: flex; align-items: center; gap: 8px; }
 
-  .file-info {
-    flex: 1;
-    min-width: 0;
-  }
+  .converting-badge { font-size: 0.68rem; padding: 2px 8px; background: rgba(167,139,250,0.15); color: #a78bfa; border-radius: 10px; border: 1px solid rgba(167,139,250,0.3); animation: pulse 1.2s ease-in-out infinite; }
 
-  .file-name {
-    font-size: 0.9rem;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-bottom: 3px;
-  }
+  .file-badge { font-family: 'DM Mono', monospace; font-size: 0.72rem; flex-shrink: 0; padding: 3px 10px; border-radius: 20px; }
+  .file-badge.type-pdf  { background: rgba(255,101,132,0.1); color: #ff9eb5; border: 1px solid rgba(255,101,132,0.2); }
+  .file-badge.type-jpg  { background: rgba(247,151,30,0.1);  color: #fabb5e; border: 1px solid rgba(247,151,30,0.2); }
+  .file-badge.type-png  { background: rgba(67,233,123,0.1);  color: #43e97b; border: 1px solid rgba(67,233,123,0.2); }
+  .file-badge.type-heic { background: rgba(167,139,250,0.1); color: #a78bfa; border: 1px solid rgba(167,139,250,0.2); }
 
-  .file-meta {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    color: var(--muted);
-  }
+  .file-remove { width: 28px; height: 28px; border: 1px solid transparent; background: rgba(255,71,87,0.1); color: var(--danger); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; transition: all 0.2s; }
+  .file-remove:hover { background: rgba(255,71,87,0.2); border-color: rgba(255,71,87,0.3); }
 
-  .file-pages {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--accent3);
-    flex-shrink: 0;
-    padding: 3px 10px;
-    background: rgba(67,233,123,0.1);
-    border-radius: 20px;
-    border: 1px solid rgba(67,233,123,0.2);
-  }
+  .hint-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; padding: 10px 16px; background: rgba(108,99,255,0.06); border: 1px solid rgba(108,99,255,0.15); border-radius: 10px; }
+  .hint-bar span { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--muted); }
 
-  .file-remove {
-    width: 28px; height: 28px;
-    border: none;
-    background: rgba(255,71,87,0.1);
-    color: var(--danger);
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    font-size: 14px;
-    transition: all 0.2s;
-    border: 1px solid transparent;
-  }
-
-  .file-remove:hover {
-    background: rgba(255,71,87,0.2);
-    border-color: rgba(255,71,87,0.3);
-  }
-
-  /* Empty state */
-  .empty-state {
-    text-align: center;
-    padding: 20px;
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.8rem;
-    display: none;
-  }
-
-  /* Actions */
-  .actions {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
+  .actions { display: flex; gap: 12px; align-items: center; }
 
   .btn-merge {
-    flex: 1;
-    padding: 16px 32px;
+    flex: 1; padding: 16px 32px;
     background: linear-gradient(135deg, var(--accent), #8b5cf6);
-    border: none;
-    border-radius: 14px;
-    color: white;
-    font-family: 'Syne', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    letter-spacing: 0.02em;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+    border: none; border-radius: 14px; color: white;
+    font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: all 0.25s ease; letter-spacing: 0.02em;
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
   }
-
-  .btn-merge::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
+  .btn-merge::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent); opacity: 0; transition: opacity 0.2s; }
   .btn-merge:hover::before { opacity: 1; }
-
-  .btn-merge:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(108,99,255,0.4);
-  }
-
+  .btn-merge:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(108,99,255,0.4); }
   .btn-merge:active { transform: translateY(0); }
+  .btn-merge:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
-  .btn-merge:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
+  .btn-clear { padding: 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; color: var(--muted); font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-clear:hover { background: var(--surface2); border-color: var(--danger); color: var(--danger); }
 
-  .btn-clear {
-    padding: 16px 20px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    color: var(--muted);
-    font-family: 'Syne', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
+  .progress-wrap { margin-top: 20px; display: none; }
+  .progress-bar-bg { height: 4px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 10px; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 4px; transition: width 0.3s ease; width: 0%; }
+  .progress-text { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--muted); text-align: center; }
 
-  .btn-clear:hover {
-    background: var(--surface2);
-    border-color: var(--danger);
-    color: var(--danger);
-  }
-
-  /* Progress */
-  .progress-wrap {
-    margin-top: 20px;
-    display: none;
-  }
-
-  .progress-bar-bg {
-    height: 4px;
-    background: var(--surface2);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 10px;
-  }
-
-  .progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    border-radius: 4px;
-    transition: width 0.3s ease;
-    width: 0%;
-  }
-
-  .progress-text {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--muted);
-    text-align: center;
-  }
-
-  /* Success banner */
-  .success-banner {
-    display: none;
-    margin-top: 20px;
-    padding: 16px 20px;
-    background: rgba(67,233,123,0.08);
-    border: 1px solid rgba(67,233,123,0.25);
-    border-radius: 14px;
-    align-items: center;
-    gap: 14px;
-  }
-
+  .success-banner { display: none; margin-top: 20px; padding: 16px 20px; background: rgba(67,233,123,0.08); border: 1px solid rgba(67,233,123,0.25); border-radius: 14px; align-items: center; gap: 14px; }
   .success-icon { font-size: 22px; }
-
-  .success-text { flex: 1; }
   .success-text strong { display: block; font-size: 0.9rem; color: var(--accent3); margin-bottom: 2px; }
   .success-text span { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--muted); }
 
-  /* Hint bar */
-  .hint-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 24px;
-    padding: 10px 16px;
-    background: rgba(108,99,255,0.06);
-    border: 1px solid rgba(108,99,255,0.15);
-    border-radius: 10px;
-  }
-
-  .hint-bar span {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
-
-  /* Spinner */
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner {
-    width: 18px; height: 18px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    display: none;
-  }
-
-  /* Fade-in animation */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .file-item {
-    animation: fadeUp 0.25s ease forwards;
-  }
-
-  /* Tooltip for order change */
-  .reorder-hint {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--muted);
-    text-align: center;
-    margin-top: 8px;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
+  .reorder-hint { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted); text-align: center; margin-top: 8px; opacity: 0; transition: opacity 0.3s; }
   .reorder-hint.show { opacity: 1; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
+
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
 
 <div class="wrapper">
   <header>
-    <div class="logo-mark">
-      <div class="logo-icon">📄</div>
-    </div>
+    <div class="logo-icon">📄</div>
     <h1>PDF <span>Merger</span></h1>
     <p class="subtitle">// kéo thả → sắp xếp → ghép → tải xuống</p>
+    <div class="format-pills">
+      <span class="pill pill-pdf">PDF</span>
+      <span class="pill pill-jpg">JPG / JPEG</span>
+      <span class="pill pill-png">PNG</span>
+      <span class="pill pill-heic">HEIC / HEIF</span>
+    </div>
   </header>
 
-  <!-- Drop Zone -->
   <div class="drop-zone" id="drop-zone">
     <span class="drop-icon">🗂️</span>
-    <h3>Kéo & thả file PDF vào đây</h3>
-    <p>hoặc chọn file từ máy tính</p>
-    <label class="browse-btn" for="file-input">Chọn file PDF</label>
-    <input type="file" id="file-input" accept=".pdf" multiple>
+    <h3>Kéo & thả file vào đây</h3>
+    <p>PDF, JPG, PNG, HEIC — trộn lẫn thoải mái</p>
+    <label class="browse-btn" for="file-input">Chọn file</label>
+    <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,image/heic,image/heif" multiple>
   </div>
 
-  <!-- Files section -->
   <div id="files-section" style="display:none;">
     <div class="files-header">
       <span class="files-label">Danh sách file</span>
@@ -557,7 +241,7 @@
 
     <div class="hint-bar">
       <span>💡</span>
-      <span>Kéo thả để sắp xếp thứ tự — thứ tự hiển thị = thứ tự ghép</span>
+      <span>Kéo thả để sắp xếp — ảnh sẽ tự convert thành PDF page khi ghép</span>
     </div>
 
     <div class="files-list" id="files-list"></div>
@@ -572,9 +256,7 @@
     </div>
 
     <div class="progress-wrap" id="progress-wrap">
-      <div class="progress-bar-bg">
-        <div class="progress-bar" id="progress-bar"></div>
-      </div>
+      <div class="progress-bar-bg"><div class="progress-bar" id="progress-bar"></div></div>
       <p class="progress-text" id="progress-text">Đang xử lý...</p>
     </div>
 
@@ -589,107 +271,130 @@
 </div>
 
 <script>
-const dropZone = document.getElementById('drop-zone');
-const fileInput = document.getElementById('file-input');
-const filesList = document.getElementById('files-list');
+const dropZone     = document.getElementById('drop-zone');
+const fileInput    = document.getElementById('file-input');
+const filesList    = document.getElementById('files-list');
 const filesSection = document.getElementById('files-section');
-const fileCount = document.getElementById('file-count');
-const mergeBtn = document.getElementById('merge-btn');
-const clearBtn = document.getElementById('clear-btn');
+const fileCount    = document.getElementById('file-count');
+const mergeBtn     = document.getElementById('merge-btn');
+const clearBtn     = document.getElementById('clear-btn');
 const progressWrap = document.getElementById('progress-wrap');
-const progressBar = document.getElementById('progress-bar');
+const progressBar  = document.getElementById('progress-bar');
 const progressText = document.getElementById('progress-text');
-const successBanner = document.getElementById('success-banner');
-const successMeta = document.getElementById('success-meta');
-const reorderHint = document.getElementById('reorder-hint');
-const spinner = document.getElementById('spinner');
-const mergeLabel = document.getElementById('merge-label');
+const successBanner= document.getElementById('success-banner');
+const successMeta  = document.getElementById('success-meta');
+const reorderHint  = document.getElementById('reorder-hint');
+const spinner      = document.getElementById('spinner');
+const mergeLabel   = document.getElementById('merge-label');
 
-let files = []; // { id, file, name, size, pages }
+let files = [];
 let dragSrcIndex = null;
 let reorderTimer = null;
 
-// ---- Drop Zone ----
-dropZone.addEventListener('dragover', e => {
-  e.preventDefault();
-  dropZone.classList.add('active');
-});
+// ── File type ─────────────────────────────────────────────────────────────
+function getType(file) {
+  const n = file.name.toLowerCase(), m = file.type.toLowerCase();
+  if (m === 'application/pdf' || n.endsWith('.pdf')) return 'pdf';
+  if (m === 'image/heic' || m === 'image/heif' || n.endsWith('.heic') || n.endsWith('.heif')) return 'heic';
+  if (m === 'image/png'  || n.endsWith('.png'))  return 'png';
+  if (m === 'image/jpeg' || n.endsWith('.jpg') || n.endsWith('.jpeg')) return 'jpg';
+  return null;
+}
 
+// ── Drop zone ─────────────────────────────────────────────────────────────
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('active'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('active'));
-
 dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('active');
-  const pdfs = [...e.dataTransfer.files].filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
-  if (pdfs.length) addFiles(pdfs);
+  e.preventDefault(); dropZone.classList.remove('active');
+  addFiles([...e.dataTransfer.files].filter(f => getType(f)));
 });
-
 fileInput.addEventListener('change', () => {
-  if (fileInput.files.length) addFiles([...fileInput.files]);
+  addFiles([...fileInput.files].filter(f => getType(f)));
   fileInput.value = '';
 });
 
-// ---- Add Files ----
-async function addFiles(newFiles) {
+// ── Add files ─────────────────────────────────────────────────────────────
+function addFiles(newFiles) {
   for (const f of newFiles) {
-    const id = Date.now() + Math.random();
-    const entry = { id, file: f, name: f.name, size: f.size, pages: null };
+    const entry = { id: Date.now() + Math.random(), file: f, name: f.name, size: f.size, type: getType(f), pages: null, thumb: null };
     files.push(entry);
-    // Count pages async
-    countPages(entry);
+    loadPreview(entry);
   }
   render();
 }
 
-async function countPages(entry) {
+async function loadPreview(entry) {
   try {
-    const buf = await entry.file.arrayBuffer();
-    const pdf = await PDFLib.PDFDocument.load(buf, { ignoreEncryption: true });
-    entry.pages = pdf.getPageCount();
-    // Update UI
-    const el = document.querySelector(`[data-id="${entry.id}"] .file-pages`);
-    if (el) el.textContent = `${entry.pages} trang`;
-  } catch { /* ignore */ }
+    if (entry.type === 'pdf') {
+      const buf = await entry.file.arrayBuffer();
+      const pdf = await PDFLib.PDFDocument.load(buf, { ignoreEncryption: true });
+      entry.pages = pdf.getPageCount();
+    } else if (entry.type === 'heic') {
+      const out = await heic2any({ blob: entry.file, toType: 'image/jpeg', quality: 0.7 });
+      entry.thumb = URL.createObjectURL(Array.isArray(out) ? out[0] : out);
+      entry.pages = 1;
+    } else {
+      entry.thumb = URL.createObjectURL(entry.file);
+      entry.pages = 1;
+    }
+  } catch(e) { entry.pages = entry.type === 'pdf' ? '?' : 1; }
+
+  // Patch live DOM without full re-render
+  const el = document.querySelector(`[data-id="${entry.id}"]`);
+  if (!el) return;
+  if (entry.thumb) {
+    const icon = el.querySelector('.file-icon');
+    icon.classList.add('has-thumb');
+    icon.innerHTML = `<img src="${entry.thumb}" alt="">`;
+  }
+  const badge = el.querySelector('.file-badge');
+  badge.textContent = entry.type === 'pdf' ? `${entry.pages} trang` : '1 trang';
+  const conv = el.querySelector('.converting-badge');
+  if (conv) conv.remove();
 }
 
-// ---- Render ----
+// ── Render ────────────────────────────────────────────────────────────────
 function render() {
   filesList.innerHTML = '';
   filesSection.style.display = files.length ? 'block' : 'none';
   fileCount.textContent = `${files.length} file`;
   successBanner.style.display = 'none';
 
-  files.forEach((entry, index) => {
+  files.forEach((e, i) => {
+    const isConverting = e.type === 'heic' && e.thumb === null;
+    const iconHtml = e.thumb
+      ? `<img src="${e.thumb}" alt="">`
+      : e.type.toUpperCase();
+    const convBadge = isConverting ? `<span class="converting-badge">converting…</span>` : '';
+    const badgeText = e.type === 'pdf'
+      ? (e.pages !== null ? `${e.pages} trang` : '...')
+      : (e.pages !== null ? '1 trang' : '...');
+
     const item = document.createElement('div');
     item.className = 'file-item';
     item.draggable = true;
-    item.dataset.id = entry.id;
-    item.dataset.index = index;
+    item.dataset.id = e.id;
+    item.dataset.index = i;
     item.innerHTML = `
       <div class="drag-handle"><span></span><span></span><span></span></div>
-      <span class="file-order">${String(index + 1).padStart(2, '0')}</span>
-      <div class="file-icon">PDF</div>
+      <span class="file-order">${String(i+1).padStart(2,'0')}</span>
+      <div class="file-icon type-${e.type}${e.thumb ? ' has-thumb' : ''}">${iconHtml}</div>
       <div class="file-info">
-        <div class="file-name">${escHtml(entry.name)}</div>
-        <div class="file-meta">${formatSize(entry.size)}</div>
+        <div class="file-name">${escHtml(e.name)}</div>
+        <div class="file-meta">${formatSize(e.size)}${convBadge}</div>
       </div>
-      <span class="file-pages">${entry.pages !== null ? entry.pages + ' trang' : '...'}</span>
-      <button class="file-remove" data-id="${entry.id}" title="Xóa">✕</button>
+      <span class="file-badge type-${e.type}">${badgeText}</span>
+      <button class="file-remove" title="Xóa">✕</button>
     `;
 
-    // Drag events
     item.addEventListener('dragstart', onDragStart);
-    item.addEventListener('dragover', onDragOver);
+    item.addEventListener('dragover',  onDragOver);
     item.addEventListener('dragleave', onDragLeave);
-    item.addEventListener('drop', onDrop);
-    item.addEventListener('dragend', onDragEnd);
-
-    // Remove button
-    item.querySelector('.file-remove').addEventListener('click', e => {
-      e.stopPropagation();
-      removeFile(entry.id);
+    item.addEventListener('drop',      onDrop);
+    item.addEventListener('dragend',   onDragEnd);
+    item.querySelector('.file-remove').addEventListener('click', ev => {
+      ev.stopPropagation(); removeFile(e.id);
     });
-
     filesList.appendChild(item);
   });
 
@@ -697,101 +402,112 @@ function render() {
 }
 
 function removeFile(id) {
+  const e = files.find(f => f.id === id);
+  if (e?.thumb) URL.revokeObjectURL(e.thumb);
   files = files.filter(f => f.id !== id);
   render();
 }
 
-// ---- Drag to reorder ----
+// ── Drag reorder ──────────────────────────────────────────────────────────
 function onDragStart(e) {
   dragSrcIndex = parseInt(this.dataset.index);
   this.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
   e.dataTransfer.setData('text/plain', dragSrcIndex);
 }
-
 function onDragOver(e) {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
+  e.preventDefault(); e.dataTransfer.dropEffect = 'move';
   document.querySelectorAll('.file-item').forEach(el => el.classList.remove('drag-over'));
   this.classList.add('drag-over');
 }
-
-function onDragLeave() {
-  this.classList.remove('drag-over');
-}
-
+function onDragLeave() { this.classList.remove('drag-over'); }
 function onDrop(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  const targetIndex = parseInt(this.dataset.index);
-  if (dragSrcIndex !== null && dragSrcIndex !== targetIndex) {
-    const moved = files.splice(dragSrcIndex, 1)[0];
-    files.splice(targetIndex, 0, moved);
+  e.preventDefault(); e.stopPropagation();
+  const to = parseInt(this.dataset.index);
+  if (dragSrcIndex !== null && dragSrcIndex !== to) {
+    files.splice(to, 0, files.splice(dragSrcIndex, 1)[0]);
     render();
-    showReorderHint();
+    reorderHint.classList.add('show');
+    clearTimeout(reorderTimer);
+    reorderTimer = setTimeout(() => reorderHint.classList.remove('show'), 2000);
   }
 }
-
 function onDragEnd() {
-  document.querySelectorAll('.file-item').forEach(el => {
-    el.classList.remove('dragging', 'drag-over');
-  });
+  document.querySelectorAll('.file-item').forEach(el => el.classList.remove('dragging','drag-over'));
   dragSrcIndex = null;
 }
 
-function showReorderHint() {
-  reorderHint.classList.add('show');
-  clearTimeout(reorderTimer);
-  reorderTimer = setTimeout(() => reorderHint.classList.remove('show'), 2000);
+// ── Image → PDF page ──────────────────────────────────────────────────────
+async function addImagePage(merged, bytes, mime) {
+  const img = mime === 'image/jpeg'
+    ? await merged.embedJpg(bytes)
+    : await merged.embedPng(bytes);
+  const { width: w, height: h } = img;
+  const maxW = 595, maxH = 842;
+  const s = Math.min(maxW / w, maxH / h, 1);
+  const page = merged.addPage([w * s, h * s]);
+  page.drawImage(img, { x: 0, y: 0, width: w * s, height: h * s });
 }
 
-// ---- Merge ----
-mergeBtn.addEventListener('click', mergePDFs);
-
-async function mergePDFs() {
+// ── Merge ─────────────────────────────────────────────────────────────────
+mergeBtn.addEventListener('click', async () => {
   if (!files.length) return;
   mergeBtn.disabled = true;
   spinner.style.display = 'block';
   mergeLabel.textContent = 'Đang ghép...';
   progressWrap.style.display = 'block';
   successBanner.style.display = 'none';
-  setProgress(0, 'Đang khởi tạo...');
+  progressText.style.color = '';
+  setProgress(0, 'Khởi tạo…');
 
   try {
     const merged = await PDFLib.PDFDocument.create();
     let totalPages = 0;
 
     for (let i = 0; i < files.length; i++) {
-      const entry = files[i];
-      setProgress(Math.round((i / files.length) * 85), `Đang xử lý: ${entry.name}`);
-      const buf = await entry.file.arrayBuffer();
-      const pdf = await PDFLib.PDFDocument.load(buf, { ignoreEncryption: true });
-      const pages = await merged.copyPages(pdf, pdf.getPageIndices());
-      pages.forEach(p => merged.addPage(p));
-      totalPages += pages.length;
+      const e = files[i];
+      setProgress(Math.round((i / files.length) * 88), `[${i+1}/${files.length}] ${e.name}`);
+
+      if (e.type === 'pdf') {
+        const buf = await e.file.arrayBuffer();
+        const pdf = await PDFLib.PDFDocument.load(buf, { ignoreEncryption: true });
+        const pages = await merged.copyPages(pdf, pdf.getPageIndices());
+        pages.forEach(p => merged.addPage(p));
+        totalPages += pages.length;
+
+      } else if (e.type === 'heic') {
+        setProgress(Math.round((i / files.length) * 88), `[${i+1}/${files.length}] Converting HEIC…`);
+        const out = await heic2any({ blob: e.file, toType: 'image/jpeg', quality: 0.92 });
+        const blob = Array.isArray(out) ? out[0] : out;
+        await addImagePage(merged, await blob.arrayBuffer(), 'image/jpeg');
+        totalPages++;
+
+      } else if (e.type === 'jpg') {
+        await addImagePage(merged, await e.file.arrayBuffer(), 'image/jpeg');
+        totalPages++;
+
+      } else if (e.type === 'png') {
+        await addImagePage(merged, await e.file.arrayBuffer(), 'image/png');
+        totalPages++;
+      }
     }
 
-    setProgress(95, 'Đang tạo file...');
+    setProgress(95, 'Đang tạo file…');
     const bytes = await merged.save();
-    setProgress(100, 'Hoàn tất!');
+    setProgress(100, 'Hoàn tất! 🎉');
 
-    // Download
     const blob = new Blob([bytes], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const date = new Date();
-    const stamp = `${date.getFullYear()}${String(date.getMonth()+1).padStart(2,'0')}${String(date.getDate()).padStart(2,'0')}_${String(date.getHours()).padStart(2,'0')}${String(date.getMinutes()).padStart(2,'0')}`;
-    a.download = `merged_${stamp}.pdf`;
+    const d = new Date();
+    a.download = `merged_${d.getFullYear()}${p2(d.getMonth()+1)}${p2(d.getDate())}_${p2(d.getHours())}${p2(d.getMinutes())}.pdf`;
     a.click();
     URL.revokeObjectURL(url);
 
     successBanner.style.display = 'flex';
-    successMeta.textContent = `${files.length} file • ${totalPages} trang • ${formatSize(bytes.byteLength)}`;
-
-    setTimeout(() => {
-      progressWrap.style.display = 'none';
-    }, 2000);
+    successMeta.textContent = `${files.length} file → ${totalPages} trang • ${formatSize(bytes.byteLength)}`;
+    setTimeout(() => { progressWrap.style.display = 'none'; }, 2500);
 
   } catch (err) {
     console.error(err);
@@ -802,31 +518,20 @@ async function mergePDFs() {
   mergeBtn.disabled = false;
   spinner.style.display = 'none';
   mergeLabel.textContent = '⚡ Ghép PDF';
-}
+});
 
-function setProgress(pct, msg) {
-  progressBar.style.width = pct + '%';
-  progressText.textContent = msg;
-}
-
-// ---- Clear ----
 clearBtn.addEventListener('click', () => {
+  files.forEach(e => { if (e.thumb) URL.revokeObjectURL(e.thumb); });
   files = [];
   render();
   progressWrap.style.display = 'none';
   successBanner.style.display = 'none';
 });
 
-// ---- Helpers ----
-function formatSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / 1024 / 1024).toFixed(2) + ' MB';
-}
-
-function escHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function setProgress(pct, msg) { progressBar.style.width = pct + '%'; progressText.textContent = msg; }
+function formatSize(b) { return b < 1024 ? b+' B' : b < 1048576 ? (b/1024).toFixed(1)+' KB' : (b/1048576).toFixed(2)+' MB'; }
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function p2(n) { return String(n).padStart(2,'0'); }
 </script>
 </body>
 </html>

@@ -713,6 +713,50 @@
         // Initialize
         initLandscape();
         loadLogo();
+
+        // Xử lý kéo thả (Drag & Drop)
+const uploadBox = document.querySelector('.upload-box');
+
+// Ngăn trình duyệt mở ảnh mặc định khi kéo vào
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    uploadBox.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    }, false);
+});
+
+// Hiệu ứng khi kéo ảnh đè lên ô upload
+uploadBox.addEventListener('dragover', () => {
+    uploadBox.style.borderColor = '#3b82f6';
+    uploadBox.style.background = '#eff6ff';
+});
+
+uploadBox.addEventListener('dragleave', () => {
+    uploadBox.style.borderColor = '#cbd5e1';
+    uploadBox.style.background = 'transparent';
+});
+
+// Xử lý khi thả chuột (Drop)
+uploadBox.addEventListener('drop', (e) => {
+    uploadBox.style.borderColor = '#cbd5e1';
+    uploadBox.style.background = 'transparent';
+    
+    const dt = e.dataTransfer;
+    const file = dt.files[0];
+
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                currentImage = img;
+                renderAll();
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
     </script>
 </body>
 </html>

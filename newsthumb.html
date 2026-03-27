@@ -665,6 +665,10 @@
                 const logoHeight = 55;
                 const logoWidth = (logoImage.width / logoImage.height) * logoHeight;
                 ctx.drawImage(logoImage, canvas.width - logoWidth - 60, canvas.height - 80, logoWidth, logoHeight);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '32px Arial'; 
+                ctx.fillText('Link in comments', 60, canvas.height - 80 + (logoHeight / 1.5));
             }
         };
 

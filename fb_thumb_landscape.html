@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>News Thumbnail Pro - Final Fixed</title>
+    <title>News Thumbnail Pro - V2 Optimized</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
@@ -13,10 +13,12 @@
         .serif { font-family: 'Merriweather', serif; }
         .preview-container { width: 100%; max-width: 800px; margin: 0 auto; border: 2px solid #334155; background: #1e293b; position: relative; overflow: hidden; display: none; }
         .canvas-area { width: 1200px; height: 630px; position: relative; transform-origin: top left; background: #000; overflow: hidden; }
-        .movable-img { position: absolute; cursor: move; user-select: none; min-width: 100%; min-height: 100%; }
+        .movable-img { position: absolute; cursor: move; user-select: none; }
         .drop-zone { border: 2px dashed #475569; transition: all 0.3s; }
         .drop-zone.dragover { background: #334155; border-color: #38bdf8; }
         .logo-box { pointer-events: none; z-index: 50; transition: opacity 0.2s; }
+        /* Tối ưu shadow cho text để không bị chìm trên nền sáng */
+        .text-shadow-heavy { text-shadow: 2px 2px 10px rgba(0,0,0,0.8), 0px 0px 20px rgba(0,0,0,0.4); }
     </style>
 </head>
 <body class="p-4 md:p-10">
@@ -28,7 +30,6 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
             <div class="lg:col-span-4 space-y-4">
                 <div id="dropZone" class="drop-zone p-5 rounded-xl text-center cursor-pointer hover:bg-slate-800">
                     <input type="file" id="imageInput" class="hidden" accept="image/*">
@@ -36,6 +37,11 @@
                 </div>
 
                 <div class="space-y-4 bg-slate-800 p-5 rounded-xl shadow-2xl border border-slate-700">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">Phóng to ảnh (Zoom)</label>
+                        <input type="range" id="zoomRange" min="1" max="3" step="0.01" value="1" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    </div>
+
                     <div class="flex items-center gap-2 pb-2 border-b border-slate-700">
                         <input type="checkbox" id="logoToggle" checked class="w-4 h-4 accent-blue-500 cursor-pointer">
                         <label for="logoToggle" class="text-xs font-bold text-slate-300 cursor-pointer uppercase">Hiển thị Logo</label>
@@ -48,8 +54,7 @@
 
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Mô tả (Short Description)</label>
-                        <textarea id="descInput" rows="2" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none focus:ring-1 focus:ring-blue-500" placeholder="Nhập mô tả ngắn gọn...">Link to article in comments.
-\nMore news: https://news.tuoitre.vn</textarea>
+                        <textarea id="descInput" rows="3" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none focus:ring-1 focus:ring-blue-500" placeholder="Nhập mô tả..."></textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -96,7 +101,7 @@
                         <img id="movableImg" src="" class="movable-img" draggable="false">
                         <div id="styleContent" class="absolute inset-0 w-full h-full pointer-events-none"></div>
                         <div id="logoBox" class="logo-box absolute top-6 right-8">
-                            <img src="https://tienxu04.github.io/xuxucode/logo_ttn.png" class="h-16 drop-shadow-lg">
+                            <img src="https://tienxu04.github.io/xuxucode/logo_ttn.png" class="h-16 drop-shadow-lg" crossorigin="anonymous">
                         </div>
                     </div>
                 </div>
@@ -123,12 +128,14 @@
         const descInput = document.getElementById('descInput');
         const colorPicker = document.getElementById('colorPicker');
         const styleSelect = document.getElementById('styleSelect');
+        const zoomRange = document.getElementById('zoomRange');
 
         let isDragging = false;
         let startX, startY, imgX = 0, imgY = 0;
+        let currentScale = 1;
+        let baseW = 0, baseH = 0;
         let currentMode = 'editing';
 
-        // 1. UI Logic
         logoToggle.addEventListener('change', () => logoBox.style.opacity = logoToggle.checked ? "1" : "0");
         tagSelect.addEventListener('change', () => {
             customTagWrap.style.display = tagSelect.value === 'OTHER' ? 'block' : 'none';
@@ -140,7 +147,6 @@
             return tagSelect.value;
         }
 
-        // 2. Upload & Fit
         dropZone.onclick = () => imageInput.click();
         dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
         dropZone.ondrop = (e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); };
@@ -167,37 +173,63 @@
             const canvasW = 1200, canvasH = 630;
             const imgW = movableImg.naturalWidth, imgH = movableImg.naturalHeight;
             const canvasRatio = canvasW / canvasH, imgRatio = imgW / imgH;
+            
             if (imgRatio > canvasRatio) {
-                movableImg.style.height = canvasH + 'px'; movableImg.style.width = 'auto';
-                imgX = -( (imgW * (canvasH / imgH)) - canvasW ) / 2; imgY = 0;
+                baseH = canvasH; baseW = imgW * (canvasH / imgH);
+                imgX = -(baseW - canvasW) / 2; imgY = 0;
             } else {
-                movableImg.style.width = canvasW + 'px'; movableImg.style.height = 'auto';
-                imgX = 0; imgY = -( (imgH * (canvasW / imgW)) - canvasH ) / 2;
+                baseW = canvasW; baseH = imgH * (canvasW / imgW);
+                imgX = 0; imgY = -(baseH - canvasH) / 2;
             }
-            movableImg.style.left = imgX + 'px'; movableImg.style.top = imgY + 'px';
+            zoomRange.value = 1;
+            applyTransform();
         }
 
-        // 3. Drag reposition
-        mainCanvas.onmousedown = (e) => {
+        function applyTransform() {
+            const scale = parseFloat(zoomRange.value);
+            movableImg.style.width = (baseW * scale) + 'px';
+            movableImg.style.height = (baseH * scale) + 'px';
+            movableImg.style.left = imgX + 'px';
+            movableImg.style.top = imgY + 'px';
+        }
+
+        zoomRange.oninput = applyTransform;
+
+        // Mouse & Touch events
+        const startDrag = (e) => {
             if (currentMode !== 'editing') return;
             isDragging = true;
-            const scale = mainCanvas.getBoundingClientRect().width / 1200;
-            startX = e.clientX / scale - imgX; startY = e.clientY / scale - imgY;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const scaleUI = mainCanvas.getBoundingClientRect().width / 1200;
+            startX = clientX / scaleUI - imgX;
+            startY = clientY / scaleUI - imgY;
         };
-        window.onmousemove = (e) => {
-            if (!isDragging) return;
-            const scale = mainCanvas.getBoundingClientRect().width / 1200;
-            imgX = e.clientX / scale - startX; imgY = e.clientY / scale - startY;
-            movableImg.style.left = imgX + 'px'; movableImg.style.top = imgY + 'px';
-        };
-        window.onmouseup = () => isDragging = false;
 
-        // 4. Render Design
+        const moveDrag = (e) => {
+            if (!isDragging) return;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const scaleUI = mainCanvas.getBoundingClientRect().width / 1200;
+            imgX = clientX / scaleUI - startX;
+            imgY = clientY / scaleUI - startY;
+            movableImg.style.left = imgX + 'px';
+            movableImg.style.top = imgY + 'px';
+        };
+
+        mainCanvas.addEventListener('mousedown', startDrag);
+        mainCanvas.addEventListener('touchstart', startDrag);
+        window.addEventListener('mousemove', moveDrag);
+        window.addEventListener('touchmove', moveDrag, { passive: false });
+        window.addEventListener('mouseup', () => isDragging = false);
+        window.addEventListener('touchend', () => isDragging = false);
+
         [headlineInput, descInput, customTagInput, colorPicker, styleSelect].forEach(el => el.addEventListener('input', updateDesign));
 
         function updateDesign() {
             const h = headlineInput.value;
-            const d = descInput.value;
+            // Fix lỗi xuống dòng bằng cách replace \n thành <br>
+            const d = descInput.value.replace(/\n/g, '<br>');
             const c = colorPicker.value;
             const s = styleSelect.value;
             const tag = getActiveTag();
@@ -207,22 +239,22 @@
                 html = `<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent"></div>
                         <div class="absolute bottom-0 left-0 p-12 w-full">
                             <span class="inline-block text-white text-lg font-bold px-4 py-1 mb-4 rounded-sm shadow-lg" style="background:${c}">${tag}</span>
-                            <h1 class="text-white text-6xl font-black leading-[1.1] mb-3 drop-shadow-2xl">${h}</h1>
-                            <p class="text-gray-300 text-2xl font-light line-clamp-2">${d}</p>
+                            <h1 class="text-white text-6xl font-black leading-[1.1] mb-4 text-shadow-heavy">${h}</h1>
+                            <p class="text-gray-300 text-2xl font-light leading-snug text-shadow-heavy">${d}</p>
                         </div>`;
             } else if (s === "2") {
                 html = `<div class="absolute inset-0 flex">
                             <div class="w-5/12 h-full p-12 flex flex-col justify-center border-r-[15px] border-white/10" style="background-color: ${c}">
                                 <span class="inline-block text-white/60 text-sm font-bold tracking-widest mb-6 border-b border-white/30 w-fit pb-1 uppercase">${tag}</span>
-                                <h1 class="text-white text-5xl font-bold leading-tight serif drop-shadow-sm mb-6">${h}</h1>
-                                <p class="text-white/70 text-xl font-light line-clamp-3 leading-relaxed">${d}</p>
+                                <h1 class="text-white text-5xl font-bold leading-tight serif mb-6">${h}</h1>
+                                <p class="text-white/70 text-xl font-light leading-relaxed">${d}</p>
                             </div>
                         </div>`;
             } else {
                 html = `<div class="absolute bottom-0 left-0 w-full p-10 border-t-4 border-white/20" style="background-color: ${c}">
                             <span class="inline-block bg-white text-xs font-black px-2 py-0.5 mb-3 rounded-sm" style="color: ${c}">${tag}</span>
-                            <h1 class="text-white text-5xl font-black uppercase tracking-tighter mb-2 drop-shadow-md">${h}</h1>
-                            <p class="text-white/80 text-2xl font-light line-clamp-1">${d}</p>
+                            <h1 class="text-white text-5xl font-black uppercase tracking-tighter mb-2 text-shadow-heavy">${h}</h1>
+                            <p class="text-white/80 text-2xl font-light leading-snug">${d}</p>
                         </div>`;
             }
             styleContent.innerHTML = html;
@@ -236,7 +268,6 @@
         }
         window.onresize = resizePreviewUI;
 
-        // 5. Buttons Mode Logic
         const previewBtn = document.getElementById('previewBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         const editBtn = document.getElementById('editBtn');
@@ -245,7 +276,7 @@
         previewBtn.onclick = () => {
             if (!movableImg.src) return alert("Vui lòng tải ảnh lên trước!");
             currentMode = 'preview';
-            statusTagUI.innerText = "Chế độ Preview";
+            statusTagUI.innerText = "Preview Mode";
             statusTagUI.className = "bg-emerald-500 text-white px-3 py-1 rounded text-xs font-bold uppercase tracking-widest";
             movableImg.style.cursor = 'default';
             [previewBtn, downloadBtn, editBtn].forEach(b => b.classList.toggle('hidden'));
@@ -253,7 +284,7 @@
 
         editBtn.onclick = () => {
             currentMode = 'editing';
-            statusTagUI.innerText = "Đang chỉnh sửa";
+            statusTagUI.innerText = "Editing";
             statusTagUI.className = "bg-yellow-500 text-black px-3 py-1 rounded text-xs font-bold uppercase tracking-widest";
             movableImg.style.cursor = 'move';
             [previewBtn, downloadBtn, editBtn].forEach(b => b.classList.toggle('hidden'));

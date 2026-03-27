@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Social Media Thumbnail Generator</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -10,311 +10,206 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             min-height: 100vh;
-            padding: 2rem;
+            padding: 1rem;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; }
         .header { text-align: center; margin-bottom: 2rem; }
-        .header h1 { font-size: 2.5rem; color: #1e293b; margin-bottom: 0.5rem; }
         .input-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
+            background: white; padding: 1.5rem; border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem;
         }
-        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         .upload-box {
-            border: 2px dashed #cbd5e1;
-            border-radius: 0.75rem;
-            padding: 3rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
+            border: 2px dashed #cbd5e1; border-radius: 0.75rem; padding: 2rem;
+            text-align: center; cursor: pointer; transition: all 0.3s;
         }
-        .upload-box:hover, .upload-box.dragover { border-color: #3b82f6; background: #eff6ff; }
-        label { display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem; }
+        .upload-box.dragover { border-color: #3b82f6; background: #eff6ff; }
+        label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: #334155; }
         input[type="text"], textarea {
             width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1;
-            border-radius: 0.5rem; font-size: 1rem; margin-bottom: 1rem;
+            border-radius: 0.5rem; margin-bottom: 1rem; font-size: 1rem;
         }
-        .section-title { font-size: 1.75rem; font-weight: bold; color: #1e293b; margin-top: 2rem; margin-bottom: 0.5rem; }
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        .card { background: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .card { background: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .card-body { padding: 1rem; }
-        /* Style cho vùng kéo ảnh */
         .canvas-wrapper { 
-            border: 2px solid #e2e8f0; 
-            border-radius: 0.5rem; 
-            overflow: hidden; 
-            margin-bottom: 1rem;
-            cursor: grab;
-            position: relative;
+            border: 2px solid #e2e8f0; border-radius: 0.5rem; 
+            overflow: hidden; cursor: grab; position: relative;
+            touch-action: none; /* Quan trọng cho mobile */
         }
         .canvas-wrapper:active { cursor: grabbing; }
         canvas { display: block; width: 100%; height: auto; }
         .btn-download {
-            width: 100%; padding: 0.75rem; background: #3b82f6; color: white;
+            width: 100%; padding: 0.8rem; background: #3b82f6; color: white;
             border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            margin-top: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
         }
-        .btn-download:hover { background: #2563eb; }
-        footer { text-align: center; color: #64748b; margin-top: 3rem; padding: 1rem; }
-        @media (max-width: 768px) { .input-grid, .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .input-grid, .grid-layout { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Social Media Thumbnail Generator</h1>
-            <p>Kéo thả ảnh và dùng chuột kéo ảnh trên Canvas Portrait để căn chỉnh</p>
+            <h1>Thumbnail Generator</h1>
+            <p>Kéo thả ảnh và vuốt trực tiếp trên ảnh Portrait để căn chỉnh</p>
         </div>
 
         <div class="input-section">
             <div class="input-grid">
-                <div>
-                    <label>Upload Ảnh Thumbnail</label>
-                    <div class="upload-box" id="dropZone" onclick="document.getElementById('imageInput').click()">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">📤</div>
-                        <div style="font-weight: 500; color: #64748b;">Kéo thả hoặc Click để chọn ảnh</div>
-                    </div>
+                <div id="dropZone" class="upload-box" onclick="document.getElementById('imageInput').click()">
+                    <div style="font-size: 2.5rem;">📤</div>
+                    <div style="font-weight: 500; color: #64748b;">Kéo thả hoặc Chạm để chọn ảnh</div>
                     <input type="file" id="imageInput" accept="image/*" style="display: none;">
                 </div>
                 <div>
-                    <label for="headline">Headline</label>
-                    <input type="text" id="headline" placeholder="Nhập tiêu đề bài viết...">
-                    <label for="description">Description (Optional - Cho bản Landscape)</label>
-                    <textarea id="description" rows="4" placeholder="Nhập mô tả ngắn..."></textarea>
+                    <label>Headline</label>
+                    <input type="text" id="headline" placeholder="Nhập tiêu đề...">
+                    <label>Description (Bản Landscape)</label>
+                    <textarea id="description" rows="3" placeholder="Nhập mô tả..."></textarea>
                 </div>
             </div>
         </div>
 
-        <h2 class="section-title">Landscape Format (1200×630)</h2>
-        <div class="grid-3" id="landscapeGrid"></div>
-
-        <h2 class="section-title">Portrait Format (1080×1350)</h2>
-        <div class="grid-2">
+        <div class="grid-layout">
             <div class="card">
                 <div class="card-body">
-                    <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">💡 Mẹo: Nhấn giữ chuột vào ảnh dưới đây và kéo lên/xuống để chỉnh khung hình.</p>
+                    <label>Bản Portrait (Vuốt/Kéo để chỉnh vị trí)</label>
                     <div class="canvas-wrapper" id="portraitWrapper">
                         <canvas id="canvasPortrait"></canvas>
                     </div>
-                    <button class="btn-download" onclick="downloadCanvas('canvasPortrait', 'portrait-thumb.png')">
-                        <span>⬇</span> Tải xuống Portrait
-                    </button>
+                    <button class="btn-download" onclick="downloadCanvas('canvasPortrait')">Tải xuống Portrait</button>
                 </div>
             </div>
+            
             <div class="card">
-                <div class="card-body" style="padding: 2rem; color: #64748b;">
-                    <h3 style="color: #1e293b; margin-bottom: 1rem;">Hướng dẫn Portrait</h3>
-                    <p>• Tỷ lệ 4:5 tối ưu cho Instagram/Facebook.</p>
-                    <p>• Dòng chữ "Link in comments" tự động thêm ở góc trái.</p>
-                    <p>• Nền đỏ thương hiệu ở phần text.</p>
+                <div class="card-body">
+                    <label>Bản Landscape (Review)</label>
+                    <div class="canvas-wrapper" style="cursor: default;">
+                        <canvas id="canvasLandscape"></canvas>
+                    </div>
+                    <button class="btn-download" onclick="downloadCanvas('canvasLandscape')">Tải xuống Landscape</button>
                 </div>
             </div>
         </div>
-
-        <footer>© 2026. Custom for Tuổi Trẻ News</footer>
     </div>
 
     <script>
         let currentImage = null;
         let logoImage = null;
-        const logoSrc = 'logo_ttn_white.png';
-
-        // Biến xử lý kéo ảnh (Pan)
         let isDragging = false;
         let startY = 0;
         let currentYOffset = 0; 
+        const logoSrc = 'logo_ttn_white.png'; // Đảm bảo file này cùng thư mục
 
-        const landscapeStyles = [
-            { name: 'Modern Split', colors: ['#1e3a8a', '#3b82f6'] },
-            { name: 'Clean Minimal', colors: ['#e5e7eb', '#ffffff'] },
-            { name: 'Dark Creative', colors: ['#0f172a', '#334155'] }
-        ];
-
+        // Load Logo
         const loadLogo = () => {
             logoImage = new Image();
             logoImage.src = logoSrc;
             logoImage.onload = () => renderAll();
         };
 
-        const initLandscape = () => {
-            const grid = document.getElementById('landscapeGrid');
-            grid.innerHTML = '';
-            landscapeStyles.forEach((style, index) => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div class="card-body">
-                        <div class="canvas-wrapper" style="cursor: default;">
-                            <canvas id="canvas${index}"></canvas>
-                        </div>
-                        <button class="btn-download" onclick="downloadCanvas('canvas${index}', 'landscape-style${index + 1}.png')">
-                            <span>⬇</span> Tải xuống PNG
-                        </button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        };
-
+        // Hàm Wrap Text
         const wrapText = (ctx, text, x, y, maxWidth, lineHeight) => {
             const words = text.split(' ');
             let line = '';
-            let currentY = y;
-            const lines = [];
-            for (let i = 0; i < words.length; i++) {
-                const testLine = line + words[i] + ' ';
-                const metrics = ctx.measureText(testLine);
-                if (metrics.width > maxWidth && i > 0) {
-                    lines.push({ text: line, y: currentY });
-                    line = words[i] + ' ';
-                    currentY += lineHeight;
-                } else {
-                    line = testLine;
-                }
+            let lines = [];
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + ' ';
+                if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+                    lines.push({ text: line, y: y });
+                    line = words[n] + ' ';
+                    y += lineHeight;
+                } else { line = testLine; }
             }
-            lines.push({ text: line, y: currentY });
+            lines.push({ text: line, y: y });
             return lines;
         };
 
-        // Hàm vẽ chung cho Landscape (Style 1 làm mẫu)
-        const drawStyle1 = (canvas) => {
+        // Vẽ Landscape
+        const drawLandscape = (canvas) => {
             const ctx = canvas.getContext('2d');
             canvas.width = 1200; canvas.height = 630;
-            ctx.fillStyle = '#1e3a8a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
             if (currentImage) {
-                const imgWidth = 500;
-                const scale = Math.max(imgWidth / currentImage.width, canvas.height / currentImage.height);
-                ctx.drawImage(currentImage, (imgWidth - currentImage.width * scale) / 2, (canvas.height - currentImage.height * scale) / 2, currentImage.width * scale, currentImage.height * scale);
+                const imgW = 500;
+                const scale = Math.max(imgW / currentImage.width, canvas.height / currentImage.height);
+                ctx.drawImage(currentImage, (imgW - currentImage.width * scale)/2, (canvas.height - currentImage.height * scale)/2, currentImage.width * scale, currentImage.height * scale);
             }
-            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 50px Arial';
-            const headline = document.getElementById('headline').value || 'Your Headline';
-            wrapText(ctx, headline, 540, 150, 620, 65).forEach(line => ctx.fillText(line.text, 540, line.y));
-            if (logoImage && logoImage.complete) ctx.drawImage(logoImage, 540, 530, (logoImage.width/logoImage.height)*45, 45);
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 48px Arial';
+            wrapText(ctx, document.getElementById('headline').value || 'Headline', 540, 150, 620, 60).forEach(l => ctx.fillText(l.text, 540, l.y));
+            if (logoImage && logoImage.complete) ctx.drawImage(logoImage, 540, 520, (logoImage.width/logoImage.height)*50, 50);
         };
 
-        // --- HÀM VẼ PORTRAIT CHỦ ĐẠO ---
+        // Vẽ Portrait
         const drawPortrait = (canvas) => {
             const ctx = canvas.getContext('2d');
-            canvas.width = 1080;
-            canvas.height = 1350;
-
+            canvas.width = 1080; canvas.height = 1350;
             if (currentImage) {
-                const imgHeight = 900;
-                const imgWidth = canvas.width;
-                const scale = Math.max(imgWidth / currentImage.width, imgHeight / currentImage.height);
-                const scaledWidth = currentImage.width * scale;
-                const scaledHeight = currentImage.height * scale;
-                
-                // Sử dụng currentYOffset từ việc kéo chuột
-                const x = (imgWidth - scaledWidth) / 2;
-                const y = (imgHeight - scaledHeight) / 2 + currentYOffset;
-                
-                ctx.save();
-                ctx.rect(0, 0, imgWidth, imgHeight);
-                ctx.clip();
-                ctx.drawImage(currentImage, x, y, scaledWidth, scaledHeight);
+                const imgH = 900;
+                const scale = Math.max(canvas.width / currentImage.width, imgH / currentImage.height);
+                const sw = currentImage.width * scale; const sh = currentImage.height * scale;
+                ctx.save(); ctx.rect(0, 0, canvas.width, imgH); ctx.clip();
+                ctx.drawImage(currentImage, (canvas.width - sw)/2, (imgH - sh)/2 + currentYOffset, sw, sh);
                 ctx.restore();
-
-                const gradient = ctx.createLinearGradient(0, imgHeight - 200, 0, imgHeight);
-                gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
-                gradient.addColorStop(1, 'rgba(0, 0, 0, 0.85)');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, imgHeight - 200, canvas.width, 200);
+                const grad = ctx.createLinearGradient(0, imgH - 200, 0, imgH);
+                grad.addColorStop(0, 'rgba(0,0,0,0)'); grad.addColorStop(1, 'rgba(0,0,0,0.8)');
+                ctx.fillStyle = grad; ctx.fillRect(0, imgH - 200, canvas.width, 200);
             }
-
-            // Nền đỏ chân trang
-            ctx.fillStyle = '#e30f16';
-            ctx.fillRect(0, 900, canvas.width, 450);
-
-            // Vẽ Headline
-            const headline = document.getElementById('headline').value || 'Your Headline Here';
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 64px Arial';
-            const lines = wrapText(ctx, headline, 60, 980, 960, 80);
-            lines.forEach(line => ctx.fillText(line.text, 60, line.y));
-
-            // Vẽ Logo và Link in comments
+            ctx.fillStyle = '#e30f16'; ctx.fillRect(0, 900, canvas.width, 450); // Màu đỏ brand
+            ctx.fillStyle = '#ffffff'; ctx.font = 'bold 64px Arial';
+            const lines = wrapText(ctx, document.getElementById('headline').value || 'Your Headline', 60, 980, 960, 80);
+            lines.forEach(l => ctx.fillText(l.text, 60, l.y));
             if (logoImage && logoImage.complete) {
-                const logoH = 55;
-                const logoW = (logoImage.width / logoImage.height) * logoH;
-                ctx.drawImage(logoImage, canvas.width - logoW - 60, canvas.height - 80, logoW, logoH);
-
-                ctx.font = '32px Arial';
-                ctx.fillText('Link in comments', 60, canvas.height - 80 + (logoH / 1.5));
+                const lh = 55; const lw = (logoImage.width/logoImage.height)*lh;
+                ctx.drawImage(logoImage, canvas.width - lw - 60, canvas.height - 80, lw, lh);
+                ctx.font = '32px Arial'; ctx.fillText('Link in comments', 60, canvas.height - 80 + (lh/1.5)); // Text đối xứng
             }
         };
 
         const renderAll = () => {
-            // Vẽ các bản review
-            try {
-                drawStyle1(document.getElementById('canvas0'));
-                // Bạn có thể thêm drawStyle2, drawStyle3 tương tự nếu muốn dùng Landscape
-                drawPortrait(document.getElementById('canvasPortrait'));
-            } catch(e) {}
+            drawLandscape(document.getElementById('canvasLandscape'));
+            drawPortrait(document.getElementById('canvasPortrait'));
         };
 
-        const downloadCanvas = (id, name) => {
-            const link = document.createElement('a');
-            link.download = name;
-            link.href = document.getElementById(id).toDataURL('image/png');
-            link.click();
-        };
-
-        // --- XỬ LÝ KÉO CHUỘT TRÊN CANVAS PORTRAIT ---
+        // --- XỬ LÝ KÉO (PAN) CHO CẢ MOUSE & TOUCH ---
         const pCanvas = document.getElementById('canvasPortrait');
-        pCanvas.addEventListener('mousedown', (e) => {
-            if (!currentImage) return;
-            isDragging = true;
-            startY = e.clientY - currentYOffset;
-        });
+        const startDrag = (y) => { if(!currentImage) return; isDragging = true; startY = y - currentYOffset; };
+        const moveDrag = (y) => { if(!isDragging) return; currentYOffset = y - startY; renderAll(); };
+        const endDrag = () => { isDragging = false; };
 
-        window.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            currentYOffset = e.clientY - startY;
-            renderAll();
-        });
+        pCanvas.addEventListener('mousedown', (e) => startDrag(e.clientY));
+        window.addEventListener('mousemove', (e) => moveDrag(e.clientY));
+        window.addEventListener('mouseup', endDrag);
 
-        window.addEventListener('mouseup', () => isDragging = false);
+        pCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrag(e.touches[0].clientY); }, {passive: false});
+        window.addEventListener('touchmove', (e) => { if(isDragging) { e.preventDefault(); moveDrag(e.touches[0].clientY); } }, {passive: false});
+        window.addEventListener('touchend', endDrag);
 
-        // --- XỬ LÝ KÉO THẢ FILE UPLOAD ---
-        const dropZone = document.getElementById('dropZone');
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eName => {
-            dropZone.addEventListener(eName, (e) => { e.preventDefault(); e.stopPropagation(); });
-        });
-        dropZone.addEventListener('dragover', () => dropZone.classList.add('dragover'));
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-        dropZone.addEventListener('drop', (e) => {
-            dropZone.classList.remove('dragover');
-            handleFiles(e.dataTransfer.files);
-        });
-
-        document.getElementById('imageInput').addEventListener('change', (e) => handleFiles(e.target.files));
-
-        function handleFiles(files) {
-            if (files.length > 0) {
+        // --- UPLOAD & DROP ---
+        const handleFiles = (files) => {
+            if (files[0]) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const img = new Image();
-                    img.onload = () => { 
-                        currentImage = img; 
-                        currentYOffset = 0; // Reset vị trí khi đổi ảnh mới
-                        renderAll(); 
-                    };
+                    img.onload = () => { currentImage = img; currentYOffset = 0; renderAll(); };
                     img.src = e.target.result;
                 };
                 reader.readAsDataURL(files[0]);
             }
-        }
+        };
 
+        const dz = document.getElementById('dropZone');
+        ['dragover', 'drop'].forEach(ev => dz.addEventListener(ev, (e) => { e.preventDefault(); if(ev==='drop') handleFiles(e.dataTransfer.files); }));
+        document.getElementById('imageInput').addEventListener('change', (e) => handleFiles(e.target.files));
         document.getElementById('headline').addEventListener('input', renderAll);
-        document.getElementById('description').addEventListener('input', renderAll);
+        
+        const downloadCanvas = (id) => {
+            const link = document.createElement('a');
+            link.download = id + '.png';
+            link.href = document.getElementById(id).toDataURL();
+            link.click();
+        };
 
-        initLandscape();
         loadLogo();
     </script>
 </body>

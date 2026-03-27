@@ -3,275 +3,712 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>News Thumbnail Pro - Final Fixed</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
-    
+    <title>Social Media Thumbnail Generator</title>
+    <meta property="og:title" content="Social Media Thumbnail Generator">
+    <meta property="og:description" content="Tạo thumbnail chuyên nghiệp cho mạng xã hội">
+    <meta property="og:type" content="website">
     <style>
-        body { font-family: 'Roboto', sans-serif; background-color: #0f172a; color: #e2e8f0; }
-        .serif { font-family: 'Merriweather', serif; }
-        .preview-container { width: 100%; max-width: 800px; margin: 0 auto; border: 2px solid #334155; background: #1e293b; position: relative; overflow: hidden; display: none; }
-        .canvas-area { width: 1200px; height: 630px; position: relative; transform-origin: top left; background: #000; overflow: hidden; }
-        .movable-img { position: absolute; cursor: move; user-select: none; min-width: 100%; min-height: 100%; }
-        .drop-zone { border: 2px dashed #475569; transition: all 0.3s; }
-        .drop-zone.dragover { background: #334155; border-color: #38bdf8; }
-        .logo-box { pointer-events: none; z-index: 50; transition: opacity 0.2s; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .input-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .upload-box {
+            border: 2px dashed #cbd5e1;
+            border-radius: 0.75rem;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-box:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #94a3b8;
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea {
+            resize: none;
+            font-family: inherit;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-desc {
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            padding: 1rem;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .canvas-wrapper {
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .btn-download {
+            width: 100%;
+            padding: 0.75rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-download:hover {
+            background: #2563eb;
+        }
+
+        .slider-control {
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #e2e8f0;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .feature-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #dbeafe;
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+
+        footer {
+            text-align: center;
+            color: #64748b;
+            margin-top: 3rem;
+            padding: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .input-grid,
+            .grid-3,
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Social Media Thumbnail Generator</h1>
+            <p>Tạo thumbnail chuyên nghiệp cho mạng xã hội</p>
+        </div>
 
-    <div class="max-w-6xl mx-auto">
-        <header class="mb-8 border-b border-slate-700 pb-4 flex justify-between items-center">
-            <h1 class="text-3xl font-black text-white tracking-tighter italic">NEWS <span class="text-blue-500 underline">EDITOR</span></h1>
-            <div id="statusTagUI" class="bg-yellow-500 text-black px-3 py-1 rounded text-xs font-bold uppercase tracking-widest">Editing</div>
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            <div class="lg:col-span-4 space-y-4">
-                <div id="dropZone" class="drop-zone p-5 rounded-xl text-center cursor-pointer hover:bg-slate-800">
-                    <input type="file" id="imageInput" class="hidden" accept="image/*">
-                    <p class="text-slate-400 text-sm italic">Kéo thả ảnh hoặc bấm để chọn</p>
+        <div class="input-section">
+            <div class="input-grid">
+                <div>
+                    <label>Upload Ảnh Thumbnail</label>
+                    <div class="upload-box" onclick="document.getElementById('imageInput').click()">
+                        <div class="upload-icon">📤</div>
+                        <div style="font-weight: 500; color: #64748b;">Click để chọn ảnh</div>
+                        <div style="font-size: 0.85rem; color: #94a3b8; margin-top: 0.5rem;">JPG, PNG, GIF</div>
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;">
                 </div>
 
-                <div class="space-y-4 bg-slate-800 p-5 rounded-xl shadow-2xl border border-slate-700">
-                    <div class="flex items-center gap-2 pb-2 border-b border-slate-700">
-                        <input type="checkbox" id="logoToggle" checked class="w-4 h-4 accent-blue-500 cursor-pointer">
-                        <label for="logoToggle" class="text-xs font-bold text-slate-300 cursor-pointer uppercase">Hiển thị Logo</label>
+                <div>
+                    <div style="margin-bottom: 1rem;">
+                        <label for="headline">Headline</label>
+                        <input type="text" id="headline" placeholder="Nhập tiêu đề bài viết...">
                     </div>
-
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tiêu đề (Headline)</label>
-                        <textarea id="headlineInput" rows="2" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none focus:ring-1 focus:ring-blue-500">Vietnam welcomes millions of international tourists in 2024</textarea>
+                        <label for="description">Description (Optional)</label>
+                        <textarea id="description" rows="5" placeholder="Nhập mô tả ngắn..."></textarea>
                     </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Mô tả (Short Description)</label>
-                        <textarea id="descInput" rows="2" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none focus:ring-1 focus:ring-blue-500" placeholder="Nhập mô tả ngắn gọn...">Link to article in comments.
-\nMore news: https://news.tuoitre.vn</textarea>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nhãn (Tag)</label>
-                            <select id="tagSelect" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none">
-                                <option value="NEWS">NEWS</option>
-                                <option value="FOOD">FOOD</option>
-                                <option value="OTHER">KHÁC...</option>
-                            </select>
-                        </div>
-                        <div id="customTagWrap" class="hidden">
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nhập nhãn</label>
-                            <input id="customTagInput" type="text" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none" placeholder="...">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Màu chủ đạo</label>
-                            <input type="color" id="colorPicker" value="#cc0000" class="w-full h-9 rounded cursor-pointer bg-slate-900 border-none">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Kiểu dáng</label>
-                            <select id="styleSelect" class="w-full bg-slate-900 border border-slate-700 p-2 rounded text-white text-sm outline-none">
-                                <option value="1">Style 1: Overlay</option>
-                                <option value="2">Style 2: Split</option>
-                                <option value="3">Style 3: Bottom</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex gap-2">
-                    <button id="previewBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg transition transform hover:-translate-y-1">XEM TRƯỚC</button>
-                    <button id="downloadBtn" class="hidden flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg shadow-lg transition">TẢI PNG</button>
-                    <button id="editBtn" class="hidden flex-1 bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 rounded-lg transition">SỬA LẠI</button>
-                </div>
-            </div>
-
-            <div class="lg:col-span-8 flex flex-col items-center justify-start min-h-[500px] border-2 border-slate-800 rounded-2xl bg-slate-900/50 p-4 overflow-hidden">
-                <div id="previewContainer" class="preview-container shadow-2xl">
-                    <div id="mainCanvas" class="canvas-area">
-                        <img id="movableImg" src="" class="movable-img" draggable="false">
-                        <div id="styleContent" class="absolute inset-0 w-full h-full pointer-events-none"></div>
-                        <div id="logoBox" class="logo-box absolute top-6 right-8">
-                            <img src="https://tienxu04.github.io/xuxucode/logo_ttn.png" class="h-16 drop-shadow-lg">
-                        </div>
-                    </div>
-                </div>
-                <div id="emptyMsg" class="mt-20 text-slate-500 text-center italic">
-                    <p>Vui lòng tải ảnh lên để hiển thị preview</p>
                 </div>
             </div>
         </div>
+
+        <div>
+            <h2 class="section-title">Landscape Format (1200×630)</h2>
+            <p class="section-desc">Phù hợp cho Facebook, Twitter, LinkedIn</p>
+            <div class="grid-3" id="landscapeGrid"></div>
+        </div>
+
+        <div>
+            <h2 class="section-title">Portrait Format (1080×1350)</h2>
+            <p class="section-desc">Phù hợp cho Instagram Post, Facebook Story</p>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="slider-control">
+                            <label>⬍⬍ Điều chỉnh vị trí ảnh (Y-axis)</label>
+                            <input type="range" id="yPosition" min="0" max="100" value="50">
+                            <div class="slider-labels">
+                                <span>Trên</span>
+                                <span>Giữa</span>
+                                <span>Dưới</span>
+                            </div>
+                        </div>
+                        <div class="canvas-wrapper">
+                            <canvas id="canvasPortrait"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header" style="background: linear-gradient(to right, #312e81, #4f46e5);">
+                        Portrait Style
+                    </div>
+                    <div class="card-body">
+                        <ul class="feature-list">
+                            <li class="feature-item">
+                                <span class="feature-number">1</span>
+                                <span>Ảnh chiếm 2/3 trên cùng với overlay tối phía dưới</span>
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-number">2</span>
+                                <span>Text overlay màu trắng nổi bật trên nền tối</span>
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-number">3</span>
+                                <span>Logo góc dưới bên phải</span>
+                            </li>
+                            <li class="feature-item">
+                                <span class="feature-number">4</span>
+                                <span>Tỷ lệ 4:5 chuẩn Instagram</span>
+                            </li>
+                        </ul>
+                        <button class="btn-download" onclick="downloadCanvas('canvasPortrait', 'thumbnail-portrait.png')">
+                            <span>⬇</span> Tải xuống PNG
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            © 2026. Vibe-coded by xuxu & Claude AI
+        </footer>
     </div>
 
     <script>
-        const dropZone = document.getElementById('dropZone');
-        const imageInput = document.getElementById('imageInput');
-        const movableImg = document.getElementById('movableImg');
-        const mainCanvas = document.getElementById('mainCanvas');
-        const previewContainer = document.getElementById('previewContainer');
-        const styleContent = document.getElementById('styleContent');
-        const logoBox = document.getElementById('logoBox');
-        const logoToggle = document.getElementById('logoToggle');
-        const tagSelect = document.getElementById('tagSelect');
-        const customTagWrap = document.getElementById('customTagWrap');
-        const customTagInput = document.getElementById('customTagInput');
-        const headlineInput = document.getElementById('headlineInput');
-        const descInput = document.getElementById('descInput');
-        const colorPicker = document.getElementById('colorPicker');
-        const styleSelect = document.getElementById('styleSelect');
+        let currentImage = null;
+        let logoImage = null;
+        const logoSrc = 'https://static-tuoitre.tuoitre.vn/tuoitrenews/images/logo-header.svg';
 
-        let isDragging = false;
-        let startX, startY, imgX = 0, imgY = 0;
-        let currentMode = 'editing';
+        const landscapeStyles = [
+            { name: 'Modern Split', colors: ['#1e3a8a', '#3b82f6'] },
+            { name: 'Clean Minimal', colors: ['#e5e7eb', '#ffffff'] },
+            { name: 'Dark Creative', colors: ['#0f172a', '#334155'] }
+        ];
 
-        // 1. UI Logic
-        logoToggle.addEventListener('change', () => logoBox.style.opacity = logoToggle.checked ? "1" : "0");
-        tagSelect.addEventListener('change', () => {
-            customTagWrap.style.display = tagSelect.value === 'OTHER' ? 'block' : 'none';
-            updateDesign();
-        });
-
-        function getActiveTag() {
-            if (tagSelect.value === 'OTHER') return customTagInput.value || 'TITLE';
-            return tagSelect.value;
-        }
-
-        // 2. Upload & Fit
-        dropZone.onclick = () => imageInput.click();
-        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
-        dropZone.ondrop = (e) => { e.preventDefault(); handleFiles(e.dataTransfer.files); };
-        imageInput.onchange = (e) => handleFiles(e.target.files);
-
-        function handleFiles(files) {
-            if (files.length > 0) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    movableImg.src = e.target.result;
-                    movableImg.onload = () => {
-                        autoFitImage();
-                        previewContainer.style.display = 'block';
-                        document.getElementById('emptyMsg').style.display = 'none';
-                        updateDesign();
-                        resizePreviewUI();
-                    };
-                };
-                reader.readAsDataURL(files[0]);
-            }
-        }
-
-        function autoFitImage() {
-            const canvasW = 1200, canvasH = 630;
-            const imgW = movableImg.naturalWidth, imgH = movableImg.naturalHeight;
-            const canvasRatio = canvasW / canvasH, imgRatio = imgW / imgH;
-            if (imgRatio > canvasRatio) {
-                movableImg.style.height = canvasH + 'px'; movableImg.style.width = 'auto';
-                imgX = -( (imgW * (canvasH / imgH)) - canvasW ) / 2; imgY = 0;
-            } else {
-                movableImg.style.width = canvasW + 'px'; movableImg.style.height = 'auto';
-                imgX = 0; imgY = -( (imgH * (canvasW / imgW)) - canvasH ) / 2;
-            }
-            movableImg.style.left = imgX + 'px'; movableImg.style.top = imgY + 'px';
-        }
-
-        // 3. Drag reposition
-        mainCanvas.onmousedown = (e) => {
-            if (currentMode !== 'editing') return;
-            isDragging = true;
-            const scale = mainCanvas.getBoundingClientRect().width / 1200;
-            startX = e.clientX / scale - imgX; startY = e.clientY / scale - imgY;
-        };
-        window.onmousemove = (e) => {
-            if (!isDragging) return;
-            const scale = mainCanvas.getBoundingClientRect().width / 1200;
-            imgX = e.clientX / scale - startX; imgY = e.clientY / scale - startY;
-            movableImg.style.left = imgX + 'px'; movableImg.style.top = imgY + 'px';
-        };
-        window.onmouseup = () => isDragging = false;
-
-        // 4. Render Design
-        [headlineInput, descInput, customTagInput, colorPicker, styleSelect].forEach(el => el.addEventListener('input', updateDesign));
-
-        function updateDesign() {
-            const h = headlineInput.value;
-            const d = descInput.value;
-            const c = colorPicker.value;
-            const s = styleSelect.value;
-            const tag = getActiveTag();
-
-            let html = '';
-            if (s === "1") {
-                html = `<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent"></div>
-                        <div class="absolute bottom-0 left-0 p-12 w-full">
-                            <span class="inline-block text-white text-lg font-bold px-4 py-1 mb-4 rounded-sm shadow-lg" style="background:${c}">${tag}</span>
-                            <h1 class="text-white text-6xl font-black leading-[1.1] mb-3 drop-shadow-2xl">${h}</h1>
-                            <p class="text-gray-300 text-2xl font-light line-clamp-2">${d}</p>
-                        </div>`;
-            } else if (s === "2") {
-                html = `<div class="absolute inset-0 flex">
-                            <div class="w-5/12 h-full p-12 flex flex-col justify-center border-r-[15px] border-white/10" style="background-color: ${c}">
-                                <span class="inline-block text-white/60 text-sm font-bold tracking-widest mb-6 border-b border-white/30 w-fit pb-1 uppercase">${tag}</span>
-                                <h1 class="text-white text-5xl font-bold leading-tight serif drop-shadow-sm mb-6">${h}</h1>
-                                <p class="text-white/70 text-xl font-light line-clamp-3 leading-relaxed">${d}</p>
-                            </div>
-                        </div>`;
-            } else {
-                html = `<div class="absolute bottom-0 left-0 w-full p-10 border-t-4 border-white/20" style="background-color: ${c}">
-                            <span class="inline-block bg-white text-xs font-black px-2 py-0.5 mb-3 rounded-sm" style="color: ${c}">${tag}</span>
-                            <h1 class="text-white text-5xl font-black uppercase tracking-tighter mb-2 drop-shadow-md">${h}</h1>
-                            <p class="text-white/80 text-2xl font-light line-clamp-1">${d}</p>
-                        </div>`;
-            }
-            styleContent.innerHTML = html;
-        }
-
-        function resizePreviewUI() {
-            const containerWidth = previewContainer.parentElement.offsetWidth - 32;
-            const scale = Math.min(containerWidth / 1200, 1);
-            mainCanvas.style.transform = `scale(${scale})`;
-            previewContainer.style.height = (630 * scale) + 'px';
-        }
-        window.onresize = resizePreviewUI;
-
-        // 5. Buttons Mode Logic
-        const previewBtn = document.getElementById('previewBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const editBtn = document.getElementById('editBtn');
-        const statusTagUI = document.getElementById('statusTagUI');
-
-        previewBtn.onclick = () => {
-            if (!movableImg.src) return alert("Vui lòng tải ảnh lên trước!");
-            currentMode = 'preview';
-            statusTagUI.innerText = "Chế độ Preview";
-            statusTagUI.className = "bg-emerald-500 text-white px-3 py-1 rounded text-xs font-bold uppercase tracking-widest";
-            movableImg.style.cursor = 'default';
-            [previewBtn, downloadBtn, editBtn].forEach(b => b.classList.toggle('hidden'));
+        // Load logo
+        const loadLogo = () => {
+            logoImage = new Image();
+            logoImage.crossOrigin = 'anonymous';
+            logoImage.src = logoSrc;
+            logoImage.onload = () => renderAll();
         };
 
-        editBtn.onclick = () => {
-            currentMode = 'editing';
-            statusTagUI.innerText = "Đang chỉnh sửa";
-            statusTagUI.className = "bg-yellow-500 text-black px-3 py-1 rounded text-xs font-bold uppercase tracking-widest";
-            movableImg.style.cursor = 'move';
-            [previewBtn, downloadBtn, editBtn].forEach(b => b.classList.toggle('hidden'));
-        };
-
-        downloadBtn.onclick = () => {
-            const originalTransform = mainCanvas.style.transform;
-            mainCanvas.style.transform = 'none';
-            html2canvas(mainCanvas, { 
-                width: 1200, height: 630, scale: 1, useCORS: true, allowTaint: true 
-            }).then(canvas => {
-                mainCanvas.style.transform = originalTransform;
-                const link = document.createElement('a');
-                link.download = `thumb-${getActiveTag()}-${Date.now()}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
+        // Initialize landscape canvases
+        const initLandscape = () => {
+            const grid = document.getElementById('landscapeGrid');
+            grid.innerHTML = '';
+            
+            landscapeStyles.forEach((style, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header" style="background: linear-gradient(to right, ${style.colors[0]}, ${style.colors[1]});">
+                        ${style.name}
+                    </div>
+                    <div class="card-body">
+                        <div class="canvas-wrapper">
+                            <canvas id="canvas${index}"></canvas>
+                        </div>
+                        <button class="btn-download" onclick="downloadCanvas('canvas${index}', 'thumbnail-style${index + 1}.png')">
+                            <span>⬇</span> Tải xuống PNG
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
             });
         };
+
+        // Wrap text helper
+        const wrapText = (ctx, text, x, y, maxWidth, lineHeight) => {
+            const words = text.split(' ');
+            let line = '';
+            let currentY = y;
+            const lines = [];
+
+            for (let i = 0; i < words.length; i++) {
+                const testLine = line + words[i] + ' ';
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > maxWidth && i > 0) {
+                    lines.push({ text: line, y: currentY });
+                    line = words[i] + ' ';
+                    currentY += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push({ text: line, y: currentY });
+            return lines;
+        };
+
+        // Draw Style 1: Modern Split
+        const drawStyle1 = (canvas) => {
+            const ctx = canvas.getContext('2d');
+            canvas.width = 1200;
+            canvas.height = 630;
+
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#1e3a8a');
+            gradient.addColorStop(1, '#3b82f6');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (currentImage) {
+                const imgWidth = 500;
+                const imgHeight = canvas.height;
+                const scale = Math.max(imgWidth / currentImage.width, imgHeight / currentImage.height);
+                const scaledWidth = currentImage.width * scale;
+                const scaledHeight = currentImage.height * scale;
+                const x = (imgWidth - scaledWidth) / 2;
+                const y = (imgHeight - scaledHeight) / 2;
+                
+                ctx.save();
+                ctx.rect(0, 0, imgWidth, imgHeight);
+                ctx.clip();
+                ctx.drawImage(currentImage, x, y, scaledWidth, scaledHeight);
+                ctx.restore();
+
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.fillRect(0, 0, imgWidth, imgHeight);
+            }
+
+            const textX = 540;
+            const textWidth = 620;
+            const headline = document.getElementById('headline').value || 'Your Headline Here';
+            const description = document.getElementById('description').value;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 56px Arial';
+            const headlineLines = wrapText(ctx, headline, textX, 180, textWidth, 70);
+            headlineLines.forEach(line => ctx.fillText(line.text, textX, line.y));
+
+            if (description) {
+                ctx.font = '28px Arial';
+                ctx.fillStyle = '#e0e7ff';
+                const descLines = wrapText(ctx, description, textX, headlineLines[headlineLines.length - 1].y + 60, textWidth, 40);
+                descLines.forEach(line => ctx.fillText(line.text, textX, line.y));
+            }
+
+            if (logoImage && logoImage.complete) {
+                const logoHeight = 50;
+                const logoWidth = (logoImage.width / logoImage.height) * logoHeight;
+                ctx.drawImage(logoImage, textX, canvas.height - 100, logoWidth, logoHeight);
+            }
+        };
+
+        // Draw Style 2: Clean Minimal
+        const drawStyle2 = (canvas) => {
+            const ctx = canvas.getContext('2d');
+            canvas.width = 1200;
+            canvas.height = 630;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (currentImage) {
+                const imgHeight = 400;
+                const imgWidth = canvas.width;
+                const scale = Math.max(imgWidth / currentImage.width, imgHeight / currentImage.height);
+                const scaledWidth = currentImage.width * scale;
+                const scaledHeight = currentImage.height * scale;
+                const x = (imgWidth - scaledWidth) / 2;
+                const y = (imgHeight - scaledHeight) / 2;
+                
+                ctx.save();
+                ctx.rect(0, 0, imgWidth, imgHeight);
+                ctx.clip();
+                ctx.drawImage(currentImage, x, y, scaledWidth, scaledHeight);
+                ctx.restore();
+
+                const gradient = ctx.createLinearGradient(0, imgHeight - 100, 0, imgHeight);
+                gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0.6)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, imgHeight - 100, canvas.width, 100);
+            }
+
+            const textY = 440;
+            const textX = 60;
+            const textWidth = 1080;
+            const headline = document.getElementById('headline').value || 'Your Headline Here';
+            const description = document.getElementById('description').value;
+
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 52px Arial';
+            const headlineLines = wrapText(ctx, headline, textX, textY, textWidth, 65);
+            headlineLines.forEach(line => ctx.fillText(line.text, textX, line.y));
+
+            if (description) {
+                ctx.font = '26px Arial';
+                ctx.fillStyle = '#64748b';
+                const lastY = headlineLines[headlineLines.length - 1].y;
+                const descLines = wrapText(ctx, description, textX, lastY + 50, textWidth, 38);
+                descLines.slice(0, 1).forEach(line => ctx.fillText(line.text, textX, line.y));
+            }
+
+            if (logoImage && logoImage.complete) {
+                const logoHeight = 45;
+                const logoWidth = (logoImage.width / logoImage.height) * logoHeight;
+                ctx.drawImage(logoImage, canvas.width - logoWidth - 60, canvas.height - 70, logoWidth, logoHeight);
+            }
+
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(0, 400, canvas.width, 6);
+        };
+
+        // Draw Style 3: Dark Creative
+        const drawStyle3 = (canvas) => {
+            const ctx = canvas.getContext('2d');
+            canvas.width = 1200;
+            canvas.height = 630;
+
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+            ctx.beginPath();
+            ctx.arc(1000, 100, 300, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.1)';
+            ctx.beginPath();
+            ctx.arc(200, 500, 250, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (currentImage) {
+                const centerX = 300;
+                const centerY = 315;
+                const radius = 200;
+                
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.clip();
+                
+                const scale = Math.max((radius * 2) / currentImage.width, (radius * 2) / currentImage.height);
+                const scaledWidth = currentImage.width * scale;
+                const scaledHeight = currentImage.height * scale;
+                const x = centerX - scaledWidth / 2;
+                const y = centerY - scaledHeight / 2;
+                
+                ctx.drawImage(currentImage, x, y, scaledWidth, scaledHeight);
+                ctx.restore();
+
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            const textX = 540;
+            const textWidth = 600;
+            const headline = document.getElementById('headline').value || 'Your Headline Here';
+            const description = document.getElementById('description').value;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 54px Arial';
+            const headlineLines = wrapText(ctx, headline, textX, 200, textWidth, 68);
+            headlineLines.forEach(line => ctx.fillText(line.text, textX, line.y));
+
+            if (description) {
+                ctx.font = '26px Arial';
+                ctx.fillStyle = '#94a3b8';
+                const lastY = headlineLines[headlineLines.length - 1].y;
+                const descLines = wrapText(ctx, description, textX, lastY + 50, textWidth, 38);
+                descLines.forEach(line => ctx.fillText(line.text, textX, line.y));
+            }
+
+            if (logoImage && logoImage.complete) {
+                const logoHeight = 50;
+                const logoWidth = (logoImage.width / logoImage.height) * logoHeight;
+                ctx.drawImage(logoImage, textX, canvas.height - 100, logoWidth, logoHeight);
+            }
+        };
+
+        // Draw Portrait
+        const drawPortrait = (canvas) => {
+            const ctx = canvas.getContext('2d');
+            canvas.width = 1080;
+            canvas.height = 1350;
+
+            const yPosition = document.getElementById('yPosition').value;
+
+            if (currentImage) {
+                const imgHeight = 900;
+                const imgWidth = canvas.width;
+                const scale = Math.max(imgWidth / currentImage.width, imgHeight / currentImage.height);
+                const scaledWidth = currentImage.width * scale;
+                const scaledHeight = currentImage.height * scale;
+                
+                const yOffset = ((yPosition - 50) / 50) * (scaledHeight - imgHeight) / 2;
+                const x = (imgWidth - scaledWidth) / 2;
+                const y = (imgHeight - scaledHeight) / 2 - yOffset;
+                
+                ctx.save();
+                ctx.rect(0, 0, imgWidth, imgHeight);
+                ctx.clip();
+                ctx.drawImage(currentImage, x, y, scaledWidth, scaledHeight);
+                ctx.restore();
+
+                const gradient = ctx.createLinearGradient(0, imgHeight - 200, 0, imgHeight);
+                gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0.85)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, imgHeight - 200, canvas.width, 200);
+            }
+
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 900, canvas.width, 450);
+
+            const textX = 60;
+            const textWidth = 960;
+            const textStartY = 980;
+            const headline = document.getElementById('headline').value || 'Your Headline Here';
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 64px Arial';
+            const headlineLines = wrapText(ctx, headline, textX, textStartY, textWidth, 80);
+            headlineLines.forEach(line => ctx.fillText(line.text, textX, line.y));
+
+            if (logoImage && logoImage.complete) {
+                const logoHeight = 55;
+                const logoWidth = (logoImage.width / logoImage.height) * logoHeight;
+                ctx.drawImage(logoImage, canvas.width - logoWidth - 60, canvas.height - 80, logoWidth, logoHeight);
+            }
+        };
+
+        // Render all canvases
+        const renderAll = () => {
+            drawStyle1(document.getElementById('canvas0'));
+            drawStyle2(document.getElementById('canvas1'));
+            drawStyle3(document.getElementById('canvas2'));
+            drawPortrait(document.getElementById('canvasPortrait'));
+        };
+
+        // Download canvas
+        const downloadCanvas = (canvasId, filename) => {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
+
+        // Event listeners
+        document.getElementById('imageInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        currentImage = img;
+                        renderAll();
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('headline').addEventListener('input', renderAll);
+        document.getElementById('description').addEventListener('input', renderAll);
+        document.getElementById('yPosition').addEventListener('input', renderAll);
+
+        // Initialize
+        initLandscape();
+        loadLogo();
     </script>
 </body>
 </html>

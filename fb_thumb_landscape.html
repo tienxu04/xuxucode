@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>News Thumbnail Pro - V2.1 Optimized</title>
+    <title>News Thumbnail Pro - v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
@@ -13,10 +13,9 @@
         .serif { font-family: 'Merriweather', serif; }
         .preview-container { width: 100%; max-width: 800px; margin: 0 auto; border: 2px solid #334155; background: #1e293b; position: relative; overflow: hidden; display: none; }
         .canvas-area { width: 1200px; height: 630px; position: relative; transform-origin: top left; background: #000; overflow: hidden; }
-        .movable-img { position: absolute; cursor: move; user-select: none; }
+        .movable-img { position: absolute; cursor: move; user-select: none; transition: none; }
         .drop-zone { border: 2px dashed #475569; transition: all 0.3s; }
         .drop-zone.dragover { background: #334155; border-color: #38bdf8; }
-        .logo-box { pointer-events: none; z-index: 50; transition: opacity 0.2s; }
         .text-shadow-heavy { text-shadow: 2px 2px 10px rgba(0,0,0,0.8), 0px 0px 20px rgba(0,0,0,0.4); }
     </style>
 </head>
@@ -36,11 +35,6 @@
                 </div>
 
                 <div class="space-y-4 bg-slate-800 p-5 rounded-xl shadow-2xl border border-slate-700">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2 italic">Phóng to ảnh (Zoom - Aspect Ratio Fixed)</label>
-                        <input type="range" id="zoomRange" min="1" max="4" step="0.01" value="1" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
-                    </div>
-
                     <div class="flex items-center gap-2 pb-2 border-b border-slate-700">
                         <input type="checkbox" id="logoToggle" checked class="w-4 h-4 accent-blue-500 cursor-pointer">
                         <label for="logoToggle" class="text-xs font-bold text-slate-300 cursor-pointer uppercase">Hiển thị Logo</label>
@@ -100,7 +94,7 @@
                     <div id="mainCanvas" class="canvas-area">
                         <img id="movableImg" src="" class="movable-img" draggable="false">
                         <div id="styleContent" class="absolute inset-0 w-full h-full pointer-events-none"></div>
-                        <div id="logoBox" class="logo-box absolute top-6 right-8">
+                        <div id="logoBox" class="logo-box absolute top-6 right-8 pointer-events-none z-50">
                             <img src="https://tienxu04.github.io/xuxucode/logo_ttn.png" class="h-16 drop-shadow-lg" crossorigin="anonymous">
                         </div>
                     </div>
@@ -128,11 +122,9 @@
         const descInput = document.getElementById('descInput');
         const colorPicker = document.getElementById('colorPicker');
         const styleSelect = document.getElementById('styleSelect');
-        const zoomRange = document.getElementById('zoomRange');
 
         let isDragging = false;
         let startX, startY, imgX = 0, imgY = 0;
-        let baseW = 0, baseH = 0;
         let currentMode = 'editing';
 
         logoToggle.addEventListener('change', () => logoBox.style.opacity = logoToggle.checked ? "1" : "0");
@@ -173,27 +165,21 @@
             const imgW = movableImg.naturalWidth, imgH = movableImg.naturalHeight;
             const canvasRatio = canvasW / canvasH, imgRatio = imgW / imgH;
             
+            // Luôn đảm bảo ảnh bao phủ toàn bộ canvas (Object-fit: cover logic)
             if (imgRatio > canvasRatio) {
-                baseH = canvasH; baseW = imgW * (canvasH / imgH);
-                imgX = -(baseW - canvasW) / 2; imgY = 0;
+                const newW = imgW * (canvasH / imgH);
+                movableImg.style.height = canvasH + 'px';
+                movableImg.style.width = newW + 'px';
+                imgX = -(newW - canvasW) / 2; imgY = 0;
             } else {
-                baseW = canvasW; baseH = imgH * (canvasW / imgW);
-                imgX = 0; imgY = -(baseH - canvasH) / 2;
+                const newH = imgH * (canvasW / imgW);
+                movableImg.style.width = canvasW + 'px';
+                movableImg.style.height = newH + 'px';
+                imgX = 0; imgY = -(newH - canvasH) / 2;
             }
-            zoomRange.value = 1;
-            applyTransform();
-        }
-
-        function applyTransform() {
-            const scale = parseFloat(zoomRange.value);
-            // Cố định tỷ lệ khung hình bằng cách nhân cả W và H với cùng một tỷ lệ scale
-            movableImg.style.width = (baseW * scale) + 'px';
-            movableImg.style.height = (baseH * scale) + 'px';
             movableImg.style.left = imgX + 'px';
             movableImg.style.top = imgY + 'px';
         }
-
-        zoomRange.oninput = applyTransform;
 
         const startDrag = (e) => {
             if (currentMode !== 'editing') return;
@@ -233,10 +219,11 @@
             const tag = getActiveTag();
 
             let html = '';
+            // Tối ưu Padding Label (Visual Centering) bằng inline-flex và line-height: 1
             if (s === "1") {
                 html = `<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent"></div>
                         <div class="absolute bottom-0 left-0 p-12 w-full">
-                            <span class="inline-flex items-center justify-center text-white text-lg font-bold px-4 pt-1.5 pb-2 mb-4 rounded-sm shadow-lg uppercase tracking-wider" style="background:${c}; line-height: 1;">${tag}</span>
+                            <span class="inline-flex items-center justify-center text-white text-lg font-bold px-4 pt-1.5 pb-2.5 mb-4 rounded-sm shadow-lg uppercase tracking-wider" style="background:${c}; line-height: 1;">${tag}</span>
                             <h1 class="text-white text-6xl font-black leading-[1.1] mb-4 text-shadow-heavy">${h}</h1>
                             <p class="text-gray-300 text-2xl font-light leading-snug text-shadow-heavy">${d}</p>
                         </div>`;
@@ -250,7 +237,7 @@
                         </div>`;
             } else {
                 html = `<div class="absolute bottom-0 left-0 w-full p-10 border-t-4 border-white/20" style="background-color: ${c}">
-                            <span class="inline-flex items-center justify-center bg-white text-[13px] font-black px-3 pt-1 pb-1.5 mb-3 rounded-sm uppercase tracking-tight" style="color: ${c}; line-height: 1;">${tag}</span>
+                            <span class="inline-flex items-center justify-center bg-white text-[13px] font-black px-3 pt-1.5 pb-2 mb-3 rounded-sm uppercase tracking-tight" style="color: ${c}; line-height: 1;">${tag}</span>
                             <h1 class="text-white text-5xl font-black uppercase tracking-tighter mb-2 text-shadow-heavy">${h}</h1>
                             <p class="text-white/80 text-2xl font-light leading-snug">${d}</p>
                         </div>`;

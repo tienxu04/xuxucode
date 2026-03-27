@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Media Thumbnail Generator</title>
+    <title>Social Media Thumbnail Generator v2@xuxu</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -58,6 +58,9 @@
             border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 0.5rem;
         }
+        .canvas-wrapper {
+    touch-action: none; /* Ngăn các thao tác mặc định của trình duyệt trên vùng này */
+}
         .btn-download:hover { background: #2563eb; }
         footer { text-align: center; color: #64748b; margin-top: 3rem; padding: 1rem; }
         @media (max-width: 768px) { .input-grid, .grid-3, .grid-2 { grid-template-columns: 1fr; } }
@@ -265,21 +268,42 @@
             link.click();
         };
 
-        // --- XỬ LÝ KÉO CHUỘT TRÊN CANVAS PORTRAIT ---
-        const pCanvas = document.getElementById('canvasPortrait');
-        pCanvas.addEventListener('mousedown', (e) => {
-            if (!currentImage) return;
-            isDragging = true;
-            startY = e.clientY - currentYOffset;
-        });
+        // --- XỬ LÝ KÉO TRÊN CANVAS (HỖ TRỢ CẢ CHUỘT VÀ CẢM ỨNG) ---
+const pCanvas = document.getElementById('canvasPortrait');
 
-        window.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            currentYOffset = e.clientY - startY;
-            renderAll();
-        });
+// Hàm xử lý khi bắt đầu chạm/nhấn
+function startDragging(y) {
+    if (!currentImage) return;
+    isDragging = true;
+    startY = y - currentYOffset;
+}
 
-        window.addEventListener('mouseup', () => isDragging = false);
+// Hàm xử lý khi đang di chuyển
+function moveDragging(y) {
+    if (!isDragging) return;
+    currentYOffset = y - startY;
+    renderAll();
+}
+
+// Sự kiện CHUỘT (Desktop)
+pCanvas.addEventListener('mousedown', (e) => startDragging(e.clientY));
+window.addEventListener('mousemove', (e) => moveDragging(e.clientY));
+window.addEventListener('mouseup', () => isDragging = false);
+
+// Sự kiện CẢM ỨNG (Mobile)
+pCanvas.addEventListener('touchstart', (e) => {
+    // Chặn cuộn trang khi đang chỉnh ảnh
+    e.preventDefault(); 
+    startDragging(e.touches[0].clientY);
+}, { passive: false });
+
+window.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    e.preventDefault(); // Chặn cuộn trang
+    moveDragging(e.touches[0].clientY);
+}, { passive: false });
+
+window.addEventListener('touchend', () => isDragging = false);
 
         // --- XỬ LÝ KÉO THẢ FILE UPLOAD ---
         const dropZone = document.getElementById('dropZone');

@@ -170,16 +170,38 @@
             lines.forEach(l => ctx.fillText(l.text, 60, l.y));
 
             // Logo và Text phụ
-            if (logoImage && logoImage.complete) {
-                const lh = 55; 
-                const lw = (logoImage.width/logoImage.height)*lh;
-                ctx.drawImage(logoImage, canvas.width - lw - 60, canvas.height - 85, lw, lh);
-                
-                ctx.font = '32px Arial'; 
-                ctx.globalAlpha = 0.9;
-                ctx.fillText('Link in comments', 60, canvas.height - 85 + (lh/1.5));
-                ctx.globalAlpha = 1.0;
-            }
+if (logoImage && logoImage.complete) {
+    const lh = 55; 
+    const lw = (logoImage.width/logoImage.height)*lh;
+    const logoX = canvas.width - lw - 60;
+    const logoY = canvas.height - 85;
+
+    // --- BẮT ĐẦU VẼ 3 GẠCH DIVIDER DÀI ---
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1; // Giảm xuống 1px cho mảnh và tinh tế hơn khi kéo dài
+    
+    const lineYStart = logoY - 30; // Khoảng cách từ divider đến đỉnh logo (30px cho thoáng)
+    const lineSpacing = 10;        // Khoảng cách giữa các sợi mảnh
+    const sideMargin = 60;         // Căn lề 2 bên cho bằng với Headline
+
+    for (let i = 0; i < 3; i++) {
+        ctx.globalAlpha = 0.2 + (i * 0.15); // Tạo hiệu ứng mờ dần (sợi trên cùng mờ nhất)
+        ctx.beginPath();
+        ctx.moveTo(sideMargin, lineYStart - (i * lineSpacing));
+        ctx.lineTo(canvas.width - sideMargin, lineYStart - (i * lineSpacing));
+        ctx.stroke();
+    }
+    ctx.globalAlpha = 1.0; 
+    // --- KẾT THÚC VẼ DIVIDER ---
+
+    // Vẽ Logo
+    ctx.drawImage(logoImage, logoX, logoY, lw, lh);
+    
+    ctx.font = '32px Arial'; 
+    ctx.globalAlpha = 0.9;
+    ctx.fillText('Link in comments', 60, canvas.height - 85 + (lh/1.5));
+    ctx.globalAlpha = 1.0;
+}
         };
 
         // --- XỬ LÝ KÉO (PAN) ---

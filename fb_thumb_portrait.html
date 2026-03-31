@@ -185,7 +185,7 @@ if (logoImage && logoImage.complete) {
     const sideMargin = 60;         // Căn lề 2 bên cho bằng với Headline
 
     for (let i = 0; i < 3; i++) {
-        ctx.globalAlpha = 0.2 + (i * 0.15); // Tạo hiệu ứng mờ dần (sợi trên cùng mờ nhất)
+        ctx.globalAlpha = 0.7 + (i * 0.15); // Tạo hiệu ứng mờ dần (sợi trên cùng mờ nhất)
         ctx.beginPath();
         ctx.moveTo(sideMargin, lineYStart - (i * lineSpacing));
         ctx.lineTo(canvas.width - sideMargin, lineYStart - (i * lineSpacing));

@@ -203,7 +203,15 @@
   .card-photo img {
     width: 100%; height: 100%;
     object-fit: cover;
+    object-position: 50% 50%;
     display: block;
+    transition: object-position 0s;
+  }
+  .card-photo.draggable {
+    cursor: grab;
+  }
+  .card-photo.dragging {
+    cursor: grabbing;
   }
   .card-photo .photo-placeholder {
     width: 100%; height: 100%;
@@ -367,7 +375,7 @@
       <img id="cardImg" src="" alt="" style="display:none">
       <div class="breaking-badge">
         <!-- Breaking News text logo (replace src with your PNG if available) -->
-         <img src="logo_ttct.webp" style="height:38px">
+      <img src="logo_ttct.webp" style="height:38px; width:auto; display:block; filter: drop-shadow(0 2px 6px rgba(0,0,0,.5));">
       </div>
     </div>
 
@@ -448,12 +456,12 @@ function applyPreview(src) {
   photoPreview.src = src;
   photoPreview.style.display = 'block';
   dropZone.classList.add('has-img');
-  // Also update card image live
   const cardImg = document.getElementById('cardImg');
   const photoPlaceholder = document.getElementById('photoPlaceholder');
   cardImg.src = src;
   cardImg.style.display = 'block';
   photoPlaceholder.style.display = 'none';
+  if (window._enableImageDrag) window._enableImageDrag();
 }
 
 // ── Category → theme map ──
@@ -522,6 +530,65 @@ function downloadCard() {
     link.click();
   });
 }
+
+// ── Drag to reposition image ──
+(function () {
+  const cardPhoto = document.getElementById('cardPhoto');
+  const cardImg   = document.getElementById('cardImg');
+
+  // image position as percentages (0–100)
+  let posX = 50, posY = 50;
+  let dragging = false;
+  let startX, startY, startPosX, startPosY;
+
+  // Sensitivity: higher = moves faster. Tweak if needed.
+  const SENSITIVITY = 0.25;
+
+  function setPos(x, y) {
+    posX = Math.max(0, Math.min(100, x));
+    posY = Math.max(0, Math.min(100, y));
+    cardImg.style.objectPosition = `${posX}% ${posY}%`;
+  }
+
+  function onStart(clientX, clientY) {
+    if (!cardImg.src || cardImg.style.display === 'none') return;
+    dragging = true;
+    startX = clientX;
+    startY = clientY;
+    startPosX = posX;
+    startPosY = posY;
+    cardPhoto.classList.add('dragging');
+  }
+
+  function onMove(clientX, clientY) {
+    if (!dragging) return;
+    const dx = (clientX - startX) * SENSITIVITY;
+    const dy = (clientY - startY) * SENSITIVITY;
+    setPos(startPosX - dx, startPosY - dy);
+  }
+
+  function onEnd() {
+    dragging = false;
+    cardPhoto.classList.remove('dragging');
+  }
+
+  // Mouse
+  cardPhoto.addEventListener('mousedown',  e => { e.preventDefault(); onStart(e.clientX, e.clientY); });
+  window.addEventListener   ('mousemove',  e => onMove(e.clientX, e.clientY));
+  window.addEventListener   ('mouseup',    onEnd);
+
+  // Touch
+  cardPhoto.addEventListener('touchstart', e => { const t = e.touches[0]; onStart(t.clientX, t.clientY); }, { passive: true });
+  window.addEventListener   ('touchmove',  e => { const t = e.touches[0]; onMove(t.clientX, t.clientY); },  { passive: true });
+  window.addEventListener   ('touchend',   onEnd);
+
+  // Enable grab cursor + reset position when new image loaded
+  window._enableImageDrag = () => {
+    posX = 50; posY = 50;
+    setPos(50, 50);
+    cardPhoto.classList.add('draggable');
+  };
+})();
 
 // Init default state
 liveUpdate();

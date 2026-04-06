@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>News Card Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a22;
+    --border: #2e2e3a;
+    --text: #e8e8f0;
+    --muted: #888899;
+    --accent: #e8192c;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Sans 3', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    gap: 0;
+  }
+
+  /* ── LEFT PANEL ── */
+  .panel {
+    width: 380px;
+    min-width: 340px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    overflow-y: auto;
+  }
+
+  .panel-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 14px;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  /* Drop zone */
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    position: relative;
+    overflow: hidden;
+    background: #12121a;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+    background: #1e1018;
+  }
+  .drop-zone img.preview {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  .drop-zone .drop-text {
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.5;
+    pointer-events: none;
+  }
+  .drop-zone .drop-icon {
+    font-size: 28px;
+    pointer-events: none;
+  }
+  .drop-zone input[type="file"] {
+    display: none;
+  }
+  .drop-zone.has-img .drop-text,
+  .drop-zone.has-img .drop-icon { display: none; }
+
+  input[type="text"], textarea, select {
+    width: 100%;
+    background: #12121a;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 14px;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color .2s;
+    resize: none;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+  }
+  textarea { min-height: 72px; }
+  select { cursor: pointer; }
+  select option { background: #1a1a22; }
+
+  .char-hint {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 4px;
+  }
+  .char-hint.warn { color: #f59e0b; }
+
+  .btn-generate {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+    width: 100%;
+    margin-top: 4px;
+  }
+  .btn-generate:hover { opacity: .88; }
+  .btn-generate:active { transform: scale(.98); }
+
+  .btn-download {
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-download:hover { border-color: var(--text); color: var(--text); }
+
+  /* ── RIGHT PREVIEW ── */
+  .preview-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background: repeating-linear-gradient(
+      45deg,
+      #111118 0px, #111118 10px,
+      #0d0d12 10px, #0d0d12 20px
+    );
+  }
+
+  /* ── NEWS CARD ── */
+  .news-card {
+    width: 320px;
+    height: 568px;
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 32px 80px rgba(0,0,0,.7);
+    font-family: 'Source Sans 3', sans-serif;
+  }
+
+  .card-photo {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #222;
+  }
+  .card-photo img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card-photo .photo-placeholder {
+    width: 100%; height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-size: 13px;
+    background: #1c1c28;
+  }
+
+  /* Breaking News logo text on photo */
+  .breaking-badge {
+    position: absolute;
+    bottom: 18px;
+    left: 18px;
+  }
+  .breaking-badge img {
+    height: 38px;
+    width: auto;
+    display: block;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.5));
+  }
+  /* Fallback text logo if no PNG provided */
+  .breaking-text-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.15;
+    text-shadow: 0 2px 8px rgba(0,0,0,.6);
+  }
+
+  /* Bottom content strip */
+  .card-content {
+    flex-shrink: 0;
+    padding: 16px 18px 0;
+    color: #fff;
+  }
+
+  .card-chuyen-muc {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    opacity: .95;
+  }
+
+  .card-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.32;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+
+  .card-lede {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: rgba(255,255,255,.82);
+    /* max 2 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .card-divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,.2);
+    margin: 0 -18px;
+  }
+
+  .card-swipe {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 0 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,.8);
+    letter-spacing: .3px;
+  }
+  .card-swipe .arrow-up {
+    font-size: 11px;
+  }
+
+  /* Colour themes per category */
+  .theme-chinh-tri    { background: #cc1624; }
+  .theme-xa-hoi       { background: #1a6fd4; }
+  .theme-the-thao     { background: #1b8a4c; }
+  .theme-kinh-te      { background: #b35c00; }
+  .theme-van-hoa      { background: #7b2fa8; }
+  .theme-giao-duc     { background: #0e7a8a; }
+  .theme-the-gioi     { background: #1a4fa0; }
+  .theme-cong-nghe    { background: #1a3a6e; }
+  .theme-suc-khoe     { background: #1a6b2e; }
+  .theme-moi-truong   { background: #2e6b1a; }
+</style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="panel">
+  <div class="panel-title">📰 News Card Generator</div>
+
+  <!-- Photo upload -->
+  <div>
+    <label>Ảnh bìa</label>
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="photoInput" accept="image/*,.heic,.heif">
+      <span class="drop-icon">🖼️</span>
+      <div class="drop-text">Kéo thả ảnh vào đây<br>hoặc click để chọn</div>
+      <img class="preview" id="photoPreview" src="" alt="" style="display:none">
+    </div>
+  </div>
+
+  <!-- Chuyên mục -->
+  <div>
+    <label>Chuyên mục</label>
+    <select id="category">
+      <option value="chinh-tri"  data-label="Chính trị">Chính trị</option>
+      <option value="xa-hoi"     data-label="Xã hội">Xã hội</option>
+      <option value="the-thao"   data-label="Thể thao">Thể thao</option>
+      <option value="kinh-te"    data-label="Kinh tế">Kinh tế</option>
+      <option value="van-hoa"    data-label="Văn hoá">Văn hoá</option>
+      <option value="giao-duc"   data-label="Giáo dục">Giáo dục</option>
+      <option value="the-gioi"   data-label="Thế giới">Thế giới</option>
+      <option value="cong-nghe"  data-label="Công nghệ">Công nghệ</option>
+      <option value="suc-khoe"   data-label="Sức khoẻ">Sức khoẻ</option>
+      <option value="moi-truong" data-label="Môi trường">Môi trường</option>
+    </select>
+  </div>
+
+  <!-- Headline -->
+  <div>
+    <label>Tiêu đề (Headline)</label>
+    <textarea id="headline" maxlength="120" placeholder="Nhập tiêu đề bài viết…" rows="3"></textarea>
+    <div class="char-hint" id="headlineCount">0 / 120</div>
+  </div>
+
+  <!-- Lede -->
+  <div>
+    <label>Lede <span style="font-weight:400;text-transform:none;letter-spacing:0">(tóm tắt, tối đa 2 dòng)</span></label>
+    <textarea id="lede" maxlength="200" placeholder="Tóm tắt ngắn gọn nội dung bài…" rows="3"></textarea>
+    <div class="char-hint" id="ledeCount">0 / 200</div>
+  </div>
+
+  <button class="btn-generate" onclick="downloadCard()">⬇ Tải xuống PNG</button>
+</div>
+
+<!-- RIGHT PREVIEW -->
+<div class="preview-area">
+  <div class="news-card" id="newsCard">
+    <!-- Photo -->
+    <div class="card-photo" id="cardPhoto">
+      <div class="photo-placeholder" id="photoPlaceholder">Chưa có ảnh</div>
+      <img id="cardImg" src="" alt="" style="display:none">
+      <div class="breaking-badge">
+        <!-- Breaking News text logo (replace src with your PNG if available) -->
+         <img src="logo_ttct.webp" style="height:38px">
+      </div>
+    </div>
+
+    <!-- Content strip -->
+    <div class="card-content theme-chinh-tri" id="cardContent">
+      <div class="card-chuyen-muc" id="cardCategory">CHÍNH TRỊ</div>
+      <div class="card-headline" id="cardHeadline">Tiêu đề bài viết sẽ hiển thị ở đây sau khi bạn nhập nội dung bên trái</div>
+      <div class="card-lede" id="cardLede">Lede tóm tắt nội dung bài viết, tối đa hai dòng, sẽ xuất hiện tại đây.</div>
+      <hr class="card-divider">
+      <div class="card-swipe">
+        <span class="arrow-up">▲</span>
+        Xem thêm trong Bình luận
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+// ── Drag & drop upload ──
+const dropZone   = document.getElementById('dropZone');
+const photoInput = document.getElementById('photoInput');
+const photoPreview = document.getElementById('photoPreview');
+
+dropZone.addEventListener('click', () => photoInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) loadImage(file);
+});
+photoInput.addEventListener('change', () => {
+  if (photoInput.files[0]) loadImage(photoInput.files[0]);
+});
+
+let currentImageSrc = '';
+
+function loadImage(file) {
+  // Use createObjectURL first — works for HEIC on Safari, JPEG/PNG/WebP everywhere
+  const objectUrl = URL.createObjectURL(file);
+  const testImg = new Image();
+
+  testImg.onload = () => {
+    // Draw onto canvas → get reliable PNG data URL (fixes HEIC on Chrome etc.)
+    const canvas = document.createElement('canvas');
+    canvas.width  = testImg.naturalWidth;
+    canvas.height = testImg.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(testImg, 0, 0);
+    try {
+      currentImageSrc = canvas.toDataURL('image/jpeg', 0.92);
+    } catch(e) {
+      // Tainted canvas fallback (cross-origin) — shouldn't happen with local files
+      currentImageSrc = objectUrl;
+    }
+    applyPreview(currentImageSrc);
+    URL.revokeObjectURL(objectUrl);
+  };
+
+  testImg.onerror = () => {
+    // Browser can't decode (e.g. HEIC on Chrome without system codec)
+    // Fall back to FileReader base64 — Safari will still render it
+    URL.revokeObjectURL(objectUrl);
+    const reader = new FileReader();
+    reader.onload = ev => {
+      currentImageSrc = ev.target.result;
+      applyPreview(currentImageSrc);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  testImg.src = objectUrl;
+}
+
+function applyPreview(src) {
+  photoPreview.src = src;
+  photoPreview.style.display = 'block';
+  dropZone.classList.add('has-img');
+  // Also update card image live
+  const cardImg = document.getElementById('cardImg');
+  const photoPlaceholder = document.getElementById('photoPlaceholder');
+  cardImg.src = src;
+  cardImg.style.display = 'block';
+  photoPlaceholder.style.display = 'none';
+}
+
+// ── Category → theme map ──
+const themeMap = {
+  'chinh-tri':  { cls: 'theme-chinh-tri',   label: 'CHÍNH TRỊ' },
+  'xa-hoi':     { cls: 'theme-xa-hoi',      label: 'XÃ HỘI' },
+  'the-thao':   { cls: 'theme-the-thao',    label: 'THỂ THAO' },
+  'kinh-te':    { cls: 'theme-kinh-te',     label: 'KINH TẾ' },
+  'van-hoa':    { cls: 'theme-van-hoa',     label: 'VĂN HOÁ' },
+  'giao-duc':   { cls: 'theme-giao-duc',    label: 'GIÁO DỤC' },
+  'the-gioi':   { cls: 'theme-the-gioi',    label: 'THẾ GIỚI' },
+  'cong-nghe':  { cls: 'theme-cong-nghe',   label: 'CÔNG NGHỆ' },
+  'suc-khoe':   { cls: 'theme-suc-khoe',    label: 'SỨC KHOẺ' },
+  'moi-truong': { cls: 'theme-moi-truong',  label: 'MÔI TRƯỜNG' },
+};
+
+// ── Char counters + live preview ──
+function liveUpdate() {
+  const cat      = document.getElementById('category').value;
+  const headline = document.getElementById('headline').value;
+  const lede     = document.getElementById('lede').value;
+  const theme    = themeMap[cat];
+
+  // Category colour + label
+  const cardContent = document.getElementById('cardContent');
+  cardContent.className = 'card-content ' + theme.cls;
+  document.getElementById('cardCategory').textContent = theme.label;
+
+  // Headline
+  document.getElementById('cardHeadline').textContent =
+    headline || 'Tiêu đề bài viết sẽ hiển thị ở đây…';
+
+  // Lede
+  document.getElementById('cardLede').textContent =
+    lede || 'Lede tóm tắt nội dung bài viết sẽ xuất hiện tại đây.';
+}
+
+function updateCount(inputId, countId, max) {
+  const el  = document.getElementById(inputId);
+  const cnt = document.getElementById(countId);
+  el.addEventListener('input', () => {
+    const len = el.value.length;
+    cnt.textContent = `${len} / ${max}`;
+    cnt.classList.toggle('warn', len > max * 0.8);
+    liveUpdate();
+  });
+}
+updateCount('headline', 'headlineCount', 120);
+updateCount('lede',     'ledeCount',     200);
+
+
+document.getElementById('category').addEventListener('change', liveUpdate);
+
+// ── Download via html2canvas ──
+function downloadCard() {
+  const card = document.getElementById('newsCard');
+  html2canvas(card, {
+    scale: 3,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: null
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'news-card.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
+
+// Init default state
+liveUpdate();
+</script>
+</body>
+</html>

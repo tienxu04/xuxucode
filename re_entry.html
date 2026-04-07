@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sống Sót Qua Biển Lửa: Artemis 2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, .space-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .glow-text {
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.7), 0 0 20px rgba(249, 115, 22, 0.5);
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+        
+        .loader {
+            border: 3px solid #1f2937;
+            border-top: 3px solid #ef4444;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="antialiased selection:bg-red-500 selection:text-white">
+
+    <!-- Header Section -->
+    <header class="relative pt-20 pb-12 px-6 text-center max-w-4xl mx-auto">
+        <div class="inline-block mb-4 px-3 py-1 rounded-full border border-red-500/30 bg-red-500/10 text-red-400 text-sm font-semibold tracking-wider">
+            SỨ MỆNH ARTEMIS II
+        </div>
+        <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+            Tại Sao Tàu Orion <br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-600 glow-text">Không Cháy Rụi?</span>
+        </h1>
+        <p class="text-lg md:text-xl text-gray-400 leading-relaxed">
+            Khi trở về từ Mặt Trăng, tàu vũ trụ Orion đâm vào bầu khí quyển Trái Đất với tốc độ <strong class="text-white">40.000 km/h</strong> (Mach 32). Nhiệt độ bên ngoài lên tới <strong class="text-red-400">2.760°C</strong> - gấp đôi nhiệt độ nóng chảy của thép. Nhưng phi hành đoàn bên trong vẫn an toàn ở nhiệt độ phòng. Mọi thứ phụ thuộc vào một nguyên lý kỳ diệu.
+        </p>
+    </header>
+
+    <!-- Interactive Visualizer Section -->
+    <section class="relative w-full max-w-6xl mx-auto px-4 mb-20">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-2xl relative">
+            
+            <!-- Canvas Container -->
+            <div class="relative w-full h-[60vh] bg-black">
+                <canvas id="reentryCanvas"></canvas>
+                
+                <!-- Overlay Stats -->
+                <div class="absolute top-4 left-4 flex flex-col gap-2 pointer-events-none">
+                    <div class="bg-black/60 backdrop-blur-sm border border-gray-700 p-3 rounded-lg">
+                        <div class="text-xs text-gray-400 uppercase tracking-wide">Tốc độ</div>
+                        <div class="text-2xl font-mono text-cyan-400 font-bold" id="stat-speed">39,800 km/h</div>
+                    </div>
+                    <div class="bg-black/60 backdrop-blur-sm border border-gray-700 p-3 rounded-lg">
+                        <div class="text-xs text-gray-400 uppercase tracking-wide">Nhiệt độ ngoài</div>
+                        <div class="text-2xl font-mono text-red-500 font-bold" id="stat-temp">-150°C</div>
+                    </div>
+                </div>
+                
+                <div class="absolute top-4 right-4 bg-black/60 backdrop-blur-sm border border-gray-700 p-3 rounded-lg pointer-events-none text-right">
+                    <div class="text-xs text-gray-400 uppercase tracking-wide">Nhiệt độ Cabin</div>
+                    <div class="text-2xl font-mono text-green-400 font-bold">22°C</div>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="p-6 bg-gray-950 border-t border-gray-800">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="text-sm font-semibold text-gray-300">Quá Trình Tái Nhập Khí Quyển</label>
+                    <span id="phase-label" class="text-sm text-red-400 font-mono">Ngoài vũ trụ</span>
+                </div>
+                <input type="range" id="phaseSlider" min="0" max="100" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-orange-500">
+                <div class="flex justify-between text-xs text-gray-500 mt-2 font-mono">
+                    <span>Không gian (0 km)</span>
+                    <span>Xuyên qua lớp khí (120 km)</span>
+                    <span>Chạm đất</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Explanation Section -->
+    <section class="max-w-5xl mx-auto px-6 mb-24">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+            
+            <!-- Principle 1 -->
+            <div class="space-y-4">
+                <div class="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/50">
+                    <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <h3 class="text-2xl font-bold space-font">1. Định lý "Đáy Phẳng" (Blunt Body)</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Trực giác mách bảo thiết kế mũi nhọn sẽ xé gió tốt hơn. Nhưng ở tốc độ siêu thanh (Mach 32), mũi nhọn lại hút nhiệt trực tiếp vào thân tàu. Thay vào đó, Orion đi vào bầu khí quyển bằng cái <strong>đáy phẳng và tù</strong> của nó.
+                </p>
+                <p class="text-gray-400 leading-relaxed">
+                    Hình dáng này nén luồng không khí ở phía trước, tạo ra một <strong>sóng xung kích hình nơ (Bow Shock)</strong>. Lớp sóng này hoạt động như một lá chắn tàng hình, đẩy lớp khí bị nén và siêu nóng (plasma) ra xa bề mặt con tàu. Hơn 80% nhiệt lượng trượt ra xung quanh thay vì chạm vào tàu!
+                </p>
+            </div>
+
+            <!-- Principle 2 -->
+            <div class="space-y-4">
+                <div class="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/50">
+                    <svg class="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path></svg>
+                </div>
+                <h3 class="text-2xl font-bold space-font">2. Vật liệu "Hy Sinh" (Avcoat)</h3>
+                <p class="text-gray-400 leading-relaxed">
+                    Ngay cả khi có sóng xung kích, lượng nhiệt lọt qua vẫn là 2.760°C. Lúc này, Tấm khiên nhiệt khổng lồ rộng 5 mét ở đáy tàu lên tiếng. Nó được làm từ vật liệu <strong>Avcoat</strong> (một loại nhựa epoxy-novolac).
+                </p>
+                <p class="text-gray-400 leading-relaxed">
+                    Cơ chế hoạt động của Avcoat là <strong>Ablative (Tiêu huỷ/Hoá hơi)</strong>. Khi bề mặt nóng lên, vật liệu này sẽ bốc cháy, hóa hơi thành khí và bong ra từng mảnh nhỏ. Quá trình hóa hơi này thu nhiệt cực mạnh, mang theo sức nóng bay đi và ngăn không cho nhiệt lượng truyền sâu vào lớp cấu trúc titan bên trong.
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- AI Generated Graphic Section -->
+    <section class="max-w-5xl mx-auto px-6 mb-24">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 relative overflow-hidden">
+            <!-- decorative blur -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-red-600/10 rounded-full blur-3xl"></div>
+            
+            <div class="flex flex-col md:flex-row gap-8 items-center relative z-10">
+                <div class="w-full md:w-1/2">
+                    <h3 class="text-2xl font-bold space-font mb-4 flex items-center gap-3">
+                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        Cận Cảnh Bề Mặt Khiên Nhiệt
+                    </h3>
+                    <p class="text-gray-400 mb-6">
+                        Tôi đã sử dụng hệ thống AI hình ảnh để phác họa cận cảnh bề mặt của vật liệu Avcoat khi nó đang chịu áp lực nhiệt độ khắc nghiệt. Bạn có thể thấy cấu trúc tổ ong chứa nhựa đang hóa hơi (glowing red) để mang nhiệt lượng tản đi.
+                    </p>
+                    <div id="ai-status" class="text-sm text-yellow-500 font-mono bg-yellow-500/10 inline-block px-3 py-1 rounded border border-yellow-500/20">
+                        Đang kết nối API Hình ảnh để vẽ...
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2 aspect-video bg-black rounded-xl border border-gray-700 flex items-center justify-center overflow-hidden relative group">
+                    <!-- Loader -->
+                    <div id="image-loader" class="flex flex-col items-center gap-3">
+                        <div class="loader"></div>
+                        <span class="text-sm text-gray-500 font-mono">Generating Graphic...</span>
+                    </div>
+                    <!-- The Image -->
+                    <img id="generated-shield-image" class="w-full h-full object-cover hidden transition-transform duration-700 group-hover:scale-105" alt="Cận cảnh khiên nhiệt Artemis bốc cháy" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center text-gray-600 text-sm py-8 border-t border-gray-800">
+        <p>Mô phỏng cơ chế Re-entry Tàu Orion - Artemis II</p>
+        <p class="mt-2 text-xs opacity-60">Created with HTML5 Canvas, JS & AI APIs.</p>
+    </footer>
+
+    <!-- LOGIC JS: Canvas Visualizer + API -->
+    <script>
+        // --- 1. CANVAS VISUALIZER LOGIC ---
+        const canvas = document.getElementById('reentryCanvas');
+        const ctx = canvas.getContext('2d');
+        const slider = document.getElementById('phaseSlider');
+        
+        const statSpeed = document.getElementById('stat-speed');
+        const statTemp = document.getElementById('stat-temp');
+        const phaseLabel = document.getElementById('phase-label');
+
+        let cw = canvas.width;
+        let ch = canvas.height;
+        
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            cw = canvas.width;
+            ch = canvas.height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Particles for atmosphere/plasma
+        let particles = [];
+        const numParticles = 200;
+        
+        for(let i=0; i<numParticles; i++) {
+            particles.push({
+                x: Math.random() * cw,
+                y: Math.random() * ch,
+                speed: Math.random() * 5 + 2,
+                size: Math.random() * 2 + 1,
+                offset: Math.random() * Math.PI * 2
+            });
+        }
+
+        // Ablation particles (flaking off shield)
+        let ablationParticles = [];
+
+        function drawOrionCapsule(x, y, scale, intensity) {
+            ctx.save();
+            ctx.translate(x, y);
+            // Shake effect based on intensity
+            if (intensity > 0) {
+                const shake = intensity * 2;
+                ctx.translate(Math.random() * shake - shake/2, Math.random() * shake - shake/2);
+            }
+
+            // Draw Heat Shield (Bottom, facing right in our 2D view)
+            ctx.beginPath();
+            ctx.moveTo(30 * scale, -50 * scale);
+            // Blunt body curve
+            ctx.quadraticCurveTo(50 * scale, 0, 30 * scale, 50 * scale);
+            ctx.lineTo(20 * scale, 50 * scale);
+            ctx.lineTo(20 * scale, -50 * scale);
+            ctx.closePath();
+            
+            // Shield color changes with heat
+            const heatR = 150 + (105 * intensity); // 150 to 255
+            const heatG = 150 - (100 * intensity); // 150 to 50
+            const heatB = 150 - (150 * intensity); // 150 to 0
+            ctx.fillStyle = `rgb(${heatR}, ${heatG}, ${heatB})`;
+            ctx.fill();
+            ctx.strokeStyle = '#444';
+            ctx.stroke();
+
+            // Draw Capsule Body
+            ctx.beginPath();
+            ctx.moveTo(20 * scale, -50 * scale);
+            ctx.lineTo(-40 * scale, -20 * scale);
+            ctx.lineTo(-40 * scale, 20 * scale);
+            ctx.lineTo(20 * scale, 50 * scale);
+            ctx.closePath();
+            
+            // Reflection
+            const gradient = ctx.createLinearGradient(0, -50*scale, 0, 50*scale);
+            gradient.addColorStop(0, '#e5e7eb');
+            gradient.addColorStop(0.5, '#9ca3af');
+            gradient.addColorStop(1, '#4b5563');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#1f2937';
+            ctx.stroke();
+
+            // Detail lines
+            ctx.beginPath();
+            ctx.moveTo(0, -40*scale);
+            ctx.lineTo(-20*scale, -10*scale);
+            ctx.lineTo(-20*scale, 10*scale);
+            ctx.lineTo(0, 40*scale);
+            ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawBowShock(x, y, scale, intensity) {
+            if (intensity <= 0.05) return;
+
+            ctx.save();
+            ctx.translate(x, y);
+
+            // Distance of shockwave from shield decreases as intensity increases
+            const shockDist = 80 - (intensity * 30); 
+            
+            ctx.beginPath();
+            // Create the curve of the bow shock
+            ctx.moveTo(shockDist * scale, -100 * scale);
+            ctx.quadraticCurveTo((shockDist + 50) * scale, 0, shockDist * scale, 100 * scale);
+            
+            // Style the plasma
+            ctx.lineWidth = 15 * intensity * scale;
+            
+            const plasmaGradient = ctx.createLinearGradient(0, -100*scale, 0, 100*scale);
+            if (intensity < 0.5) {
+                // Initial compression (Blueish)
+                plasmaGradient.addColorStop(0, 'rgba(0, 200, 255, 0)');
+                plasmaGradient.addColorStop(0.5, `rgba(0, 200, 255, ${intensity})`);
+                plasmaGradient.addColorStop(1, 'rgba(0, 200, 255, 0)');
+            } else {
+                // Max heat (Yellow/Orange)
+                plasmaGradient.addColorStop(0, 'rgba(255, 100, 0, 0)');
+                plasmaGradient.addColorStop(0.5, `rgba(255, 200, 0, ${intensity})`);
+                plasmaGradient.addColorStop(1, 'rgba(255, 100, 0, 0)');
+            }
+            
+            ctx.strokeStyle = plasmaGradient;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // Inner intense heat glow directly on shield
+            ctx.beginPath();
+            ctx.moveTo(35 * scale, -50 * scale);
+            ctx.quadraticCurveTo(55 * scale, 0, 35 * scale, 50 * scale);
+            ctx.lineWidth = 8 * intensity * scale;
+            ctx.strokeStyle = `rgba(255, 50, 0, ${intensity * 0.8})`;
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function spawnAblation(x, y, scale) {
+            ablationParticles.push({
+                x: x + 40 * scale,
+                y: y + (Math.random() * 100 - 50) * scale,
+                vx: - (Math.random() * 15 + 5), // fly leftwards (relative to air)
+                vy: (Math.random() * 4 - 2),
+                life: 1.0,
+                size: Math.random() * 3 + 1
+            });
+        }
+
+        let time = 0;
+
+        function animate() {
+            time += 0.05;
+            const progress = slider.value / 100; // 0.0 to 1.0
+            
+            // Calculate physical state based on slider
+            let intensity = 0; // 0 to 1 mapping of heat
+            let speedKmh = 39800;
+            let tempC = -150;
+            let phaseText = "Không gian tĩnh lặng";
+
+            if (progress < 0.2) {
+                intensity = 0;
+                speedKmh = 39800;
+                tempC = -150 + (progress/0.2) * 200; 
+                phaseText = "Xâm nhập (Độ cao > 120km)";
+            } else if (progress < 0.7) {
+                // Max heating phase
+                const heatProgress = (progress - 0.2) / 0.5; // 0 to 1
+                intensity = Math.sin(heatProgress * Math.PI); // Peaks at middle
+                speedKmh = 39800 - (heatProgress * 25000); // Decelerating
+                tempC = 50 + (intensity * 2710); // Peaks at ~2760
+                phaseText = "Hút Nhiệt & Plasma (Độ cao 70km)";
+                statTemp.classList.replace('text-cyan-400', 'text-red-500');
+            } else {
+                intensity = 0;
+                const coolProgress = (progress - 0.7) / 0.3;
+                speedKmh = 14800 - (coolProgress * 14750); // Slows to parachute speed
+                tempC = 2760 - (coolProgress * 2600); // Cooling down
+                phaseText = "Giảm tốc & Làm mát (Độ cao < 30km)";
+                statTemp.classList.replace('text-red-500', 'text-orange-400');
+            }
+
+            // Update UI
+            statSpeed.textContent = Math.round(speedKmh).toLocaleString() + " km/h";
+            statTemp.textContent = Math.round(tempC).toLocaleString() + "°C";
+            phaseLabel.textContent = phaseText;
+
+            // Clear canvas
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, cw, ch);
+
+            // Background speed lines (stars/air)
+            const speedMultiplier = progress < 0.8 ? (10 + progress * 40) : 5; // Fast then slow
+            
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            for (let p of particles) {
+                p.x -= p.speed * (speedMultiplier/10);
+                if (p.x < 0) {
+                    p.x = cw;
+                    p.y = Math.random() * ch;
+                }
+                
+                // If it hits the "shockwave" zone, deflect it
+                const dx = p.x - (cw/2 + 50);
+                const dy = p.y - ch/2;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (intensity > 0.1 && p.x < cw/2 + 100 && p.x > cw/2 && dist < 120) {
+                    // Deflect up or down
+                    if (p.y < ch/2) p.y -= 5 * intensity;
+                    else p.y += 5 * intensity;
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            // Draw Elements
+            const capsuleX = cw / 2 - 50;
+            const capsuleY = ch / 2;
+            const scale = 1.5;
+
+            drawBowShock(capsuleX, capsuleY, scale, intensity);
+            drawOrionCapsule(capsuleX, capsuleY, scale, intensity);
+
+            // Ablation Logic
+            if (intensity > 0.4 && Math.random() < intensity) {
+                spawnAblation(capsuleX, capsuleY, scale);
+                spawnAblation(capsuleX, capsuleY, scale);
+            }
+
+            // Draw Ablation Particles
+            for (let i = ablationParticles.length - 1; i >= 0; i--) {
+                let ap = ablationParticles[i];
+                ap.x += ap.vx;
+                ap.y += ap.vy;
+                ap.life -= 0.02;
+
+                if (ap.life <= 0) {
+                    ablationParticles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.fillStyle = `rgba(255, ${Math.floor(ap.life * 150)}, 0, ${ap.life})`;
+                ctx.beginPath();
+                ctx.arc(ap.x, ap.y, ap.size, 0, Math.PI*2);
+                ctx.fill();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Start animation
+        animate();
+
+
+        // --- 2. API GENERATION LOGIC ---
+        // Sử dụng Exponential Backoff để đảm bảo độ tin cậy
+        const apiKey = ""; // Được tiêm tự động bởi môi trường
+        
+        async function generateGraphicWithRetry(prompt, retries = 5) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+            const payload = {
+                instances: { prompt: prompt },
+                parameters: { sampleCount: 1 }
+            };
+
+            let delay = 1000;
+            
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    
+                    const result = await response.json();
+                    if (result.predictions && result.predictions[0] && result.predictions[0].bytesBase64Encoded) {
+                        return `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                    } else {
+                        throw new Error("Invalid response format");
+                    }
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2; // Exponential backoff (1s, 2s, 4s, 8s, 16s)
+                }
+            }
+        }
+
+        window.addEventListener('load', () => {
+            const prompt = "Close up macro photography of a spacecraft's ablative honeycomb heat shield (Avcoat) glowing red hot, vaporizing and breaking off slightly. Dark space background, hyperrealistic, sci-fi documentary style, cinematic lighting, highly detailed.";
+            
+            const loader = document.getElementById('image-loader');
+            const imgElement = document.getElementById('generated-shield-image');
+            const statusText = document.getElementById('ai-status');
+
+            generateGraphicWithRetry(prompt)
+                .then(imgData => {
+                    if (imgData && imgData.startsWith("data:image")) {
+                        imgElement.src = imgData;
+                        loader.classList.add('hidden');
+                        imgElement.classList.remove('hidden');
+                        statusText.textContent = "✓ Hình ảnh đã được kết xuất thành công bởi AI.";
+                        statusText.classList.replace('text-yellow-500', 'text-green-400');
+                        statusText.classList.replace('bg-yellow-500/10', 'bg-green-500/10');
+                        statusText.classList.replace('border-yellow-500/20', 'border-green-500/20');
+                    } else {
+                        throw new Error("Lỗi dữ liệu ảnh trả về không hợp lệ."); 
+                    }
+                })
+                .catch(err => {
+                    console.error("Failed to generate image:", err);
+                    loader.innerHTML = `<span class="text-red-400 text-sm text-center px-4">Không thể tải graphic lúc này do giới hạn kết nối API.<br>Vui lòng xem mô phỏng Canvas phía trên.</span>`;
+                    statusText.textContent = "⚠ Lỗi kết nối AI.";
+                    statusText.classList.replace('text-yellow-500', 'text-red-400');
+                });
+        });
+
+    </script>
+</body>
+</html>

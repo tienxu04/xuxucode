@@ -380,7 +380,7 @@
       <hr class="card-divider">
       <div class="card-swipe">
         <span class="arrow-up">▲</span>
-        Xem thêm trong Bình luận
+        cuoituan.tuoitre.vn
       </div>
     </div>
   </div>
@@ -513,16 +513,48 @@ document.getElementById('category').addEventListener('change', liveUpdate);
 // ── Download via html2canvas ──
 function downloadCard() {
   const card = document.getElementById('newsCard');
-  html2canvas(card, {
-    scale: 3,
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: null
-  }).then(canvas => {
-    const link = document.createElement('a');
-    link.download = 'news-card.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+
+  // Snapshot current inline styles to restore after
+  const prevStyle = card.getAttribute('style') || '';
+
+  // Force exact card dimensions so html2canvas sees the right layout
+  card.style.cssText = `
+    width: 320px !important;
+    height: 568px !important;
+    min-height: 568px !important;
+    max-height: 568px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border-radius: 18px !important;
+    overflow: hidden !important;
+  `;
+
+  // Also force photo area to fill remaining space
+  const cardPhoto = document.getElementById('cardPhoto');
+  const prevPhotoStyle = cardPhoto.getAttribute('style') || '';
+  cardPhoto.style.cssText = 'flex: 1; overflow: hidden; position: relative;';
+
+  requestAnimationFrame(() => {
+    html2canvas(card, {
+      scale: 3,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: null,
+      width: 320,
+      height: 568,
+    }).then(canvas => {
+      // Restore
+      card.setAttribute('style', prevStyle);
+      cardPhoto.setAttribute('style', prevPhotoStyle);
+
+      const link = document.createElement('a');
+      link.download = 'news-card.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }).catch(() => {
+      card.setAttribute('style', prevStyle);
+      cardPhoto.setAttribute('style', prevPhotoStyle);
+    });
   });
 }
 

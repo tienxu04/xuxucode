@@ -223,26 +223,18 @@
     background: #1c1c28;
   }
 
-  /* Breaking News logo text on photo */
-  .breaking-badge {
-    position: absolute;
-    bottom: 18px;
-    right: 18px;
+  /* Header bar with logo */
+  .card-header {
+    flex-shrink: 0;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .breaking-badge img {
-    height: 38px;
+  .card-header img {
+    height: 32px;
     width: auto;
     display: block;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,.5));
-  }
-  /* Fallback text logo if no PNG provided */
-  .breaking-text-logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    font-weight: 900;
-    color: #fff;
-    line-height: 1.15;
-    text-shadow: 0 2px 8px rgba(0,0,0,.6);
   }
 
   /* Bottom content strip */
@@ -369,14 +361,15 @@
 <!-- RIGHT PREVIEW -->
 <div class="preview-area">
   <div class="news-card" id="newsCard">
+    <!-- Header bar -->
+    <div class="card-header theme-chinh-tri" id="cardHeader">
+      <img src="logo_ttct.png" alt="Logo">
+    </div>
+
     <!-- Photo -->
     <div class="card-photo" id="cardPhoto">
       <div class="photo-placeholder" id="photoPlaceholder">Chưa có ảnh</div>
       <img id="cardImg" src="" alt="" style="display:none">
-      <div class="breaking-badge">
-        <!-- Breaking News text logo (replace src with your PNG if available) -->
-      <img src="logo_ttct.png" style="height:38px; width:auto; display:block; filter: drop-shadow(0 2px 6px rgba(0,0,0,.5));">
-      </div>
     </div>
 
     <!-- Content strip -->
@@ -487,7 +480,9 @@ function liveUpdate() {
 
   // Category colour + label
   const cardContent = document.getElementById('cardContent');
+  const cardHeader  = document.getElementById('cardHeader');
   cardContent.className = 'card-content ' + theme.cls;
+  cardHeader.className  = 'card-header '  + theme.cls;
   document.getElementById('cardCategory').textContent = theme.label;
 
   // Headline

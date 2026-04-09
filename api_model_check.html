@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>Máy dò Model Gemini của Sơn</h2>
+    <input type="password" id="key" placeholder="Dán API Key vào đây">
+    <button onclick="check()">Dò ngay</button>
+    <pre id="output"></pre>
+
+    <script>
+        async function check() {
+            const key = document.getElementById('key').value.trim();
+            const out = document.getElementById('output');
+            out.innerText = "Đang dò...";
+            
+            try {
+                // Gọi list models từ Google
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+                const data = await res.json();
+                
+                if (data.models) {
+                    // Lọc ra những model có hỗ trợ tạo nội dung (generateContent)
+                    const list = data.models
+                        .filter(m => m.supportedGenerationMethods.includes("generateContent"))
+                        .map(m => m.name.replace("models/", ""))
+                        .join("\n");
+                    out.innerText = "Các ID model bạn có thể dùng:\n\n" + list;
+                } else {
+                    out.innerText = "Lỗi: " + JSON.stringify(data, null, 2);
+                }
+            } catch (e) {
+                out.innerText = "Không gọi được API. Check mạng hoặc Key.";
+            }
+        }
+    </script>
+</body>
+</html>

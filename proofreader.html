@@ -3,44 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tỉnh Táo Viên v6.0 - Ultimate Edition</title>
+    <title>Tỉnh Táo Viên PRO v6.5 - GitHub Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-900 leading-relaxed">
+<body class="bg-slate-50 min-h-screen p-4 md:p-8 font-sans text-slate-900 leading-relaxed">
     <div class="max-w-6xl mx-auto space-y-6">
         <header class="flex justify-between items-center border-b-2 pb-5 border-slate-200">
             <div>
-                <h1 class="text-3xl font-black text-slate-950 tracking-tighter italic">TỈNH TÁO VIÊN <span class="text-blue-600">v6.0</span></h1>
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-[0.2em] mt-1">Hệ thống biên tập chuyên sâu & Phân tích logic</p>
+                <h1 class="text-3xl font-black text-slate-950 tracking-tighter italic">TỈNH TÁO VIÊN <span class="text-blue-600">v6.5</span></h1>
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-[0.2em] mt-1">Hệ thống tổng duyệt & Phân tích logic chuyên sâu</p>
             </div>
             <div id="statusBadge" class="hidden px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 shadow-sm"></div>
         </header>
         
         <div class="bg-white p-6 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-xs font-black text-slate-400 uppercase">Input Terminal</span>
-                <input type="file" id="fileInput" accept=".docx" class="text-[10px] text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-slate-100 file:text-slate-600 hover:file:bg-slate-200 cursor-pointer transition-all">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 block">Google API Key (Bảo mật)</label>
+                    <div class="relative">
+                        <input type="password" id="apiKeyInput" 
+                            class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all text-sm font-mono" 
+                            placeholder="Dán AIza... của bạn vào đây">
+                        <button onclick="toggleKey()" class="absolute right-4 top-3 text-slate-400 hover:text-blue-600 transition-colors">
+                            <span id="eyeIcon">👁️</span>
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 block">Bản thảo (.docx)</label>
+                    <input type="file" id="fileInput" accept=".docx" 
+                        class="block w-full text-[10px] text-slate-400 file:mr-4 file:py-2.5 file:px-6 file:rounded-xl file:border-0 file:bg-slate-900 file:text-white file:text-[10px] file:font-black file:uppercase file:tracking-widest hover:file:bg-blue-700 cursor-pointer border border-dashed border-slate-200 p-1.5 rounded-2xl">
+                </div>
             </div>
-            <textarea id="editor" class="w-full h-80 p-6 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all text-base text-slate-800 placeholder:italic" placeholder="Ném bản thảo của bạn vào đây..."></textarea>
-            <div class="mt-4 flex justify-end">
-                <button onclick="runProofreader()" id="btnSubmit" class="bg-slate-950 text-white px-14 py-4 rounded-2xl hover:bg-blue-700 font-black tracking-widest transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-blue-200/20 uppercase text-xs">Bắt đầu tổng duyệt</button>
+
+            <textarea id="editor" class="w-full h-80 p-6 border border-slate-50 rounded-2xl focus:ring-4 focus:ring-blue-50 outline-none transition-all text-base text-slate-800 placeholder:italic shadow-inner" placeholder="Ném bản thảo của bạn vào đây..."></textarea>
+            
+            <div class="mt-6 flex flex-col sm:flex-row gap-4 items-center justify-between border-t pt-6 border-slate-50">
+                <div class="flex items-center gap-2">
+                    <span class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                    </span>
+                    <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Model: gemini-3.1-flash-lite</p>
+                </div>
+                <button onclick="runProofreader()" id="btnSubmit" class="bg-slate-950 text-white px-16 py-4 rounded-2xl hover:bg-blue-700 font-black tracking-widest transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-blue-200/20 uppercase text-xs">
+                    Bắt đầu tổng duyệt
+                </button>
             </div>
         </div>
 
         <div id="results" class="hidden grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div class="space-y-4">
-                <h2 class="text-xs font-black text-amber-600 bg-amber-50 px-4 py-2 rounded-lg flex justify-between items-center tracking-[0.2em] uppercase">
+                <h2 class="text-xs font-black text-amber-600 bg-amber-50 px-4 py-3 rounded-xl flex justify-between items-center tracking-[0.2em] uppercase">
                     <span>🧠 Phân tích Logic</span>
-                    <span id="logicCount"></span>
+                    <span id="logicCount" class="bg-white px-2 py-0.5 rounded shadow-sm text-[10px]"></span>
                 </h2>
                 <div id="logicContainer" class="space-y-4"></div>
             </div>
 
             <div class="space-y-4">
-                <h2 class="text-xs font-black text-blue-600 bg-blue-50 px-4 py-2 rounded-lg flex justify-between items-center tracking-[0.2em] uppercase">
+                <h2 class="text-xs font-black text-blue-600 bg-blue-50 px-4 py-3 rounded-xl flex justify-between items-center tracking-[0.2em] uppercase">
                     <span>✍️ Rà soát Ngôn ngữ</span>
-                    <span id="lingCount"></span>
+                    <span id="lingCount" class="bg-white px-2 py-0.5 rounded shadow-sm text-[10px]"></span>
                 </h2>
                 <div id="morassContainer" class="space-y-3"></div>
             </div>
@@ -50,15 +75,33 @@
     <script type="module">
         import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-        // ==========================================
-        // CONFIG (Sơn dán API Key vào đây)
-        // ==========================================
-        const API_KEY = "AIzaSyCiZ26JQQYsLGfYuFdRw9E6MjRGDnK7nl4";
-        const MODEL_NAME = "gemini-3.1-flash-lite-preview";
+        // Tự động load Key từ bộ nhớ máy khách (LocalStorage)
+        window.onload = () => {
+            const savedKey = localStorage.getItem('sonluong_proofreader_key');
+            if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+        };
+
+        window.toggleKey = function() {
+            const input = document.getElementById('apiKeyInput');
+            const eye = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                eye.innerText = '🙈';
+            } else {
+                input.type = 'password';
+                eye.innerText = '👁️';
+            }
+        };
 
         window.runProofreader = async function() {
             const text = document.getElementById('editor').value.trim();
-            if (!text || API_KEY.includes("DÁN")) return alert("Sếp ơi, check lại nội dung hoặc API Key nhé!");
+            const API_KEY = document.getElementById('apiKeyInput').value.trim();
+
+            if (!text) return alert("Sếp ơi, chưa có nội dung bài!");
+            if (!API_KEY) return alert("Sếp nhập API Key vào đã nhé!");
+
+            // Lưu Key lại cho lần sau
+            localStorage.setItem('sonluong_proofreader_key', API_KEY);
 
             const btn = document.getElementById('btnSubmit');
             btn.innerText = "ĐANG TỔNG DUYỆT...";
@@ -66,48 +109,44 @@
 
             try {
                 const genAI = new GoogleGenerativeAI(API_KEY);
-                const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+                const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite-preview" });
 
-                // NÂNG CẤP PROMPT: Chôm từ bạn và "bơm" thêm tiêu chuẩn tòa soạn của mình
-                const ultimatePrompt = `Bạn là Trưởng phòng Biên tập kỳ cựu của một tờ báo chính trị - xã hội lớn. Bạn nổi tiếng với "con mắt cú vọ" có thể phát hiện những hạt sạn nhỏ nhất và những lỗ hổng logic tinh vi nhất.
-
-Nhiệm vụ: Soát lỗi toàn bộ văn bản dưới đây với tiêu chuẩn "Không sai một dấu phẩy, không hổng một lập luận".
+                const ultimatePrompt = `Bạn là biên tập viên kỳ cựu kiêm "tỉnh táo viên" tại một tòa soạn lớn. Nhiệm vụ của bạn là soát lỗi toàn bộ văn bản sau với tiêu chuẩn cực kỳ cao.
 
 VĂN BẢN CẦN SOÁT:
 ---
 ${text}
 ---
 
-Yêu cầu phân tích và trả về JSON thuần túy (KHÔNG markdown):
+Hãy phân tích và trả về JSON thuần (KHÔNG markdown):
 {
   "summary": {
-    "typo_count": <tổng lỗi ngôn ngữ>,
-    "logic_count": <tổng lỗi logic>,
-    "severity": "<Nhẹ|Trung bình|Nặng>",
-    "overall_critique": "<Nhận xét tổng quan về chất lượng văn bản trong 1 câu>"
+    "typo_count": 0,
+    "logic_count": 0,
+    "severity": "Nhẹ",
+    "overall_critique": "Nhận xét tổng quan bài viết."
   },
   "linguistic_errors": [
     {
-      "type": "<typo|punct|grammar|format|vocabulary|style>",
-      "location": "<trích đoạn ngắn chứa lỗi>",
-      "original": "<phần bị lỗi>",
-      "corrected": "<phần đã sửa>",
-      "note": "<Giải thích ngắn gọn quy tắc hoặc lý do sửa, ví dụ: 'Sai ngữ cảnh từ vựng', 'Dấu thanh đặt sai vị trí'>"
+      "type": "typo|punct|grammar|format|vocabulary",
+      "location": "cụm từ vị trí lỗi",
+      "original": "gốc",
+      "corrected": "sửa",
+      "note": "tại sao sai (vd: sai ngữ cảnh, thiếu từ bổ trợ)"
     }
   ],
   "logic_errors": [
     {
-      "location": "<trích đoạn có vấn đề>",
-      "issue": "<Tên lỗi: Mâu thuẫn | Nhảy cóc ý | Tối nghĩa | Diễn đạt kiểu 'Tây'>",
-      "argument": "<Lập luận biên tập: Phân tích chi tiết tại sao đoạn này chưa ổn và nó gây khó hiểu cho độc giả như thế nào. Trình bày sắc bén, thuyết phục.>"
+      "location": "đoạn lỗi",
+      "issue": "Mâu thuẫn | Nhảy cóc | Tối nghĩa",
+      "argument": "Lập luận biên tập sắc bén lý giải tại sao đoạn này chưa ổn."
     }
   ]
 }
 
-LƯU Ý CỰC KỲ QUAN TRỌNG:
-1. Soi thật kỹ các từ dễ sai ngữ cảnh (ví dụ: 'tệp khách' phải là 'tệp khách hàng', 'yếu điểm' vs 'điểm yếu').
-2. Bắt các lỗi format đặc thù tiếng Việt: dấu phẩy sát từ đứng trước, dấu ba chấm phải là 3 ký tự '.', khoảng trắng giữa con số và đơn vị.
-3. Phần logic_errors: Tuyệt đối không nhận xét khơi khơi. Phải giải thích được cái 'hổng' của tư duy tác giả.`;
+Lưu ý: 
+- Soát micro-editing từng dấu câu, khoảng trắng thừa, và chính tả Việt Nam (vd: 'tệp khách' -> 'tệp khách hàng').
+- logic_errors phải giải thích sâu, thuyết phục.`;
 
                 const result = await model.generateContent(ultimatePrompt);
                 const response = await result.response;
@@ -118,7 +157,7 @@ LƯU Ý CỰC KỲ QUAN TRỌNG:
 
             } catch (err) {
                 console.error(err);
-                alert("Lỗi hệ thống rồi! Sơn check console coi sao.");
+                alert("Lỗi: " + err.message);
             } finally {
                 btn.innerText = "Bắt đầu tổng duyệt";
                 btn.disabled = false;
@@ -128,46 +167,40 @@ LƯU Ý CỰC KỲ QUAN TRỌNG:
         function renderResults(data) {
             document.getElementById('results').classList.remove('hidden');
             
-            // Badge & Summary
             const badge = document.getElementById('statusBadge');
-            badge.innerText = `[ ${data.summary?.severity} ] : ${data.summary?.overall_critique}`;
+            badge.innerText = `[ ${data.summary?.severity || 'OK'} ] : ${data.summary?.overall_critique || ''}`;
             badge.className = `px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 shadow-sm ${
                 data.summary?.severity === 'Nặng' ? 'bg-red-50 border-red-200 text-red-600' : 'bg-emerald-50 border-emerald-200 text-emerald-600'
             }`;
             badge.classList.remove('hidden');
 
-            // Render Logic
-            document.getElementById('logicCount').innerText = `${data.summary?.logic_count || 0} LỖI`;
+            document.getElementById('logicCount').innerText = `${data.summary?.logic_count || 0}`;
             document.getElementById('logicContainer').innerHTML = (data.logic_errors || []).map(err => `
-                <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm hover:border-amber-300 transition-all group">
-                    <div class="flex items-center gap-2 mb-3">
-                        <span class="text-[8px] font-black bg-amber-500 text-white px-2 py-0.5 rounded uppercase tracking-tighter">${err.issue}</span>
-                        <span class="text-[10px] text-slate-400 font-mono italic truncate">Vị trí: ${err.location}</span>
+                <div class="bg-white p-5 rounded-2xl border border-amber-100 shadow-sm">
+                    <div class="flex items-center gap-2 mb-3 font-black text-[8px] uppercase">
+                        <span class="bg-amber-500 text-white px-2 py-0.5 rounded tracking-tighter">${err.issue}</span>
+                        <span class="text-slate-400 italic">@ ${err.location}</span>
                     </div>
-                    <p class="text-amber-800 text-sm leading-relaxed font-bold italic border-l-2 border-amber-200 pl-4 bg-amber-50/30 py-2 rounded-r-lg">
-                        ${err.argument}
-                    </p>
+                    <p class="text-amber-800 text-sm leading-relaxed italic border-l-2 border-amber-200 pl-4 bg-amber-50/30 py-2 rounded-r-lg font-medium">${err.argument}</p>
                 </div>
-            `).join('') || "<div class='p-8 text-center text-slate-300 italic text-sm'>Văn bản mạch lạc vô song.</div>";
+            `).join('') || "<div class='p-4 text-center text-slate-300 italic text-xs'>Mạch lạc, không lỗi logic.</div>";
 
-            // Render Linguistic
-            document.getElementById('lingCount').innerText = `${data.summary?.typo_count || 0} LỖI`;
+            document.getElementById('lingCount').innerText = `${data.summary?.typo_count || 0}`;
             document.getElementById('morassContainer').innerHTML = (data.linguistic_errors || []).map(err => `
-                <div class="bg-white p-4 rounded-2xl border border-blue-50 shadow-sm flex flex-col gap-2">
-                    <div class="flex justify-between items-center">
-                        <span class="text-[8px] font-black uppercase bg-blue-100 text-blue-600 px-2 py-0.5 rounded">${err.type}</span>
-                        <span class="text-[10px] text-slate-400 italic font-medium">${err.location}</span>
+                <div class="bg-white p-4 rounded-2xl border border-blue-50 shadow-sm flex flex-col gap-1">
+                    <div class="flex justify-between items-center text-[8px] font-black uppercase tracking-tighter">
+                        <span class="text-blue-600">${err.type}</span>
+                        <span class="text-slate-400 italic">${err.location}</span>
                     </div>
                     <div class="flex items-baseline gap-2">
                         <span class="text-slate-300 line-through text-xs italic">${err.original}</span>
                         <span class="text-blue-700 font-black text-base italic">→ ${err.corrected}</span>
                     </div>
-                    <p class="text-[10px] text-slate-500 font-medium leading-tight mt-1 border-t pt-2 border-slate-50">${err.note}</p>
+                    <p class="text-[10px] text-slate-400 font-medium mt-1 italic">${err.note}</p>
                 </div>
-            `).join('') || "<div class='p-8 text-center text-slate-300 italic text-sm'>Chính tả sạch như lau như ly.</div>";
+            `).join('') || "<div class='p-4 text-center text-slate-300 italic text-xs'>Chính tả sạch sẽ.</div>";
         }
 
-        // Đọc Docx
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;

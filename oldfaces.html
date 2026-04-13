@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-back: #1e293b;
+            --accent: #38bdf8;
+            --win-color: #fbbf24;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        h1 { font-weight: 300; letter-spacing: 2px; margin-bottom: 30px; color: var(--accent); text-align: center; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 1000px;
+            perspective: 1000px;
+        }
+
+        .card-wrapper { width: 180px; height: 260px; position: relative; }
+
+        .card {
+            width: 100%; height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-back {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden;
+            background-color: var(--card-back);
+            border: 2px solid #334155;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .card-back::after { content: "🎧"; font-size: 40px; opacity: 0.2; }
+
+        .card-front {
+            position: absolute; width: 100%; height: 100%;
+            backface-visibility: hidden;
+            background: white; color: #1e293b;
+            border-radius: 12px; padding: 15px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; transform: rotateY(180deg);
+            box-sizing: border-box;
+        }
+
+        .card.is-flipped { transform: rotateY(180deg); }
+
+        /* Hiệu ứng trúng giải */
+        .card.winner .card-front {
+            border: 4px solid var(--win-color);
+            box-shadow: 0 0 30px var(--win-color);
+            transform: rotateY(180deg) scale(1.1);
+            z-index: 100;
+        }
+
+        .card-wrapper.glowing .card-back {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        .title { font-size: 1.1rem; font-weight: bold; margin-bottom: 5px; color: #000; line-height: 1.2; }
+        .author { font-size: 0.85rem; color: #64748b; font-style: italic; margin-bottom: 15px; }
+        
+        /* Phần thông tin mới thêm */
+        .info-box {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #cbd5e1;
+            width: 100%;
+        }
+        .listen-on { font-size: 0.75rem; font-weight: bold; color: #0369a1; text-transform: uppercase; }
+        .note { font-size: 0.7rem; color: #ef4444; margin-top: 4px; display: block; }
+
+        .btn {
+            margin-top: 40px; padding: 15px 50px;
+            font-size: 1rem; background: var(--accent);
+            color: var(--bg); border: none; border-radius: 8px;
+            font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .btn:disabled { background: #475569; }
+
+        @media (max-width: 800px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+
+    <h1>AUDIOBOOK PICKER</h1>
+    <div class="grid" id="cardGrid"></div>
+    <button class="btn" id="shuffleBtn" onclick="startShuffle()">SHUFFLE & PICK</button>
+
+    <script>
+        let books = [];
+        let cardElements = [];
+
+        // Gọi hàm từ Apps Script để lấy data thực tế từ Sheet
+        google.script.run.withSuccessHandler(data => {
+            books = data;
+            initGrid();
+        }).getBooksFromSheet();
+
+        function initGrid() {
+            const grid = document.getElementById('cardGrid');
+            grid.innerHTML = '';
+            books.forEach((book, i) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'card-wrapper';
+                wrapper.innerHTML = `
+                    <div class="card" id="card-${i}">
+                        <div class="card-back"></div>
+                        <div class="card-front">
+                            <div class="title">${book.t}</div>
+                            <div class="author">${book.a}</div>
+                            <div class="info-box">
+                                <span class="listen-on">📍 ${book.s}</span>
+                                ${book.n ? `<span class="note">(${book.n})</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(wrapper);
+                cardElements.push(wrapper);
+            });
+        }
+
+        async function startShuffle() {
+            const btn = document.getElementById('shuffleBtn');
+            btn.disabled = true;
+            
+            cardElements.forEach(el => {
+                el.classList.remove('glowing');
+                el.querySelector('.card').classList.remove('is-flipped', 'winner');
+            });
+
+            let currentIndex = -1;
+            let shuffles = 25;
+
+            for (let i = 0; i < shuffles; i++) {
+                if (currentIndex >= 0) cardElements[currentIndex].classList.remove('glowing');
+                currentIndex = Math.floor(Math.random() * cardElements.length);
+                cardElements[currentIndex].classList.add('glowing');
+                await new Promise(r => setTimeout(r, 80 + (i * 10)));
+            }
+
+            const winCard = cardElements[currentIndex].querySelector('.card');
+            winCard.classList.add('is-flipped', 'winner');
+            btn.disabled = false;
+        }
+    </script>
+</body>
+</html>

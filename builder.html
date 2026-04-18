@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Story Builder - V2 Spotlight</title>
+    <style>
+        :root {
+            --primary-color: #c41212;
+            --bg-canvas: #f0f2f5;
+            --text-main: #1a1a1a;
+            --font-serif: "Ibarra Real Nova", Georgia, serif;
+            --font-sans: "Inter", -apple-system, system-ui, sans-serif;
+            --spotlight-transition: opacity 0.8s ease, filter 0.8s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        body { margin: 0; font-family: var(--font-sans); display: flex; height: 100vh; overflow: hidden; background: var(--bg-canvas); }
+
+        /* --- EDITOR UI --- */
+        #sidebar { width: 320px; background: #1e1e24; color: white; padding: 25px 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; box-shadow: 2px 0 15px rgba(0,0,0,0.1); z-index: 10; }
+        #sidebar h2 { font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 10px; color: #aaa; }
+        .block-tool { background: #2b2b36; padding: 14px; border-radius: 8px; cursor: pointer; border: 1px solid #3f3f4e; transition: 0.2s; display: flex; align-items: center; gap: 12px; font-weight: 500; }
+        .block-tool:hover { background: #3f3f4e; border-color: var(--primary-color); transform: translateX(5px); }
+        
+        #canvas-container { flex: 1; overflow-y: auto; padding: 50px 20px; display: flex; flex-direction: column; align-items: center; scroll-behavior: smooth; }
+        #canvas { width: 100%; max-width: 850px; background: white; min-height: 90vh; box-shadow: 0 15px 40px rgba(0,0,0,0.08); padding: 80px 0 300px; position: relative; }
+
+        /* --- CONTROL BUTTONS --- */
+        .controls { position: fixed; bottom: 30px; right: 30px; display: flex; gap: 15px; z-index: 1000; }
+        .btn { padding: 14px 28px; border-radius: 40px; border: none; cursor: pointer; font-weight: 700; font-family: var(--font-sans); text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .btn-preview { background: #fff; color: var(--text-main); }
+        .btn-preview:hover { background: #eee; }
+        .btn-download { background: var(--primary-color); color: white; }
+        .btn-download:hover { background: #a00f0f; transform: translateY(-2px); }
+
+        /* --- DRAG & DROP EDITOR BLOCKS --- */
+        .block-wrapper { position: relative; padding: 10px 60px; border: 2px dashed transparent; transition: border 0.3s; }
+        .block-wrapper.dragging { opacity: 0.4; }
+        .block-wrapper.drag-over { border-top: 4px solid var(--primary-color); }
+        body:not(.preview-mode) .block-wrapper:hover { border-color: #e0e0e0; background: #fafbfc; }
+        
+        .block-actions { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); display: none; flex-direction: column; gap: 8px; background: white; border: 1px solid #ddd; padding: 8px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 100; }
+        body:not(.preview-mode) .block-wrapper:hover .block-actions { display: flex; }
+        .action-btn { background: none; border: none; font-size: 16px; cursor: pointer; opacity: 0.6; transition: 0.2s; }
+        .action-btn:hover { opacity: 1; }
+        .drag-handle { cursor: grab; font-weight: bold; color: #999; }
+        .drag-handle:active { cursor: grabbing; }
+
+        /* --- DROPZONE UPLOAD --- */
+        .dropzone { border: 2px dashed #ccc; background: #f9f9f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; min-height: 200px; cursor: pointer; position: relative; transition: 0.3s; color: #888; overflow: hidden; }
+        .dropzone:hover, .dropzone.dragover { background: #e3f2fd; border-color: #2196f3; color: #2196f3; }
+        .dropzone img { position: absolute; width: 100%; height: 100%; object-fit: cover; z-index: 1; display: none; }
+        .dropzone span { position: relative; z-index: 2; pointer-events: none; background: rgba(255,255,255,0.8); padding: 5px 10px; border-radius: 4px; }
+        .dropzone.has-image { border: none; }
+        .dropzone.has-image img { display: block; }
+        .dropzone.has-image span { opacity: 0; transition: 0.3s; }
+        .dropzone.has-image:hover span { opacity: 1; }
+
+        /* --- RENDERED STYLES --- */
+        [contenteditable]:focus { outline: none; background: rgba(255, 255, 0, 0.1); }
+        
+        .story-block { transition: var(--spotlight-transition); } /* Nền tảng cho Focus */
+        
+        .header-block { text-align: center; margin-bottom: 80px; }
+        .p-block { font-family: var(--font-serif); font-size: 1.3rem; line-height: 1.85; color: #222; margin: 0 auto 35px; max-width: 680px; }
+        
+        .quote-block { border-left: 5px solid var(--primary-color); padding-left: 35px; margin: 80px auto; max-width: 750px; }
+        .quote-text { font-family: var(--font-serif); font-size: 2.5rem; font-style: italic; color: #111; margin-bottom: 15px; line-height: 1.3; }
+        .quote-author { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 2px; color: #777; font-weight: 600; }
+
+        .img-parallax { width: 100%; margin: 80px 0; position: relative; overflow: hidden; border-radius: 4px; display: flex; flex-direction: column; }
+        .img-parallax .img-container { height: 75vh; width: 100%; overflow: hidden; position: relative; }
+        .img-parallax .dropzone { height: 100%; width: 100%; border-radius: 0; }
+        .caption { font-size: 0.95rem; color: #666; margin-top: 15px; font-style: italic; text-align: center; font-family: var(--font-sans); }
+
+        .grid-block { display: grid; gap: 15px; margin: 80px 0; padding: 0 20px; }
+        .grid-2 { grid-template-columns: 1fr 1fr; }
+        .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .grid-4 { grid-template-columns: 1fr 1fr; }
+        .grid-block .dropzone { height: 350px; border-radius: 4px; }
+
+        .box-block { background: #fafafa; border: 1px solid #eaeaea; border-left: 4px solid #333; padding: 45px; margin: 80px auto; max-width: 700px; }
+        .box-title { font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; color: var(--primary-color); }
+
+        /* =========================================
+           V2: SPOTLIGHT SCROLLING (THE MAGIC)
+           ========================================= */
+        /* Trạng thái mặc định khi bật chế độ Preview hoặc trên bản Xuất bản: Mờ và tối */
+        .preview-mode .story-block, 
+        body.published-story .story-block {
+            opacity: 0.15;
+            filter: blur(10px);
+            transform: scale(0.95);
+            pointer-events: none; /* Không cho click vào block đang mờ */
+        }
+        
+        /* Trạng thái được chọn (Nằm giữa màn hình) */
+        .preview-mode .story-block.spotlight-active, 
+        body.published-story .story-block.spotlight-active {
+            opacity: 1;
+            filter: blur(0);
+            transform: scale(1.02); /* Phóng to nhẹ tạo điểm nhấn */
+            pointer-events: auto;
+        }
+
+        /* Ẩn UI dư thừa khi Preview */
+        .preview-mode #sidebar { display: none; }
+        .preview-mode .block-actions { display: none !important; }
+        .preview-mode #canvas { box-shadow: none; background: transparent; }
+        .preview-mode #canvas-container { background: #fff; } /* Đổi nền để trải nghiệm đọc tốt hơn */
+
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <h2>Magazine Blocks</h2>
+    <div class="block-tool" onclick="addBlock('paragraph')"><span>¶</span> Paragraph</div>
+    <div class="block-tool" onclick="addBlock('quote')"><span>“</span> Big Quote</div>
+    <div class="block-tool" onclick="addBlock('image')"><span>🖼</span> Parallax Image</div>
+    <div class="block-tool" onclick="addBlock('grid')"><span>▦</span> Photo Grid</div>
+    <div class="block-tool" onclick="addBlock('box')"><span>📦</span> Fact Box</div>
+</div>
+
+<div id="canvas-container">
+    <div id="canvas">
+        <div class="block-wrapper" draggable="false">
+            <div class="story-block header-block">
+                <h1 contenteditable="true" style="font-family: var(--font-serif); font-size: 4.5rem; margin-bottom: 15px; line-height: 1.1; color: var(--primary-color);">Đại Lộ Hoàng Hôn</h1>
+                <p contenteditable="true" style="color: #666; font-size: 1.4rem; font-weight: 300;">Sapo của bài viết bắt đầu từ đây, nhấp để sửa...</p>
+            </div>
+        </div>
+        <div id="story-content">
+            </div>
+    </div>
+</div>
+
+<div class="controls">
+    <button class="btn btn-preview" onclick="togglePreview()" id="previewBtn">Live Preview</button>
+    <button class="btn btn-download" onclick="downloadHTML()">Xuất Bản</button>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" style="display: none;">
+
+<script>
+    const storyContent = document.getElementById('story-content');
+    const scrollArea = document.getElementById('canvas-container'); // Container cuộn
+    let activeDropzone = null;
+
+    const templates = {
+        paragraph: `<div class="story-block p-block" contenteditable="true">Nhập nội dung văn bản. Chữ Serif cổ điển mang lại cảm giác đọc của một tạp chí in truyền thống.</div>`,
+        quote: `<div class="story-block quote-block">
+                    <div class="quote-text" contenteditable="true">"Hãy đặt một câu nói đắt giá nhất của nhân vật vào đây để thu hút thị giác."</div>
+                    <div class="quote-author" contenteditable="true">Tên Nhân Vật</div>
+                </div>`,
+        image: `<div class="story-block img-parallax">
+                    <div class="img-container">
+                        <div class="dropzone" onclick="triggerFileInput(this)" ondrop="handleDrop(event, this)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                            <span>+ Kéo thả ảnh hoặc Click để tải lên</span>
+                            <img src="" class="parallax-target">
+                        </div>
+                    </div>
+                    <div class="caption" contenteditable="true">Ghi chú hình ảnh hoặc nguồn...</div>
+                </div>`,
+        box: `<div class="story-block box-block">
+                <div class="box-title" contenteditable="true">Thông tin ngoài lề</div>
+                <div class="p-block" style="margin:0; max-width:100%; font-size:1.1rem;" contenteditable="true">Điền các số liệu thống kê hoặc fact thú vị vào sidebar box này.</div>
+              </div>`
+    };
+
+    function addBlock(type) {
+        let blockHTML = '';
+        
+        if (type === 'grid') {
+            let count = prompt("Bạn muốn tạo lưới mấy ảnh? (Nhập 2, 3, hoặc 4):", "3");
+            if(count === null) return;
+            count = parseInt(count);
+            if (![2, 3, 4].includes(count)) { alert("Chỉ hỗ trợ nhập 2, 3 hoặc 4 ảnh!"); return; }
+            
+            blockHTML = `<div class="story-block grid-block grid-${count}">`;
+            for(let i = 0; i < count; i++) {
+                blockHTML += `
+                    <div class="grid-item dropzone" onclick="triggerFileInput(this)" ondrop="handleDrop(event, this)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <span>+ Ảnh ${i+1}</span>
+                        <img src="">
+                    </div>`;
+            }
+            blockHTML += `</div>`;
+        } else {
+            blockHTML = templates[type];
+        }
+
+        const div = document.createElement('div');
+        div.className = 'block-wrapper';
+        div.setAttribute('draggable', 'true');
+        div.innerHTML = blockHTML + `
+            <div class="block-actions">
+                <div class="action-btn drag-handle" title="Kéo để di chuyển">⋮⋮</div>
+                <button class="action-btn" onclick="this.closest('.block-wrapper').remove()" title="Xóa block" style="color:red">✕</button>
+            </div>
+        `;
+        storyContent.appendChild(div);
+        setupDragAndDropSort(div);
+    }
+
+    // --- 1. DRAG & DROP TO SORT BLOCKS ---
+    let draggedItem = null;
+    function setupDragAndDropSort(el) {
+        el.addEventListener('dragstart', function(e) {
+            draggedItem = this;
+            setTimeout(() => this.classList.add('dragging'), 0);
+        });
+        el.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.block-wrapper').forEach(w => w.classList.remove('drag-over'));
+            draggedItem = null;
+        });
+        el.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            if (this !== draggedItem && draggedItem !== null) this.classList.add('drag-over');
+        });
+        el.addEventListener('dragleave', function() {
+            this.classList.remove('drag-over');
+        });
+        el.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            if (!draggedItem) return; 
+            if (this !== draggedItem) {
+                let allItems = [...storyContent.querySelectorAll('.block-wrapper')];
+                let draggedIdx = allItems.indexOf(draggedItem);
+                let targetIdx = allItems.indexOf(this);
+                if (draggedIdx < targetIdx) {
+                    this.after(draggedItem);
+                } else {
+                    this.before(draggedItem);
+                }
+            }
+        });
+    }
+
+    // --- 2. UPLOAD ẢNH BẰNG BASE64 ---
+    const fileInput = document.getElementById('fileInput');
+    function triggerFileInput(dropzoneElement) {
+        activeDropzone = dropzoneElement;
+        fileInput.click();
+    }
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0 && activeDropzone) {
+            processImageFile(e.target.files[0], activeDropzone);
+        }
+    });
+    function handleDragOver(e) { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.add('dragover'); }
+    function handleDragLeave(e) { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('dragover'); }
+    function handleDrop(e, dropzoneElement) {
+        e.preventDefault();
+        e.stopPropagation(); 
+        dropzoneElement.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) processImageFile(e.dataTransfer.files[0], dropzoneElement);
+    }
+    function processImageFile(file, dropzoneElement) {
+        if (!file.type.match('image.*')) { alert("Vui lòng chọn file hình ảnh."); return; }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = dropzoneElement.querySelector('img');
+            img.src = e.target.result;
+            dropzoneElement.classList.add('has-image');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // --- 3. V2: SPOTLIGHT LOGIC ---
+    let animationFrameId = null;
+
+    function runSpotlight() {
+        let blocks = document.querySelectorAll('.story-block');
+        let centerPoint = window.innerHeight / 2;
+        let closestBlock = null;
+        let minDistance = Infinity;
+
+        // Quét tìm Block đang nằm gần vị trí trung tâm nhất
+        blocks.forEach(block => {
+            let rect = block.getBoundingClientRect();
+            let blockCenter = rect.top + (rect.height / 2);
+            let distance = Math.abs(blockCenter - centerPoint);
+
+            // Ưu tiên các block cao (như ảnh), nới lỏng khoảng cách tính toán
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestBlock = block;
+            }
+        });
+
+        // Áp dụng class Focus cho duy nhất 1 block
+        blocks.forEach(block => {
+            if (block === closestBlock) {
+                block.classList.add('spotlight-active');
+            } else {
+                block.classList.remove('spotlight-active');
+            }
+        });
+    }
+
+    function spotlightScrollHandler() {
+        if(animationFrameId) cancelAnimationFrame(animationFrameId);
+        animationFrameId = requestAnimationFrame(runSpotlight);
+    }
+
+    // --- 4. EXPORT & PREVIEW LOGIC ---
+    function togglePreview() {
+        const isPreview = document.body.classList.toggle('preview-mode');
+        const btn = document.getElementById('previewBtn');
+        
+        if (isPreview) {
+            btn.textContent = "Exit Preview";
+            document.querySelectorAll('[contenteditable]').forEach(el => el.contentEditable = false);
+            document.querySelectorAll('.block-wrapper').forEach(el => el.setAttribute('draggable', 'false'));
+            
+            // Kích hoạt Spotlight
+            scrollArea.addEventListener('scroll', spotlightScrollHandler);
+            runSpotlight(); // Chạy ngay lần đầu
+        } else {
+            btn.textContent = "Live Preview";
+            document.querySelectorAll('[contenteditable]').forEach(el => el.contentEditable = true);
+            document.querySelectorAll('.block-wrapper').forEach(el => el.setAttribute('draggable', 'true'));
+            
+            // Tắt Spotlight
+            scrollArea.removeEventListener('scroll', spotlightScrollHandler);
+            document.querySelectorAll('.story-block').forEach(b => b.classList.remove('spotlight-active'));
+        }
+    }
+
+    function downloadHTML() {
+        const content = document.getElementById('canvas').cloneNode(true);
+        
+        content.querySelectorAll('.block-actions').forEach(el => el.remove());
+        content.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+        content.querySelectorAll('.block-wrapper').forEach(el => {
+            el.removeAttribute('draggable');
+            el.classList.remove('dragging', 'drag-over');
+            el.style = "";
+        });
+        
+        content.querySelectorAll('.dropzone.has-image').forEach(dz => {
+            const img = dz.querySelector('img');
+            const newImg = document.createElement('img');
+            newImg.src = img.src;
+            if (dz.classList.contains('grid-item')) newImg.className = 'grid-item';
+            if (img.classList.contains('parallax-target')) newImg.className = 'parallax-target';
+            newImg.style.width = '100%'; newImg.style.height = '100%'; newImg.style.objectFit = 'cover';
+            dz.parentNode.replaceChild(newImg, dz);
+        });
+
+        if(content.querySelectorAll('.dropzone').length > 0) {
+            if(!confirm("Có một số ô ảnh bạn chưa Upload ảnh. Bạn có chắc muốn xuất bản file không?")) return;
+        }
+
+        const fullHTML = `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tác phẩm Báo chí - Interactive Story</title>
+    <link href="https://fonts.googleapis.com/css2?family=Ibarra+Real+Nova:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        ${document.querySelector('style').innerHTML}
+        /* Dành riêng cho file xuất bản */
+        body { display: block; overflow-y: auto; height: auto; background: #fff; }
+        #canvas { margin: 0 auto; box-shadow: none; min-height: auto; overflow: hidden; padding-top: 20vh; padding-bottom: 50vh; }
+        .block-wrapper { padding: 0; margin-bottom: 20px; border: none !important; background: transparent !important; }
+    </style>
+</head>
+<body class="published-story">
+    <div id="canvas">
+        ${content.innerHTML}
+    </div>
+    <script>
+        // 1. Thuật toán Tâm điểm (Spotlight Logic)
+        ${runSpotlight.toString()}
+        
+        let animationFrameId = null;
+        window.addEventListener('scroll', () => {
+            if(animationFrameId) cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(runSpotlight);
+            
+            // 2. Kích hoạt hiệu ứng trượt Parallax cho Ảnh
+            document.querySelectorAll('.parallax-target').forEach(img => {
+                let rect = img.closest('.img-parallax').getBoundingClientRect();
+                if(rect.top < window.innerHeight && rect.bottom > 0) {
+                    let yPos = (rect.top - window.innerHeight/2) * 0.15;
+                    img.style.transform = \`translateY(\${yPos}px) scale(1.1)\`;
+                }
+            });
+        });
+
+        // Chạy lần đầu khi load trang
+        runSpotlight();
+    <\/script>
+</body>
+</html>`;
+
+        const blob = new Blob([fullHTML], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'magazine-spotlight.html';
+        a.click();
+    }
+</script>
+
+</body>
+</html>

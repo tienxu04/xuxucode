@@ -3,185 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>~ xuxudocsach @ LinkTree ~</title>
-    <!-- Tải Tailwind CSS cho styling hiện đại và responsive -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tải Font Inter và Font Monospace cho phong cách Retro -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=VT323&display=swap" rel="stylesheet">
-    <!-- Cấu hình Tailwind -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'retro-pink': '#FF69B4', // Hồng đậm
-                        'retro-mint': '#AEEEEE', // Xanh bạc hà
-                        'retro-purple': '#9370DB', // Tím nhạt
-                        'retro-bg': '#2E3D52', // Xám đậm làm nền
-                        'retro-border': '#FFFFFF', // Viền trắng
-                    },
-                    fontFamily: {
-                        // Font Monospace tạo cảm giác "máy tính cũ"
-                        'retro': ['"VT323"', 'monospace'],
-                        'sans': ['"Inter"', 'sans-serif'],
-                    },
-                    boxShadow: {
-                        // Shadow kiểu 3D/Cổ điển
-                        'retro': '4px 4px 0 0 #FF69B4, 6px 6px 0 0 #AEEEEE',
-                        'retro-hover': '2px 2px 0 0 #FF69B4, 4px 4px 0 0 #AEEEEE',
-                        'button-shadow': '3px 3px 0 0 #5E268E', // Shadow cho nút
-                    }
-                }
-            }
-        }
-    </script>
+    <title>Personal Linktree - OS Switcher</title>
     <style>
-        /* Đảm bảo chiều cao tối thiểu để nền lấp đầy màn hình */
+        /* CSS Reset & Base */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background: linear-gradient(135deg, #2E3D52 0%, #0D1B2A 100%);
-            min-height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; transition: background 0.4s ease;
+            overflow-x: hidden;
+        }
+        .container { width: 90%; max-width: 400px; display: flex; flex-direction: column; gap: 20px; }
+
+        /* Theme Switcher */
+        .theme-switcher {
+            display: flex; justify-content: center; gap: 8px;
+            background: rgba(255, 255, 255, 0.2); padding: 8px;
+            border-radius: 50px; backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            z-index: 10;
+        }
+        .theme-switcher button {
+            border: none; padding: 8px 16px; border-radius: 20px;
+            cursor: pointer; font-weight: bold; background: rgba(255,255,255,0.5);
+            transition: 0.3s; font-size: 0.85em;
+        }
+        .theme-switcher button.active { background: #fff; color: #000; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+
+        /* Window Base */
+        .window { width: 100%; display: flex; flex-direction: column; overflow: hidden; }
+        .window-body { padding: 25px; display: flex; flex-direction: column; gap: 12px; }
+        .link-btn { 
+            display: block; text-align: center; text-decoration: none; 
+            padding: 14px; transition: 0.2s ease;
         }
 
-        /* Styling riêng cho cửa sổ retro (giả lập tiêu đề) */
-        .retro-window {
-            border: 2px solid #FFFFFF;
-            border-radius: 8px;
-            background-color: #E6E6FA; /* Màu nền nhạt */
-            box-shadow: 6px 6px 0 0 #FF69B4;
-            max-width: 500px;
-            width: 90%;
-            margin: 0 auto;
+        /* --- THEME 1: WIN 98 --- */
+        body.theme-98 { background: #008080; }
+        .theme-98 .window { background: #c0c0c0; border: 2px solid; border-color: #fff #000 #000 #fff; }
+        .theme-98 .title-bar { background: #000080; color: white; padding: 4px 8px; font-weight: bold; font-family: sans-serif; font-size: 13px; }
+        .theme-98 .link-btn { background: #c0c0c0; color: #000; border: 2px solid; border-color: #fff #000 #000 #fff; font-family: sans-serif; font-size: 14px; }
+        .theme-98 .link-btn:active { border-color: #000 #fff #fff #000; padding: 15px 13px 13px 15px; }
+
+        /* --- THEME 2: WIN XP (MẶC ĐỊNH) --- */
+        body.theme-xp { background: linear-gradient(to bottom, #245edb, #46b42b); }
+        .theme-xp .window { background: #ece9d8; border: 3px solid #0055ea; border-radius: 8px 8px 0 0; box-shadow: 5px 5px 15px rgba(0,0,0,0.3); }
+        .theme-xp .title-bar { background: linear-gradient(to right, #0058e6, #3a93ff); color: #fff; padding: 8px 12px; font-family: Tahoma, sans-serif; font-weight: bold; text-shadow: 1px 1px #000; }
+        .theme-xp .link-btn { background: linear-gradient(to bottom, #fff, #e4ecef); border: 1px solid #7a9eb1; border-radius: 3px; color: #000; font-family: Tahoma, sans-serif; }
+        .theme-xp .link-btn:hover { background: linear-gradient(to bottom, #fff, #cce4f7); border-color: #0055ea; }
+
+        /* --- THEME 3: WIN 11 (VIBRANT) --- */
+        body.theme-11 { background: linear-gradient(135deg, #004fe1, #08a1f7, #03c1f4, #09e0fe); }
+        .theme-11 .window { background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-radius: 12px; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .theme-11 .title-bar { color: #fff; text-align: center; padding: 20px 15px 5px; font-weight: 600; font-family: "Segoe UI", sans-serif; }
+        .theme-11 .link-btn { background: rgba(255,255,255,0.9); color: #004fe1; border-radius: 8px; border: none; font-weight: 600; font-family: "Segoe UI", sans-serif; }
+        .theme-11 .link-btn:hover { background: linear-gradient(90deg, #08a1f7, #03c1f4); color: #fff; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(8, 161, 247, 0.4); }
+		
+		/* --- THEME 4: macOS LATEST (Sonoma/Sequoia Style) --- */
+        body.theme-mac { background: url('https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop') center/cover; }
+        .theme-mac .window { 
+            background: rgba(255, 255, 255, 0.4); 
+            backdrop-filter: blur(50px); -webkit-backdrop-filter: blur(50px); 
+            border-radius: 20px; 
+            border: 0.5px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+        }
+        .theme-mac .title-bar { 
+            padding: 15px; display: flex; align-items: center; justify-content: center; position: relative;
+        }
+        /* Nút đóng/thu nhỏ kiểu Mac */
+        .theme-mac .title-bar::before {
+            content: ""; position: absolute; left: 15px;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: #ff5f56; box-shadow: 20px 0 0 #ffbd2e, 40px 0 0 #27c93f;
+        }
+        .theme-mac .title-bar span { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 600; color: #333; font-size: 14px; }
+        .theme-mac .link-btn { 
+            background: rgba(255, 255, 255, 0.5); 
+            color: #1d1d1f; border-radius: 12px; border: 0.5px solid rgba(255, 255, 255, 0.3);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            font-weight: 500; font-size: 15px;
+        }
+        .theme-mac .link-btn:hover { 
+            background: rgba(255, 255, 255, 0.8);
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        /* Thanh tiêu đề giả lập (màu xanh bạc hà) */
-        .window-header {
-            background-color: #AEEEEE;
-            border-bottom: 2px solid #FFFFFF;
-            padding: 4px 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        /* Nút liên kết theo phong cách Retro */
-        .retro-button {
-            transition: all 0.1s ease-in-out;
-            font-family: 'VT323', monospace;
-            font-size: 1.25rem;
-            color: #FFFFFF;
-            background-color: #9370DB; /* Tím */
-            border: 2px solid #FFFFFF;
-            border-radius: 6px;
-        }
-
-        .retro-button:hover {
-            transform: translate(-1px, -1px); /* Dịch chuyển nhẹ khi hover */
-            box-shadow: 2px 2px 0 0 #5E268E;
-            background-color: #B0A0E0; /* Tím nhạt hơn khi hover */
-        }
     </style>
 </head>
-<body class="font-sans flex flex-col items-center py-8">
+<body class="theme-xp">
 
-    <!-- KHUNG CỬA SỔ CHÍNH (RETRO WINDOW) -->
-    <div class="retro-window">
-        <!-- HEADER CỬA SỔ (Thanh tiêu đề giả lập) -->
-        <div class="window-header font-retro text-lg text-gray-900">
-            <!-- Tên File/Tiêu đề -->
-            <span class="font-bold">C:\XUXUKUN\CREATOR\MY_LINK_TREE.EXE</span>
-            <!-- Các nút điều khiển giả lập -->
-            <div class="flex space-x-1">
-                <div class="w-3 h-3 border border-white bg-red-400 rounded-full"></div>
-                <div class="w-3 h-3 border border-white bg-yellow-400 rounded-full"></div>
-                <div class="w-3 h-3 border border-white bg-green-400 rounded-full"></div>
-            </div>
+    <div class="container">
+        <!-- Switcher -->
+        <div class="theme-switcher">
+            <button onclick="setTheme('theme-98')" id="btn-98">Windows 98</button>
+            <button onclick="setTheme('theme-xp')" id="btn-xp" class="active">Windows XP</button>
+            <button onclick="setTheme('theme-11')" id="btn-11">Windows 11</button>
+			<button onclick="setTheme('theme-mac')" id="btn-mac">macOS</button>
         </div>
 
-        <!-- NỘI DUNG CỬA SỔ -->
-        <div class="p-6 text-center">
-
-            <!-- AVATAR VÀ TÊN -->
-            <div class="flex flex-col items-center mb-6">
-                <!-- Avatar Placeholder - Bạn có thể thay bằng URL ảnh của mình -->
-                <img id="avatar" src="linktreeava.png"
-                     alt="Ảnh đại diện"
-                     class="w-24 h-24 rounded-full border-4 border-retro-purple object-cover shadow-lg mb-3">
-
-                <!-- Tên/Username -->
-                <h1 id="my-name" class="font-retro text-3xl text-retro-bg font-bold tracking-widest">
-                    @XUXUDOCSACH
-                </h1>
-                <!-- Mô tả ngắn (tùy chọn) -->
-                <p class="font-sans text-sm text-gray-600 mt-1 italic">
-                    [Click] để kết nối
-                </p>
+        <!-- Window -->
+        <div class="window">
+            <div class="title-bar">Link Tree @ xuxudocsach</div>
+            <div class="window-body">
+                <!-- Thay link thật của bạn vào đây -->
+                <a href="https://www.instagram.com/xuxudocsach" alt="Instagram" class="link-btn">Instagram</a>
+                <a href="https://www.youtube.com/xuxukun" class="link-btn">YouTube</a>
+                <a href="https://tiktok.com/xuxudocsach" class="link-btn">TikTok</a>
+                <a href="https://xu-insta-list.vercel.app/" class="link-btn">Danh sách review 1.0</a>
+				<a href="https://tienxu04.github.io/xuxucode/bookshelves.html" class="link-btn">Danh sách review 2.0</a>
+                <a href="https://docs.google.com/spreadsheets/d/194IYfgWPbrFxXTs5YZ1sOn22tzmDIaj3uC-eIAuqyws/edit?gid=0#gid=0" class="link-btn">Higashino Tracker</a>
+                <a href="https://rentry.org/xu_code_goodreads" class="link-btn">Goodreads Add-on</a>
             </div>
+        </div>
+    </div>
 
+    <script>
+        // Logic tự động gán mở tab mới cho tất cả nút
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll('.link-btn').forEach(link => {
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+            });
+        });
 
-            <!-- KHU VỰC DANH SÁCH LIÊN KẾT -->
-            <div id="link-list" class="flex flex-col space-y-4">
-
-                <!-- LIÊN KẾT 1: Instagram (Mặc định) -->
-                <a href="https://www.instagram.com/xuxudocsach/"
-                   target="_blank"
-                   class="retro-button w-full py-3 px-4 shadow-button-shadow hover:shadow-none hover:transform hover:translate-x-0.5 hover:translate-y-0.5">
-                    📸 INSTAGRAM - Review sách
-                </a>
-
-                 <!-- LIÊN KẾT 1: Instagram (Mặc định) -->
-                <a href="https://tienxu04.github.io/xuxucode/bookshelves.html"
-                   target="_blank"
-                   class="retro-button w-full py-3 px-4 shadow-button-shadow hover:shadow-none hover:transform hover:translate-x-0.5 hover:translate-y-0.5">
-                    📙  Mục lục INSTAGRAM
-                </a>
-
-                <!-- LIÊN KẾT 2: YouTube (Mặc định) -->
-                <a href="https://www.youtube.com/@xuxukun"
-                   target="_blank"
-                   class="retro-button w-full py-3 px-4 shadow-button-shadow hover:shadow-none hover:transform hover:translate-x-0.5 hover:translate-y-0.5">
-                    ▶️ YOUTUBE - Games & books
-                </a>
-
-                <!-- LIÊN KẾT 3: TikTok (Mặc định) -->
-                <a href="https://www.tiktok.com/@xuxudocsach"
-                   target="_blank"
-                   class="retro-button w-full py-3 px-4 shadow-button-shadow hover:shadow-none hover:transform hover:translate-x-0.5 hover:translate-y-0.5">
-                    🎵 TIKTOK - Tất cả về sách
-                </a>
-
-                 <a href="https://docs.google.com/spreadsheets/d/194IYfgWPbrFxXTs5YZ1sOn22tzmDIaj3uC-eIAuqyws/edit?gid=0#gid=0"          
-                     target="_blank"
-                   class="retro-button w-full py-3 px-4 shadow-button-shadow hover:shadow-none hover:transform hover:translate-x-0.5 hover:translate-y-0.5">
-                     🕵️‍♀️ HIGASHINO KEIGO - Danh sách đã xuất bản
-                </a>
-
-
-                
-                <!-- 
-                    HƯỚNG DẪN THÊM LINK MỚI: 
-                    1. Sao chép khối <a>...</a> bên dưới.
-                    2. Thay 'YOUR_URL' bằng liên kết đích của bạn.
-                    3. Thay 'TÊN LIÊN KẾT' bằng mô tả bạn muốn.
-
-                    Ví dụ: 
-                    <a href="https://yourwebsite.com/newproduct"
-                       target="_blank"
-                       class="retro-button w-full py-3 px-4 shadow-button-shadow hover:shadow-none hover:transform hover:translate-x-0.5 hover:translate-y-0.5">
-                       ⭐️ TRANG WEB CÁ NHÂN - Dự án mới
-                    </a>
-                -->
-
-            </div> <!-- End Link List -->
-
-        </div> <!-- End Content -->
-    </div> <!-- End Retro Window -->
-
-    <!-- FOOTER MÀN HÌNH (Tối giản) -->
-    <footer class="mt-8 text-white text-xs font-retro tracking-widest opacity-75">
-        LINK-IN-BIO VERSION 1.0 (10/2025)
-    </footer>
-
+        // Logic chuyển theme
+        function setTheme(themeName) {
+            document.body.className = themeName;
+            
+            // Cập nhật trạng thái nút bấm
+            document.querySelectorAll('.theme-switcher button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('btn-' + themeName.split('-')[1]).classList.add('active');
+        }
+    </script>
 </body>
 </html>

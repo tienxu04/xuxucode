@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Globetrotting with Books</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Libre+Baskerville:ital@0;1&family=Source+Code+Pro:wght@300;400&display=swap');
+
+:root {
+  --ink:     #1a1208;
+  --paper:   #f5efe2;
+  --cream:   #ede5d0;
+  --aged:    #c9b99a;
+  --rust:    #b85c30;
+  --rust-dim:rgba(184,92,48,0.25);
+  --forest:  #2d4a2d;
+  --gold:    #c8962a;
+  --gold-dim:rgba(200,150,42,0.2);
+  --muted:   rgba(26,18,8,0.45);
+  --globe-bg:#0c0e14;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Libre Baskerville', Georgia, serif;
+  min-height: 100vh;
+}
+
+/* ── Header ─────────────────────────────── */
+header {
+  padding: 28px 48px 20px;
+  border-bottom: 1px solid var(--aged);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  background: var(--paper);
+  position: relative;
+  z-index: 10;
+}
+
+.site-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.3rem, 2.5vw, 1.9rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+.site-title em {
+  font-style: italic;
+  color: var(--rust);
+}
+
+.book-count {
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.book-count strong { color: var(--rust); font-weight: 400; }
+
+/* ── Globe container ─────────────────────── */
+#globe-wrap {
+  width: 100%;
+  background: var(--globe-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+#globe-canvas {
+  display: block;
+  width: 100%;
+  height: 62vh;
+  cursor: grab;
+}
+#globe-canvas:active { cursor: grabbing; }
+
+/* Vignette overlay on globe */
+#globe-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(12,14,20,0.7) 100%);
+  pointer-events: none;
+}
+
+/* Loading overlay */
+#globe-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--globe-bg);
+  z-index: 20;
+  gap: 14px;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.75rem;
+  color: var(--aged);
+  letter-spacing: 0.12em;
+}
+.loading-spinner {
+  width: 32px; height: 32px;
+  border: 2px solid rgba(200,150,42,0.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#globe-loading.hidden { display: none; }
+
+/* ── Filter bar ──────────────────────────── */
+#filter-bar {
+  background: var(--cream);
+  border-bottom: 1px solid var(--aged);
+  padding: 16px 48px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.select-wrap {
+  position: relative;
+}
+.select-wrap::after {
+  content: '▾';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.65rem;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+select {
+  appearance: none;
+  background: var(--paper);
+  border: 1px solid var(--aged);
+  border-radius: 4px;
+  color: var(--ink);
+  font-family: 'Libre Baskerville', serif;
+  font-size: 0.8rem;
+  padding: 8px 32px 8px 14px;
+  cursor: pointer;
+  outline: none;
+  min-width: 160px;
+  transition: border-color 0.2s;
+}
+select:focus, select:hover { border-color: var(--rust); }
+select:disabled { opacity: 0.4; cursor: default; }
+
+.btn-clear {
+  background: none;
+  border: 1px solid var(--aged);
+  border-radius: 4px;
+  color: var(--muted);
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.btn-clear:hover { border-color: var(--rust); color: var(--rust); }
+.btn-clear.hidden { display: none; }
+
+.filter-result {
+  margin-left: auto;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.filter-result strong { color: var(--rust); font-weight: 400; }
+
+/* ── Book panel ──────────────────────────── */
+#book-panel {
+  min-height: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+  background: var(--paper);
+  border-bottom: 1px solid var(--aged);
+}
+#book-panel.open {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.panel-inner {
+  padding: 28px 48px 32px;
+}
+
+.panel-location {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  font-style: italic;
+  color: var(--rust);
+  margin-bottom: 6px;
+}
+.panel-subtitle {
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.book-card {
+  border: 1px solid var(--aged);
+  border-radius: 4px;
+  padding: 14px 16px;
+  background: var(--cream);
+  transition: border-color 0.2s, transform 0.15s;
+}
+.book-card:hover {
+  border-color: var(--rust);
+  transform: translateY(-2px);
+}
+.book-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ink);
+  margin-bottom: 5px;
+}
+.book-author {
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+/* ── Tooltip ─────────────────────────────── */
+#tooltip {
+  position: fixed;
+  z-index: 200;
+  background: var(--ink);
+  color: var(--cream);
+  border-radius: 4px;
+  padding: 8px 14px;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.7rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  max-width: 200px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+}
+#tooltip strong {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.82rem;
+  font-style: italic;
+  color: var(--gold);
+  font-weight: 400;
+  margin-bottom: 2px;
+}
+
+/* ── Footer ──────────────────────────────── */
+footer {
+  padding: 20px 48px;
+  font-family: 'Source Code Pro', monospace;
+  font-size: 0.62rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  border-top: 1px solid var(--aged);
+  text-align: center;
+}
+
+/* scrollbar styling */
+#book-panel::-webkit-scrollbar { width: 6px; }
+#book-panel::-webkit-scrollbar-track { background: var(--cream); }
+#book-panel::-webkit-scrollbar-thumb { background: var(--aged); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="site-title">My Globetrotting <em>with Books</em></div>
+  <div class="book-count">
+    <strong id="stat-books">—</strong> books ·
+    <strong id="stat-countries">—</strong> countries ·
+    <strong id="stat-cities">—</strong> cities
+  </div>
+</header>
+
+<div id="globe-wrap">
+  <canvas id="globe-canvas"></canvas>
+  <div id="globe-loading">
+    <div class="loading-spinner"></div>
+    <span>Loading your library...</span>
+  </div>
+</div>
+
+<div id="filter-bar">
+  <span class="filter-label">Browse by</span>
+
+  <div class="select-wrap">
+    <select id="sel-country" disabled>
+      <option value="">All Countries</option>
+    </select>
+  </div>
+
+  <div class="select-wrap">
+    <select id="sel-city" disabled>
+      <option value="">All Cities / States</option>
+    </select>
+  </div>
+
+  <button class="btn-clear hidden" id="btn-clear" onclick="clearFilters()">Clear</button>
+
+  <span class="filter-result">
+    Showing <strong id="stat-visible">—</strong> books
+  </span>
+</div>
+
+<div id="book-panel">
+  <div class="panel-inner">
+    <div class="panel-location" id="panel-location"></div>
+    <div class="panel-subtitle" id="panel-subtitle"></div>
+    <div class="book-grid" id="book-grid"></div>
+  </div>
+</div>
+
+<footer>
+  Dots on the globe represent places I've traveled through words.
+  Each book, a passport stamp.
+</footer>
+
+<div id="tooltip"></div>
+
+<!-- ════════════════════════════════════════════════════════════════
+  CONFIGURATION — thay đổi ở đây
+═══════════════════════════════════════════════════════════════════ -->
+<script>
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQcUGkdDcQT0Pi3y1TCnsnO0qbdVV11rpb3vNz-Uip6ag9J9uQmrWOtVd82cZtt9FxqVhKd7oxJelc0/pub?output=csv';
+const HOME = { lat: 10.7916, lng: 106.6273 };
+
+
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ════════════════════════════════════════════════════════════════
+// DATA LOADING
+// ════════════════════════════════════════════════════════════════
+
+async function loadData() {
+  try {
+    const resp = await fetch(CSV_URL);
+    const text = await resp.text();
+    return parseCSV(text);
+  } catch(e) {
+    console.error('Could not load sheet:', e);
+    return [];
+  }
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g,''));
+  const books = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = splitCSVLine(lines[i]);
+    if (cols.length < 3) continue;
+    const obj = {};
+    headers.forEach((h, idx) => obj[h] = (cols[idx] || '').replace(/"/g,'').trim());
+    if (obj.title && obj.country && obj.lat && obj.lng) {
+      books.push({
+        title:   obj.title,
+        author:  obj.author || '',
+        country: obj.country,
+        city:    obj.city || '',
+        lat:     parseFloat(obj.lat),
+        lng:     parseFloat(obj.lng),
+      });
+    }
+  }
+  return books;
+}
+
+function splitCSVLine(line) {
+  const result = [];
+  let cur = '', inQuote = false;
+  for (let c of line) {
+    if (c === '"') { inQuote = !inQuote; }
+    else if (c === ',' && !inQuote) { result.push(cur); cur = ''; }
+    else cur += c;
+  }
+  result.push(cur);
+  return result;
+}
+
+// ════════════════════════════════════════════════════════════════
+// CLUSTER — group books by same lat/lng (or very close)
+// ════════════════════════════════════════════════════════════════
+
+function buildClusters(books) {
+  // Key: country + city (or country alone if no city)
+  const map = {};
+  books.forEach(b => {
+    const key = b.city ? `${b.country}||${b.city}` : b.country;
+    if (!map[key]) {
+      map[key] = {
+        key, country: b.country, city: b.city,
+        lat: b.lat, lng: b.lng,
+        books: []
+      };
+    }
+    map[key].books.push(b);
+  });
+  return Object.values(map);
+}
+
+// ════════════════════════════════════════════════════════════════
+// THREE.JS GLOBE
+// ════════════════════════════════════════════════════════════════
+
+const canvas = document.getElementById('globe-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 1000);
+camera.position.z = 2.75;
+
+function resizeRenderer() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+resizeRenderer();
+window.addEventListener('resize', resizeRenderer);
+
+const R = 1;
+
+function latLngToVec3(lat, lng, r = R) {
+  const phi   = (90 - lat) * Math.PI / 180;
+  const theta = (lng + 180) * Math.PI / 180;
+  return new THREE.Vector3(
+    -r * Math.sin(phi) * Math.cos(theta),
+     r * Math.cos(phi),
+     r * Math.sin(phi) * Math.sin(theta)
+  );
+}
+
+// ── Globe sphere ───────────────────────────────────
+const pivot = new THREE.Group();
+scene.add(pivot);
+
+// Earth texture from public CDN
+const texLoader = new THREE.TextureLoader();
+const earthTex  = texLoader.load('https://unpkg.com/three-globe/example/img/earth-night.jpg');
+const bumpTex   = texLoader.load('https://unpkg.com/three-globe/example/img/earth-topology.png');
+const specTex   = texLoader.load('https://unpkg.com/three-globe/example/img/earth-water.png');
+
+const sphereMat = new THREE.MeshPhongMaterial({
+  map:          earthTex,
+  bumpMap:      bumpTex,
+  bumpScale:    0.007,
+  specularMap:  specTex,
+  specular:     new THREE.Color(0x334466),
+  shininess:    18,
+});
+pivot.add(new THREE.Mesh(new THREE.SphereGeometry(R, 64, 64), sphereMat));
+
+// Atmosphere glow
+pivot.add(new THREE.Mesh(
+  new THREE.SphereGeometry(R * 1.04, 48, 48),
+  new THREE.MeshPhongMaterial({ color: 0x1a4a8a, transparent: true, opacity: 0.08 })
+));
+
+// Grid lines
+function addGrid() {
+  const mat = new THREE.LineBasicMaterial({ color: 0x162035, transparent: true, opacity: 0.5 });
+  for (let lat = -80; lat <= 80; lat += 20) {
+    const pts = [];
+    for (let lon = 0; lon <= 360; lon += 2) pts.push(latLngToVec3(lat, lon, R * 1.001));
+    pivot.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat));
+  }
+  for (let lon = 0; lon < 360; lon += 20) {
+    const pts = [];
+    for (let lat = -90; lat <= 90; lat += 2) pts.push(latLngToVec3(lat, lon, R * 1.001));
+    pivot.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat));
+  }
+}
+addGrid();
+
+// Lights — brighter to show texture
+scene.add(new THREE.AmbientLight(0x556688, 0.7));
+const sun = new THREE.DirectionalLight(0xffffff, 1.4);
+sun.position.set(5, 3, 5);
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0x334466, 0.3);
+fill.position.set(-4, -2, -3);
+scene.add(fill);
+
+// ── Home marker (HCMC) ────────────────────────────
+function buildHomeMarker() {
+  const pos = latLngToVec3(HOME.lat, HOME.lng, R + 0.022);
+
+  // Base dot — white/bright
+  const homeDot = new THREE.Mesh(
+    new THREE.SphereGeometry(0.025, 12, 12),
+    new THREE.MeshBasicMaterial({ color: 0xffffff })
+  );
+  homeDot.position.copy(pos);
+  pivot.add(homeDot);
+
+  // House shape using a small SVG-like geometry built from lines
+  // Roof triangle
+  const roofPts = [];
+  const up = pos.clone().normalize();
+  const right = new THREE.Vector3().crossVectors(up, new THREE.Vector3(0,1,0)).normalize();
+  const fwd   = new THREE.Vector3().crossVectors(right, up).normalize();
+  const s = 0.045; // size of house
+  const base = pos.clone().addScaledVector(up, s * 0.1);
+
+  // Roof peak
+  const peak   = base.clone().addScaledVector(up, s * 1.1);
+  const tl     = base.clone().addScaledVector(right, -s).addScaledVector(up, s * 0.5);
+  const tr     = base.clone().addScaledVector(right,  s).addScaledVector(up, s * 0.5);
+  const bl     = base.clone().addScaledVector(right, -s).addScaledVector(up, -s * 0.3);
+  const br     = base.clone().addScaledVector(right,  s).addScaledVector(up, -s * 0.3);
+
+  const houseMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 });
+
+  // Roof
+  pivot.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([tl, peak, tr]), houseMat));
+  // Walls
+  pivot.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([tl, bl, br, tr, tl]), houseMat));
+  // Door
+  const dm = 0.35;
+  const dl = base.clone().addScaledVector(right, -s * dm).addScaledVector(up, -s * 0.3);
+  const dr = base.clone().addScaledVector(right,  s * dm).addScaledVector(up, -s * 0.3);
+  const dt = base.clone().addScaledVector(up, s * 0.28);
+  pivot.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([dl, dt, dr]), houseMat));
+
+  // Pulsing halo
+  const haloMesh = new THREE.Mesh(
+    new THREE.RingGeometry(0.034, 0.052, 24),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3, side: THREE.DoubleSide })
+  );
+  haloMesh.position.copy(pos);
+  haloMesh.lookAt(0, 0, 0);
+  pivot.add(haloMesh);
+
+  return haloMesh; // return for animation
+}
+
+// ── Arc lines from each cluster → Home ────────────
+let arcGroup = new THREE.Group();
+pivot.add(arcGroup);
+
+function buildArcs(clusters) {
+  arcGroup.clear();
+  const homeVec = latLngToVec3(HOME.lat, HOME.lng, R);
+
+  clusters.forEach(cl => {
+    const endVec = latLngToVec3(cl.lat, cl.lng, R);
+    const pts = [];
+    const n = 60;
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      const v = homeVec.clone().lerp(endVec, t);
+      // Bulge: arc peaks above surface
+      const bulge = 1 + 0.38 * Math.sin(Math.PI * t);
+      v.normalize().multiplyScalar(R * bulge);
+      pts.push(v);
+    }
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    const mat = new THREE.LineBasicMaterial({
+      color: 0xc8962a, transparent: true, opacity: 0.22
+    });
+    arcGroup.add(new THREE.Line(geo, mat));
+  });
+}
+
+function highlightArcs(activeKeys) {
+  arcGroup.children.forEach((line, i) => {
+    if (!allClusters[i]) return;
+    line.visible = !activeKeys || activeKeys.has(allClusters[i].key);
+  });
+}
+
+const homeHalo = buildHomeMarker();
+let dotMeshes   = [];
+let allClusters = [];
+let activeDotIdx = null;
+
+const DOT_GEO = new THREE.SphereGeometry(0.02, 10, 10);
+const RING_GEO = new THREE.RingGeometry(0.028, 0.042, 20);
+
+const DOT_MAT_DEFAULT  = new THREE.MeshBasicMaterial({ color: 0xc8962a });
+const DOT_MAT_ACTIVE   = new THREE.MeshBasicMaterial({ color: 0xb85c30 });
+const DOT_MAT_INACTIVE = new THREE.MeshBasicMaterial({ color: 0x4a3a20 });
+
+function buildDots(clusters) {
+  // Clear existing
+  dotMeshes.forEach(({ dot, ring }) => { pivot.remove(dot); pivot.remove(ring); });
+  dotMeshes = [];
+
+  clusters.forEach((cl, i) => {
+    const pos = latLngToVec3(cl.lat, cl.lng, R + 0.021);
+
+    const dot = new THREE.Mesh(DOT_GEO, DOT_MAT_DEFAULT.clone());
+    dot.position.copy(pos);
+    dot.userData = { clusterIdx: i };
+    pivot.add(dot);
+
+    const ring = new THREE.Mesh(RING_GEO, new THREE.MeshBasicMaterial({
+      color: 0xc8962a, transparent: true, opacity: 0.25, side: THREE.DoubleSide
+    }));
+    ring.position.copy(pos);
+    ring.lookAt(0, 0, 0);
+    pivot.add(ring);
+
+    dotMeshes.push({ dot, ring, cluster: cl });
+  });
+}
+
+function highlightDots(activeKeys) {
+  dotMeshes.forEach(({ dot, ring }) => {
+    const cl = allClusters[dot.userData.clusterIdx];
+    const active = !activeKeys || activeKeys.has(cl.key);
+    dot.visible = active;
+    ring.visible = active;
+    if (active) dot.material.color.setHex(0xc8962a);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// DRAG / ROTATE
+// ════════════════════════════════════════════════════════════════
+
+let isDragging = false, didDrag = false;
+let prevMX = 0, prevMY = 0;
+const targetRot = { x: 0.2, y: 0 };
+const curRot    = { x: 0.2, y: 0 };
+
+canvas.addEventListener('mousedown', e => {
+  isDragging = true; didDrag = false;
+  prevMX = e.clientX; prevMY = e.clientY;
+});
+window.addEventListener('mouseup', () => { isDragging = false; });
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const dx = e.clientX - prevMX, dy = e.clientY - prevMY;
+  if (Math.abs(dx) + Math.abs(dy) > 2) didDrag = true;
+  targetRot.y += dx * 0.005;
+  targetRot.x += dy * 0.004;
+  targetRot.x = Math.max(-1.3, Math.min(1.3, targetRot.x));
+  prevMX = e.clientX; prevMY = e.clientY;
+});
+
+canvas.addEventListener('touchstart', e => {
+  isDragging = true; didDrag = false;
+  prevMX = e.touches[0].clientX; prevMY = e.touches[0].clientY;
+}, { passive: true });
+canvas.addEventListener('touchend', () => { isDragging = false; });
+canvas.addEventListener('touchmove', e => {
+  const dx = e.touches[0].clientX - prevMX, dy = e.touches[0].clientY - prevMY;
+  if (Math.abs(dx) + Math.abs(dy) > 2) didDrag = true;
+  targetRot.y += dx * 0.005;
+  targetRot.x += dy * 0.004;
+  targetRot.x = Math.max(-1.3, Math.min(1.3, targetRot.x));
+  prevMX = e.touches[0].clientX; prevMY = e.touches[0].clientY;
+}, { passive: true });
+
+// ════════════════════════════════════════════════════════════════
+// RAYCASTING — hover & click
+// ════════════════════════════════════════════════════════════════
+
+const raycaster = new THREE.Raycaster();
+const mouse2d   = new THREE.Vector2();
+const tooltip   = document.getElementById('tooltip');
+
+function updateMouse(e) {
+  const rect = canvas.getBoundingClientRect();
+  mouse2d.x = ((e.clientX - rect.left) / rect.width)  * 2 - 1;
+  mouse2d.y = -((e.clientY - rect.top)  / rect.height) * 2 + 1;
+}
+
+canvas.addEventListener('mousemove', e => {
+  updateMouse(e);
+  raycaster.setFromCamera(mouse2d, camera);
+  const meshes = dotMeshes.map(d => d.dot);
+  const hits = raycaster.intersectObjects(meshes);
+  if (hits.length) {
+    const cl = allClusters[hits[0].object.userData.clusterIdx];
+    const loc = cl.city ? `${cl.city}, ${cl.country}` : cl.country;
+    const n   = cl.books.length;
+    tooltip.innerHTML = `<strong>${loc}</strong>${n} book${n > 1 ? 's' : ''}`;
+    tooltip.style.opacity = '1';
+    tooltip.style.left = (e.clientX + 16) + 'px';
+    tooltip.style.top  = (e.clientY - 8)  + 'px';
+    canvas.style.cursor = 'pointer';
+  } else {
+    tooltip.style.opacity = '0';
+    canvas.style.cursor = isDragging ? 'grabbing' : 'grab';
+  }
+});
+canvas.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
+
+canvas.addEventListener('click', e => {
+  if (didDrag) return;
+  updateMouse(e);
+  raycaster.setFromCamera(mouse2d, camera);
+  const hits = raycaster.intersectObjects(dotMeshes.map(d => d.dot));
+  if (hits.length) {
+    const idx = hits[0].object.userData.clusterIdx;
+    openPanel(allClusters[idx]);
+  }
+  //click anywhere to reset filter
+  else {
+  closePanel();
+  highlightDots(null);
+  highlightArcs(null);
+}
+});
+
+// ════════════════════════════════════════════════════════════════
+// PANEL + FILTERS
+// ════════════════════════════════════════════════════════════════
+
+let allBooks = [];
+let currentFilterKey = null;
+
+function openPanel(cluster) {
+  const loc = cluster.city ? `${cluster.city}, ${cluster.country}` : cluster.country;
+  document.getElementById('panel-location').textContent = loc;
+  document.getElementById('panel-subtitle').textContent =
+    `${cluster.books.length} book${cluster.books.length > 1 ? 's' : ''} set here`;
+
+  const grid = document.getElementById('book-grid');
+  grid.innerHTML = '';
+  cluster.books.forEach(b => {
+    const card = document.createElement('div');
+    card.className = 'book-card';
+    card.innerHTML = `<div class="book-title">${b.title}</div>
+                      <div class="book-author">${b.author}</div>`;
+    grid.appendChild(card);
+  });
+
+  document.getElementById('book-panel').classList.add('open');
+  // with dot clicked
+  const activeKeys = new Set([cluster.key]);
+  highlightDots(activeKeys);  
+  highlightArcs(activeKeys);
+  
+  document.getElementById('book-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closePanel() {
+  document.getElementById('book-panel').classList.remove('open');
+  highlightDots(null);
+  highlightArcs(null);
+}
+
+function populateFilters(books) {
+  const countrySet = [...new Set(books.map(b => b.country))].sort();
+  const cSel = document.getElementById('sel-country');
+  cSel.innerHTML = '<option value="">All Countries</option>';
+  countrySet.forEach(c => {
+    const o = document.createElement('option'); o.value = c; o.textContent = c; cSel.add(o);
+  });
+  cSel.disabled = false;
+
+  cSel.addEventListener('change', () => {
+    const country = cSel.value;
+    const citySel = document.getElementById('sel-city');
+    citySel.innerHTML = '<option value="">All Cities / States</option>';
+    if (country) {
+      const cities = [...new Set(books.filter(b => b.country === country && b.city).map(b => b.city))].sort();
+      cities.forEach(c => {
+        const o = document.createElement('option'); o.value = c; o.textContent = c; citySel.add(o);
+      });
+      citySel.disabled = cities.length === 0;
+    } else {
+      citySel.disabled = true;
+    }
+    applyFilter();
+  });
+
+  document.getElementById('sel-city').addEventListener('change', applyFilter);
+}
+
+function applyFilter() {
+  const country = document.getElementById('sel-country').value;
+  const city    = document.getElementById('sel-city').value;
+  const btnClear = document.getElementById('btn-clear');
+
+  let filtered = allBooks;
+  if (country) filtered = filtered.filter(b => b.country === country);
+  if (city)    filtered = filtered.filter(b => b.city === city);
+
+  const isFiltered = country || city;
+  btnClear.classList.toggle('hidden', !isFiltered);
+  document.getElementById('stat-visible').textContent = filtered.length;
+
+  // Rebuild clusters from filtered books and re-highlight
+  const filteredClusters = buildClusters(filtered);
+  const activeKeys = new Set(filteredClusters.map(c => c.key));
+  highlightDots(activeKeys);
+  highlightArcs(activeKeys);
+
+  // If filtered to a specific location, open its panel
+  if (city && filteredClusters.length === 1) {
+    openPanel(filteredClusters[0]);
+  } else if (country && !city && filteredClusters.length > 0) {
+    // Show all books for that country
+    const merged = {
+      country, city: '',
+      lat: filteredClusters[0].lat, lng: filteredClusters[0].lng,
+      books: filtered,
+      key: country
+    };
+    const loc = country;
+    document.getElementById('panel-location').textContent = loc;
+    document.getElementById('panel-subtitle').textContent =
+      `${filtered.length} book${filtered.length > 1 ? 's' : ''} set in this country`;
+    const grid = document.getElementById('book-grid');
+    grid.innerHTML = '';
+    filtered.forEach(b => {
+      const card = document.createElement('div');
+      card.className = 'book-card';
+      card.innerHTML = `<div class="book-title">${b.title}</div>
+                        <div class="book-author">${b.author}</div>`;
+      grid.appendChild(card);
+    });
+    document.getElementById('book-panel').classList.add('open');
+  } else if (!isFiltered) {
+    closePanel();
+    highlightDots(null);
+  }
+}
+
+function clearFilters() {
+  document.getElementById('sel-country').value = '';
+  document.getElementById('sel-city').innerHTML = '<option value="">All Cities / States</option>';
+  document.getElementById('sel-city').disabled = true;
+  document.getElementById('btn-clear').classList.add('hidden');
+  document.getElementById('stat-visible').textContent = allBooks.length;
+  highlightDots(null);
+  highlightArcs(null);
+  closePanel();
+}
+
+// ════════════════════════════════════════════════════════════════
+// ANIMATE
+// ════════════════════════════════════════════════════════════════
+
+let t = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  t += 0.025;
+
+  if (!isDragging) targetRot.y += 0.0018;
+  curRot.x += (targetRot.x - curRot.x) * 0.07;
+  curRot.y += (targetRot.y - curRot.y) * 0.07;
+  pivot.rotation.x = curRot.x;
+  pivot.rotation.y = curRot.y;
+
+  // Pulse dots
+  dotMeshes.forEach(({ dot, ring }, i) => {
+    const s = 1 + 0.15 * Math.sin(t + i * 0.8);
+    dot.scale.setScalar(s);
+    ring.scale.setScalar(1 + 0.4 * Math.abs(Math.sin(t * 0.5 + i * 0.6)));
+    ring.material.opacity = 0.12 + 0.1 * Math.abs(Math.sin(t * 0.5 + i * 0.6));
+  });
+
+  // Pulse home halo
+  if (homeHalo) {
+    homeHalo.scale.setScalar(1 + 0.3 * Math.abs(Math.sin(t * 0.8)));
+    homeHalo.material.opacity = 0.15 + 0.15 * Math.abs(Math.sin(t * 0.8));
+  }
+
+  renderer.render(scene, camera);
+}
+animate();
+
+// ════════════════════════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════════════════════════
+
+(async () => {
+  allBooks = await loadData();
+  allClusters = buildClusters(allBooks);
+
+  buildDots(allClusters);
+  buildArcs(allClusters);
+  populateFilters(allBooks);
+
+  // Stats
+  document.getElementById('stat-books').textContent     = allBooks.length;
+  document.getElementById('stat-countries').textContent = new Set(allBooks.map(b => b.country)).size;
+  document.getElementById('stat-cities').textContent    = new Set(allBooks.filter(b => b.city).map(b => b.city)).size;
+  document.getElementById('stat-visible').textContent   = allBooks.length;
+
+  document.getElementById('globe-loading').classList.add('hidden');
+})();
+</script>
+</body>
+</html>

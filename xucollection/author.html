@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Author Archive | Digital Book Showcase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;700&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fdfcf0; /* Màu kem đặc trưng Editorial */
+            --text-color: #1a1a1a;
+            --accent-color: #7d7d7d;
+            --transition-speed: 0.5s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Cố định màn hình showcase */
+        }
+
+        /* Container chính */
+        .showcase-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Cột trái: Danh sách tên tác giả */
+        .authors-list {
+            flex: 0 0 40%;
+            border-right: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 10%;
+        }
+
+        .category-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2rem;
+            color: var(--accent-color);
+            margin-bottom: 2rem;
+        }
+
+        .author-item {
+            font-family: 'Fraunces', serif;
+            font-size: 3.5rem;
+            line-height: 1.2;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+            transition: color 0.3s ease, padding-left 0.3s ease;
+            position: relative;
+            width: fit-content;
+        }
+
+        .author-item:hover {
+            color: var(--accent-color);
+            padding-left: 1rem;
+        }
+
+        .author-item.active {
+            color: var(--text-color);
+        }
+        
+        /* Chấm đỏ nhỏ đánh dấu tác giả đang được chọn */
+        .author-item.locked::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            background: #cc0000;
+            border-radius: 50%;
+        }
+
+        /* Cột phải: Hiển thị chi tiết */
+        .display-panel {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5%;
+        }
+
+        /* Ảnh chân dung */
+        .portrait-container {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 3rem;
+            filter: grayscale(100%);
+            transition: opacity var(--transition-speed), transform var(--transition-speed);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .portrait-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Container chứa sách xòe ra */
+        .books-fan-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .book-card {
+            position: absolute;
+            width: 160px;
+            height: 230px;
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 2px;
+            transition: all var(--transition-speed) cubic-bezier(0.23, 1, 0.32, 1);
+            opacity: 0;
+            transform: scale(0.8) translateY(100px) rotate(0deg);
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            font-size: 0.7rem;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .book-card .cover-placeholder {
+            flex: 1;
+            background: #f0f0f0;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+            font-family: 'Fraunces', serif;
+            font-weight: bold;
+        }
+
+        /* Hiệu ứng xòe khi Active */
+        .active-display .portrait-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .active-display .book-card {
+            opacity: 1;
+        }
+
+        /* Logic xòe 5 cuốn cho Alice Feeney */
+        .active-display .book-card:nth-child(1) { transform: translateX(-240px) rotate(-15deg); transition-delay: 0.1s; }
+        .active-display .book-card:nth-child(2) { transform: translateX(-120px) rotate(-7deg); transition-delay: 0.15s; }
+        .active-display .book-card:nth-child(3) { transform: translateX(0) rotate(0deg) translateY(-20px); transition-delay: 0.2s; z-index: 10; }
+        .active-display .book-card:nth-child(4) { transform: translateX(120px) rotate(7deg); transition-delay: 0.25s; }
+        .active-display .book-card:nth-child(5) { transform: translateX(240px) rotate(15deg); transition-delay: 0.3s; }
+
+        /* Meta info bên dưới */
+        .author-meta {
+            margin-top: 2rem;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .active-display .author-meta { opacity: 1; }
+
+        .author-name-large {
+            font-family: 'Fraunces', serif;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* UI Helpers */
+        .nav-hint {
+            position: absolute;
+            bottom: 30px;
+            right: 40px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+            color: var(--accent-color);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="showcase-container">
+        <!-- Cột trái -->
+        <aside class="authors-list">
+            <span class="category-label">Archive / Authors</span>
+            
+            <div class="author-item" data-id="alice" onmouseenter="previewAuthor('alice')" onclick="lockAuthor('alice')">
+                Alice Feeney
+            </div>
+            <div class="author-item" data-id="margaret" onmouseenter="previewAuthor('margaret')" onclick="lockAuthor('margaret')">
+                Margaret Atwood
+            </div>
+            <div class="author-item" data-id="haruki" onmouseenter="previewAuthor('haruki')" onclick="lockAuthor('haruki')">
+                Haruki Murakami
+            </div>
+        </aside>
+
+        <!-- Cột phải -->
+        <main class="display-panel" id="display-panel">
+            <div id="author-content" class="">
+                <!-- Ảnh chân dung -->
+                <div class="portrait-container">
+                    <img id="author-portrait" src="" alt="Author Portrait">
+                </div>
+
+                <!-- Fan books -->
+                <div class="books-fan-container" id="books-container">
+                    <!-- Books will be injected here -->
+                </div>
+
+                <!-- Meta -->
+                <div class="author-meta">
+                    <p class="author-name-large" id="author-display-name">Author Name</p>
+                    <p style="font-size: 0.8rem; color: #777;" id="author-book-count">0 Published Works</p>
+                </div>
+            </div>
+
+            <div class="nav-hint">Hover to preview &bull; Click to explore</div>
+        </main>
+    </div>
+
+    <script>
+        const authorsData = {
+            alice: {
+                name: "Alice Feeney",
+                portrait: "https://images.squarespace-cdn.com/content/v1/59ef264a6f4ca3763789f816/1509971842045-8W2L58189GCPV2G51P3B/Alice+Feeney+High+Res+1.jpg",
+                count: "5 Featured Books",
+                books: ["Rock Paper Scissors", "Daisy Darker", "His & Hers", "Sometimes I Lie", "Good Bad Girl"]
+            },
+            margaret: {
+                name: "Margaret Atwood",
+                portrait: "https://upload.wikimedia.org/wikipedia/commons/2/21/Margaret_Atwood_2017.jpg",
+                count: "15+ Published Works",
+                books: ["The Handmaid's Tale", "Oryx and Crake", "Alias Grace", "The Testaments", "Cat's Eye"]
+            },
+            haruki: {
+                name: "Haruki Murakami",
+                portrait: "https://upload.wikimedia.org/wikipedia/commons/4/4c/Haruki_Murakami_%282013%29.jpg",
+                count: "10+ Global Best-sellers",
+                books: ["Norwegian Wood", "Kafka on the Shore", "1Q84", "Men Without Women", "The Rat Series"]
+            }
+        };
+
+        let lockedId = null;
+
+        function renderAuthor(id) {
+            const data = authorsData[id];
+            const content = document.getElementById('author-content');
+            const booksContainer = document.getElementById('books-container');
+            const portrait = document.getElementById('author-portrait');
+            const nameDisplay = document.getElementById('author-display-name');
+            const countDisplay = document.getElementById('author-book-count');
+
+            // Reset animation
+            content.classList.remove('active-display');
+            
+            // Cập nhật dữ liệu
+            setTimeout(() => {
+                portrait.src = data.portrait;
+                nameDisplay.innerText = data.name;
+                countDisplay.innerText = data.count;
+                
+                booksContainer.innerHTML = '';
+                data.books.forEach(bookTitle => {
+                    const card = document.createElement('div');
+                    card.className = 'book-card';
+                    card.innerHTML = `
+                        <div class="cover-placeholder">${bookTitle}</div>
+                        <div style="font-weight: bold; margin-bottom: 2px;">${bookTitle}</div>
+                        <div style="color: #999">Fiction / Novel</div>
+                    `;
+                    booksContainer.appendChild(card);
+                });
+
+                content.classList.add('active-display');
+            }, 50);
+        }
+
+        function previewAuthor(id) {
+            // Khi hover, nếu chưa khóa ai hoặc hover vào người khác người đang khóa
+            renderAuthor(id);
+        }
+
+        function lockAuthor(id) {
+            lockedId = id;
+            
+            // Xóa class locked của tất cả
+            document.querySelectorAll('.author-item').forEach(item => {
+                item.classList.remove('locked');
+            });
+            
+            // Thêm class locked cho người được chọn
+            const selectedItem = document.querySelector(`.author-item[data-id="${id}"]`);
+            selectedItem.classList.add('locked');
+        }
+
+        // Xử lý khi chuột rời khỏi toàn bộ danh sách
+        document.querySelector('.authors-list').onmouseleave = () => {
+            if (lockedId) {
+                renderAuthor(lockedId);
+            }
+        };
+
+        // Khởi tạo mặc định với Alice Feeney
+        window.onload = () => {
+            lockAuthor('alice');
+            renderAuthor('alice');
+        };
+    </script>
+</body>
+</html>

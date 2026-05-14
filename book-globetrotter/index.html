@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Book Globetrotter</title>
+  <meta name="description" content="An interactive reading atlas: travelling the world through books from Tân Phú, Ho Chi Minh City." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ6mPw3jT1FdgBA1F0hHYp40pK1b8r0=" crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <aside class="panel" aria-label="Book Globetrotter controls">
+      <section class="hero-card">
+        <p class="eyebrow">Book Globetrotter</p>
+        <h1>Ngồi ở Tân Phú, đi vòng quanh thế giới bằng sách.</h1>
+        <p class="lede">Mỗi điểm trên bản đồ là một bối cảnh, một chuyến đi tưởng tượng, một đường nối từ nhà đến thế giới.</p>
+      </section>
+
+      <section class="home-card">
+        <div class="home-dot"></div>
+        <div>
+          <p class="label">Home base</p>
+          <p class="value">Tân Phú, TP.HCM</p>
+          <p class="muted">10.7916, 106.6273</p>
+        </div>
+      </section>
+
+      <section class="stats-grid" aria-label="Reading atlas stats">
+        <article>
+          <span id="statBooks">—</span>
+          <p>books</p>
+        </article>
+        <article>
+          <span id="statCountries">—</span>
+          <p>countries</p>
+        </article>
+        <article>
+          <span id="statPlaces">—</span>
+          <p>geo points</p>
+        </article>
+        <article>
+          <span id="statFarthest">—</span>
+          <p>farthest km</p>
+        </article>
+      </section>
+
+      <section class="controls">
+        <label for="searchInput">Tìm sách / tác giả / địa điểm</label>
+        <input id="searchInput" type="search" placeholder="Ví dụ: Tokyo, Evelyn Hugo, Iceland…" autocomplete="off" />
+
+        <div class="filter-row">
+          <div>
+            <label for="countryFilter">Country</label>
+            <select id="countryFilter">
+              <option value="all">All countries</option>
+            </select>
+          </div>
+          <div>
+            <label for="lineMode">Lines</label>
+            <select id="lineMode">
+              <option value="on">Show</option>
+              <option value="off">Hide</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <label class="toggle">
+            <input id="clusterToggle" type="checkbox" checked />
+            <span>Cluster markers</span>
+          </label>
+          <label class="toggle">
+            <input id="naToggle" type="checkbox" />
+            <span>Include N/A / abstract points</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="list-section">
+        <div class="section-head">
+          <h2>Visible books</h2>
+          <button id="resetBtn" type="button">Reset</button>
+        </div>
+        <div id="bookList" class="book-list" aria-live="polite"></div>
+      </section>
+    </aside>
+
+    <section class="map-wrap">
+      <div id="map" aria-label="Interactive world map of books"></div>
+      <div class="map-caption">
+        <strong>Tip:</strong> click một marker để mở sách; hover sidebar để focus địa điểm.
+      </div>
+      <div id="loading" class="loading">Loading your reading atlas…</div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio | Authors Directory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen">
+
+    <div class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+            <h1 class="font-bold tracking-tight uppercase text-sm">Authors Directory</h1>
+        </div>
+        <div class="flex gap-3">
+            <a href="admin.html" class="border border-gray-300 px-4 py-2 text-xs font-bold text-gray-600 uppercase tracking-wider hover:border-black hover:text-black transition-colors">
+                ← Dashboard
+            </a>
+            <a href="author.html" class="bg-black text-white px-4 py-2 text-xs font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors">
+                + Add New Author
+            </a>
+        </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-6 py-10">
+        
+        <div id="status-message" class="text-center py-12 text-gray-400 italic text-sm">
+            Loading authors directory...
+        </div>
+
+        <div id="authors-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+            </div>
+
+    </div>
+<script src="config.js"></script>
+    <script src="author_list_logic.js"></script>
+</body>
+</html>

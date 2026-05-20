@@ -2,28 +2,30 @@
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Check Admin Auth (chặn khách)
-// add_item_logic.js
-
-// 1. Kiểm tra Auth và bật khung Login nếu chưa đăng nhập
 document.addEventListener('DOMContentLoaded', async () => {
-    const { data: { user } } = await _supabase.auth.getUser();
-    if (!user) {
+    // 1. Kiểm tra session từ trình duyệt
+    const { data: { session } } = await _supabase.auth.getSession();
+    
+    if (!session) {
+        // Cổng khóa: Hiện khung Login
         document.getElementById('auth-gate').classList.remove('hidden');
+    } else {
+        // Cổng mở: Khởi động logic của trang
+        // (Trong admin_logic thì gọi loadAdminItems(), add_item thì gọi initAddPage() v.v...)
+        initializePage(); 
     }
 });
 
-// 2. Hàm xử lý Login để mở cổng
+// Hàm handleLogin dùng chung cho cả 3 file
 window.handleLogin = async () => {
     const email = document.getElementById('login-email').value;
     const pass = document.getElementById('login-pass').value;
-    
     const { error } = await _supabase.auth.signInWithPassword({ email, pass });
     
     if (error) {
-        alert("Thông tin đăng nhập không hợp lệ!");
+        alert("Sai thông tin đăng nhập!");
     } else {
-        document.getElementById('auth-gate').classList.add('hidden'); // Ẩn khung login
-        location.reload(); // Tải lại trang để load toàn bộ logic
+        location.reload(); // Reload lại trang để vào thẳng giao diện quản trị
     }
 };
 

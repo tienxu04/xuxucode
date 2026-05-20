@@ -9,13 +9,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Cổng khóa: Hiện khung Login
         document.getElementById('auth-gate').classList.remove('hidden');
     } else {
-        // Cổng mở: Khởi động logic của trang
-        // (Trong admin_logic thì gọi loadAdminItems(), add_item thì gọi initAddPage() v.v...)
+        // Cổng mở: Khởi động logic của trang admin
         initializePage(); 
     }
 });
 
-// Hàm handleLogin dùng chung cho cả 3 file
+// XỬ LÝ LOGIN NGAY TẠI TRANG
 window.handleLogin = async () => {
     const email = document.getElementById('login-email').value;
     const pass = document.getElementById('login-pass').value;
@@ -24,10 +23,15 @@ window.handleLogin = async () => {
     if (error) {
         alert("Sai thông tin đăng nhập!");
     } else {
-        location.reload(); // Reload lại trang để vào thẳng giao diện quản trị
+        location.reload(); // Reload lại trang để ẩn cổng và load data
     }
 };
 
+function initializePage() {
+    loadAdminItems();
+}
+
+// KÉO DATA VÀ RENDER DANH SÁCH
 async function loadAdminItems() {
     const listContainer = document.getElementById('admin-item-list');
     
@@ -72,21 +76,20 @@ async function loadAdminItems() {
     `).join('');
 }
 
-// XÓA ITEM: OK LÀ ACTION LUÔN KO NÓI NHIỀU
+// XÓA ITEM VÀ TOÀN BỘ SÁCH LIÊN QUAN
 window.deleteItem = async function(id, name) {
-    const confirmed = confirm(`WARNING: Bạn có chắc chắn muốn xóa vĩnh viễn [${name}] và TOÀN BỘ SÁCH của họ khỏi database? Hành động này không thể hoàn tác.`);
+    const confirmed = confirm(`WARNING: Bạn có chắc chắn muốn xóa vĩnh viễn [${name}] và TOÀN BỘ SÁCH của họ khỏi database?`);
     
     if (confirmed) {
         try {
-            // 1. Xóa toàn bộ sách liên kết trước (tránh lỗi Foreign Key)
+            // 1. Xóa toàn bộ sách liên kết trước để không kẹt Foreign Key
             await _supabase.from('books').delete().eq('item_id', id);
             
             // 2. Xóa Item
             const { error } = await _supabase.from('items').delete().eq('id', id);
             if (error) throw error;
 
-            alert('Đã xóa thành công!');
-            loadAdminItems(); // Reload danh sách ngay lập tức
+            loadAdminItems(); // Reload danh sách mềm mượt không cần F5
             
         } catch (err) {
             alert("Lỗi khi xóa: " + err.message);

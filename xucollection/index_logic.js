@@ -91,7 +91,7 @@ window.renderStageBooks = function(itemId) {
     // ĐÃ FIX LỖI "SỐNG NHĂN": Đổi book.image_url thành book.photo_url cho chuẩn tên cột DB của sếp
     container.innerHTML = itemBooks.map(book => `
         <a href="${book.original_url || 'https://instagram.com/xuxudocsach'}" target="_blank" class="aspect-[3/4] overflow-hidden border border-[var(--border-color)] bg-[var(--bg-main)] block group transition-transform hover:scale-[1.02] duration-200">
-            <img src="${book.photo_url}" alt="Book cover" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
+            <img src="${book.cover_url}" alt="Book cover" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
         </a>
     `).join('');
 };

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Book Showcase Studio | V2 Beta</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="theme.css">
     <style>
         .fade-in-active { animation: fadeIn 0.4s ease-in-out forwards; }
         @keyframes fadeIn {
@@ -17,19 +18,29 @@
         ::-webkit-scrollbar-track { background: transparent; }
     </style>
 </head>
-<body class="bg-[#fcfcfc] text-black font-sans antialiased overflow-hidden">
+<body class="bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-300" style="font-family: var(--font-heading)">
 
-    <header class="border-b border-gray-100 px-8 py-5 flex justify-between items-center bg-white z-40 relative">
-        <div class="font-black tracking-widest text-lg uppercase">Curated by Xu</div>
-        <div class="flex gap-4">
-            <a href="https://www.instagram.com/xuxudocsach" target="_blank" class="text-xs uppercase font-bold tracking-wider text-black border border-black px-4 py-2 hover:bg-black hover:text-white transition-colors">
-                My Instagram
-            </a>
-            <a href="https://tienxu04.github.io/xuxucode/bookshelves.html" target="_blank" class="text-xs uppercase font-bold tracking-wider text-gray-400 hover:text-black transition-colors py-2">
-                All reviews
-            </a>
+  <header class="border-b border-[var(--border-color)] px-8 py-5 flex justify-between items-center bg-[var(--bg-card)] z-40 relative transition-colors duration-300">
+    <div class="font-black tracking-widest text-lg uppercase text-[var(--text-main)]">Curated by Xu</div>
+    
+    <div class="flex items-center gap-4">
+        
+        <div class="flex gap-2 text-[10px] font-mono uppercase tracking-wider border-r border-[var(--border-color)] pr-4 text-[var(--text-muted)]">
+            <button onclick="setTheme('cream')" class="hover:text-[var(--text-main)] hover:underline">Cream</button>
+            <span class="opacity-30">|</span>
+            <button onclick="setTheme('gray')" class="hover:text-[var(--text-main)] hover:underline">Gray</button>
+            <span class="opacity-30">|</span>
+            <button onclick="setTheme('dark')" class="hover:text-[var(--text-main)] hover:underline">Dark</button>
         </div>
-    </header>
+
+        <a href="https://www.instagram.com/xuxudocsach" target="_blank" class="text-xs uppercase font-bold tracking-wider text-[var(--text-main)] border border-[var(--text-main)] px-4 py-2 hover:bg-[var(--text-main)] hover:text-[var(--bg-main)] transition-colors duration-300">
+            My Instagram
+        </a>
+        <a href="https://tienxu04.github.io/xuxucode/bookshelves.html" target="_blank" class="text-xs uppercase font-bold tracking-wider text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors duration-300 py-2">
+            All reviews
+        </a>
+    </div>
+</header>
 
     <section class="h-[calc(100vh-73px)] grid grid-cols-1 lg:grid-cols-12">
         

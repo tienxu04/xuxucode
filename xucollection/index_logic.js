@@ -2,7 +2,7 @@
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==========================================
-// 1. CƠ CHẾ QUẢN LÝ THEME
+// 1. CƠ CHẾ QUẢN LÝ THEME MỚI
 // ==========================================
 window.setTheme = function(themeName) {
     document.body.setAttribute('data-theme', themeName);
@@ -20,12 +20,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// 2. LOGIC ĐÚNG NGUYÊN TÁC XUXU
+// 2. LOGIC GỐC: HOVER SHOWCASE ALL BOOKS
 // ==========================================
+// Khai báo biến toàn cục để lưu trữ data sau khi kéo về
+let globalItems = [];
+let globalBooks = [];
+
 async function initShowcase() {
-    // Kéo dữ liệu 2 bảng độc lập
+    // Kéo dữ liệu từ 2 bảng độc lập để bypass lỗi kết nối ngầm
     const { data: items } = await _supabase.from('items').select('*').order('created_at', { ascending: false });
-    const { data: allBooks } = await _supabase.from('books').select('*');
+    const { data: books } = await _supabase.from('books').select('*');
+
+    globalItems = items || [];
+    globalBooks = books || [];
 
     const zoneAuthors = document.getElementById('zone-authors');
     const zoneBooksets = document.getElementById('zone-booksets');
@@ -35,20 +42,12 @@ async function initShowcase() {
     zoneBooksets.innerHTML = '';
     zoneCollections.innerHTML = '';
 
-    if (!items || items.length === 0) return;
+    if (globalItems.length === 0) return;
 
-    items.forEach(item => {
-        // Lọc ra danh sách sách của Item này
-        const itemBooks = allBooks ? allBooks.filter(book => book.item_id === item.id) : [];
-        
-        // Lấy thông tin cuốn đầu tiên (Ảnh và Link Insta gốc)
-        const hasBooks = itemBooks.length > 0;
-        const bookImg = hasBooks ? itemBooks[0].image_url : item.avatar_url;
-        const bookLink = hasBooks ? itemBooks[0].original_url : 'https://instagram.com/xuxudocsach';
-
+    globalItems.forEach(item => {
         const itemHTML = `
             <div class="group/item py-2 border-b border-[var(--border-color)]/30 hover:border-[var(--text-main)] transition-colors cursor-pointer"
-                 onmouseenter="previewImage('${bookImg}', '${bookLink}')">
+                 onmouseenter="renderStageBooks('${item.id}')">
                 <div class="flex justify-between items-baseline">
                     <span onclick="window.location.href='item_detail.html?id=${item.id}'" class="font-bold text-base tracking-tight hover:underline group-hover/item:translate-x-1 transition-transform inline-block">
                         ${item.name}
@@ -63,32 +62,36 @@ async function initShowcase() {
         else if (item.item_type === 'collection') zoneCollections.insertAdjacentHTML('beforeend', itemHTML);
     });
 
-    // Mới nạp trang: Hiển thị sẵn cuốn đầu tiên của danh mục đầu tiên
-    if (items.length > 0) {
-        const firstItemBooks = allBooks ? allBooks.filter(book => book.item_id === items[0].id) : [];
-        const defaultImg = firstItemBooks.length > 0 ? firstItemBooks[0].image_url : items[0].avatar_url;
-        const defaultLink = firstItemBooks.length > 0 ? firstItemBooks[0].original_url : 'https://instagram.com/xuxudocsach';
-        previewImage(defaultImg, defaultLink);
+    // Mới mở trang: Hiển thị sẵn toàn bộ sách của item đầu tiên
+    if (globalItems.length > 0) {
+        renderStageBooks(globalItems[0].id);
     }
 }
 
-// HÀM HOVER: ĐỔI CẢ ẢNH LẪN LINK INSTAGRAM
-window.previewImage = function(imgUrl, instaLink) {
-    const stageImg = document.getElementById('stage-showcase-img');
-    const stageLink = document.getElementById('stage-showcase-link');
-    if (!stageImg || !stageLink) return;
+// HÀM KEY POINT: HOVER VÀO LÀ RẢI TOÀN BỘ ẢNH SÁCH + LINK INSTA LÊN SÂN KHẤU
+window.renderStageBooks = function(itemId) {
+    const container = document.getElementById('stage-books-container');
+    if (!container) return;
 
-    // Cập nhật link Instagram cho sân khấu
-    stageLink.href = instaLink || '#';
+    // Lọc ra tất cả các cuốn sách thuộc về Item này
+    const itemBooks = globalBooks.filter(book => book.item_id === itemId);
 
-    if (!imgUrl || imgUrl === 'null' || imgUrl === 'undefined') {
-        stageImg.classList.add('opacity-0');
+    // Nếu item này chưa có sách nào, hiển thị một thông báo nhẹ hoặc ảnh avatar
+    if (itemBooks.length === 0) {
+        const item = globalItems.find(i => i.id === itemId);
+        const avatarImg = item ? item.avatar_url : '';
+        container.innerHTML = `
+            <div class="col-span-2 aspect-[3/4] overflow-hidden border border-[var(--border-color)]">
+                <img src="${avatarImg}" class="w-full h-full object-cover">
+            </div>
+        `;
         return;
     }
 
-    stageImg.classList.add('opacity-0');
-    setTimeout(() => {
-        stageImg.src = imgUrl;
-        stageImg.classList.remove('opacity-0');
-    }, 150); 
+    // Nếu có sách, rải toàn bộ danh sách sách dạng lưới, click hình nào bay sang Insta hình đó
+    container.innerHTML = itemBooks.map(book => `
+        <a href="${book.original_url || 'https://instagram.com/xuxudocsach'}" target="_blank" class="aspect-[3/4] overflow-hidden border border-[var(--border-color)] bg-[var(--bg-main)] block group transition-transform hover:scale-[1.02] duration-200">
+            <img src="${book.image_url}" alt="Book cover" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
+        </a>
+    `).join('');
 };

@@ -80,17 +80,26 @@ window.handleItemHover = function(itemId, itemName) {
         return;
     }
 
-    grid.innerHTML = filteredBooks.map(book => `
-        <div class="bg-white border border-gray-100 p-2 shadow-sm relative group/book fade-in-active hover:border-black transition-colors cursor-pointer">
+    grid.innerHTML = filteredBooks.map(book => {
+        // Tự động dùng link gốc, nếu data cũ rỗng thì fallback về link ghép tự động
+        const targetUrl = book.original_url || `https://www.instagram.com/p/${book.instagram_embed_id}/`;
+        
+        return `
+        <div 
+            class="bg-white border border-gray-100 p-2 shadow-sm relative group/book fade-in-active hover:border-black transition-colors cursor-pointer"
+            onclick="window.open('${targetUrl}', '_blank')" 
+        >
             <div class="aspect-[3/4] w-full overflow-hidden bg-gray-50 relative">
                 <img src="${book.cover_url}" class="w-full h-full object-cover group-hover/book:scale-105 transition-transform duration-500">
                 <span class="absolute top-2 left-2 bg-black text-white font-mono text-[10px] px-1.5 py-0.5 font-bold uppercase tracking-wider shadow-sm">
                     Vol.${book.vol_number}
                 </span>
             </div>
-            <div class="mt-3 px-1 pb-1">
-                <h4 class="text-xs font-bold text-gray-900 truncate" title="${book.title}">${book.title}</h4>
+            <div class="mt-3 px-1 pb-1 flex justify-between items-center">
+                <h4 class="text-xs font-bold text-gray-900 truncate flex-1 mr-2" title="${book.title}">${book.title}</h4>
+                <span class="text-[10px] text-gray-300 group-hover/book:text-black transition-colors uppercase font-bold tracking-wider">↗ Insta</span>
             </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 };

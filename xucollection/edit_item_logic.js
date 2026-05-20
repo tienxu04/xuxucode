@@ -2,30 +2,29 @@
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const { data: { user } } = await _supabase.auth.getUser();
+    // 1. Kiểm tra session từ trình duyệt
+    const { data: { session } } = await _supabase.auth.getSession();
     
-    if (!user) {
-        // Hiện khung login thay vì chuyển hướng
+    if (!session) {
+        // Cổng khóa: Hiện khung Login
         document.getElementById('auth-gate').classList.remove('hidden');
-        return;
+    } else {
+        // Cổng mở: Khởi động logic của trang
+        // (Trong admin_logic thì gọi loadAdminItems(), add_item thì gọi initAddPage() v.v...)
+        initializePage(); 
     }
-    
-    // Nếu có user, cứ tiếp tục load data bình thường...
-    initEditPage();
 });
 
-// Hàm login để mở cổng
+// Hàm handleLogin dùng chung cho cả 3 file
 window.handleLogin = async () => {
     const email = document.getElementById('login-email').value;
     const pass = document.getElementById('login-pass').value;
-    
     const { error } = await _supabase.auth.signInWithPassword({ email, pass });
     
     if (error) {
-        alert("Sai thông tin rồi!");
+        alert("Sai thông tin đăng nhập!");
     } else {
-        document.getElementById('auth-gate').classList.add('hidden'); // Ẩn khung login
-        location.reload(); // Tải lại để load data
+        location.reload(); // Reload lại trang để vào thẳng giao diện quản trị
     }
 };
 

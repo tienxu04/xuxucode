@@ -2,13 +2,30 @@
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Check Admin Auth (chặn khách)
+// add_item_logic.js
+
+// 1. Kiểm tra Auth và bật khung Login nếu chưa đăng nhập
 document.addEventListener('DOMContentLoaded', async () => {
     const { data: { user } } = await _supabase.auth.getUser();
     if (!user) {
-        alert("Thao tác bất hợp pháp! Vui lòng đăng nhập.");
-        window.location.href = 'admin.html';
+        document.getElementById('auth-gate').classList.remove('hidden');
     }
 });
+
+// 2. Hàm xử lý Login để mở cổng
+window.handleLogin = async () => {
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-pass').value;
+    
+    const { error } = await _supabase.auth.signInWithPassword({ email, pass });
+    
+    if (error) {
+        alert("Thông tin đăng nhập không hợp lệ!");
+    } else {
+        document.getElementById('auth-gate').classList.add('hidden'); // Ẩn khung login
+        location.reload(); // Tải lại trang để load toàn bộ logic
+    }
+};
 
 // THAY ĐỔI GIAO DIỆN DỰA THEO LOẠI ITEM
 function toggleFormLabels() {

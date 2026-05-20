@@ -1,4 +1,22 @@
 // item_detail_logic.js
+
+// ==========================================
+// CƠ CHẾ QUẢN LÝ THEME (CHẠY TRƯỚC TIÊN)
+// ==========================================
+window.setTheme = function(themeName) {
+    document.body.setAttribute('data-theme', themeName);
+    localStorage.setItem('selected-theme', themeName);
+};
+
+function initTheme() {
+    const savedTheme = localStorage.getItem('selected-theme') || 'cream';
+    setTheme(savedTheme);
+}
+initTheme(); // Kích hoạt ngay khi file JS vừa load để tránh chớp trắng màn hình
+// ==========================================
+
+// Kéo xuống dưới là các đoạn code cũ của sếp (supabase, fetchItemDetail...) giữ nguyên!
+
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 document.addEventListener('DOMContentLoaded', () => {

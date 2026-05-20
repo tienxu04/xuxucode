@@ -3,72 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Book Showcase | V2 Beta</title>
+    <title>The Book Showcase Studio | V2 Beta</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in-active { animation: fadeIn 0.4s ease-in-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Tùy chỉnh thanh cuộn cho mượt */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+    </style>
 </head>
-<body class="bg-[#f4f4f5] text-black font-sans antialiased min-h-screen p-8">
+<body class="bg-[#fcfcfc] text-black font-sans antialiased overflow-hidden">
 
-    <header class="flex justify-between items-center mb-12">
-        <h1 class="font-black tracking-widest text-2xl uppercase">CMS Showcase</h1>
-        <a href="add_item.html" class="bg-black text-white px-5 py-2 text-xs font-bold uppercase tracking-widest hover:bg-gray-800">+ Add New Item</a>
+    <header class="border-b border-gray-100 px-8 py-5 flex justify-between items-center bg-white z-40 relative">
+        <div class="font-black tracking-widest text-lg uppercase">The Studio.</div>
+        <div class="flex gap-4">
+            <a href="add_item.html" class="text-xs uppercase font-bold tracking-wider text-black border border-black px-4 py-2 hover:bg-black hover:text-white transition-colors">
+                + Add Item
+            </a>
+            <a href="admin.html" class="text-xs uppercase font-bold tracking-wider text-gray-400 hover:text-black transition-colors py-2">
+                Staff Portal ↗
+            </a>
+        </div>
     </header>
 
-    <div class="space-y-16 max-w-7xl mx-auto">
+    <section class="h-[calc(100vh-73px)] grid grid-cols-1 lg:grid-cols-12">
         
-        <section>
-            <h2 class="text-xs font-mono uppercase tracking-widest text-gray-500 mb-4 border-b pb-2">Zone 1: Featured Authors</h2>
-            <div id="zone-authors" class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                </div>
-        </section>
+        <div class="lg:col-span-5 border-r border-gray-100 bg-white p-8 lg:p-10 overflow-y-auto h-full space-y-12 pb-24">
+            
+            <div id="status-message" class="text-xs text-gray-400 italic">Initializing catalog...</div>
 
-        <section>
-            <h2 class="text-xs font-mono uppercase tracking-widest text-gray-500 mb-4 border-b pb-2">Zone 2: Exclusive Booksets</h2>
-            <div id="zone-booksets" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                </div>
-        </section>
+            <div class="zone-container hidden" id="wrap-authors">
+                <h2 class="text-[10px] font-mono uppercase tracking-widest text-gray-400 mb-4 border-b border-gray-100 pb-2">Zone 1: Featured Authors</h2>
+                <div id="zone-authors" class="space-y-2"></div>
+            </div>
 
-        <section>
-            <h2 class="text-xs font-mono uppercase tracking-widest text-gray-500 mb-4 border-b pb-2">Zone 3: Curated Collections</h2>
-            <div id="zone-collections" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                </div>
-        </section>
+            <div class="zone-container hidden" id="wrap-booksets">
+                <h2 class="text-[10px] font-mono uppercase tracking-widest text-gray-400 mb-4 border-b border-gray-100 pb-2">Zone 2: Exclusive Booksets</h2>
+                <div id="zone-booksets" class="space-y-2"></div>
+            </div>
 
-    </div>
+            <div class="zone-container hidden" id="wrap-collections">
+                <h2 class="text-[10px] font-mono uppercase tracking-widest text-gray-400 mb-4 border-b border-gray-100 pb-2">Zone 3: Curated Collections</h2>
+                <div id="zone-collections" class="space-y-2"></div>
+            </div>
+
+        </div>
+
+        <div class="lg:col-span-7 bg-[#f8f9fa] p-8 lg:p-12 flex flex-col overflow-y-auto h-full relative">
+            <div class="w-full max-w-4xl mx-auto space-y-8">
+                
+                <div class="flex justify-between items-end border-b border-gray-200 pb-3 sticky top-0 bg-[#f8f9fa] z-10 pt-4">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gray-500">Exhibited Artworks</h3>
+                    <span id="preview-item-name" class="text-xs font-mono text-gray-400 bg-white px-2 py-1 border border-gray-200">Select an item</span>
+                </div>
+
+                <div id="books-preview-grid" class="grid grid-cols-2 md:grid-cols-3 gap-6 pb-20">
+                    <div class="col-span-full flex flex-col items-center justify-center text-gray-300 italic text-sm p-12 h-64">
+                        <svg class="w-8 h-8 mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        Hover over any item on the left to reveal its collection
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
 
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-    <script>
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            const { data: items, error } = await _supabase.from('items').select('*').order('created_at', { ascending: false });
-            
-            if (error) return console.error(error);
-
-            const zoneAuthors = document.getElementById('zone-authors');
-            const zoneBooksets = document.getElementById('zone-booksets');
-            const zoneCollections = document.getElementById('zone-collections');
-
-            // Template render chung
-            const renderItem = (item) => `
-                <div class="bg-white border border-gray-200 p-4 shadow-sm flex items-center gap-4 cursor-pointer hover:border-black transition-colors" onclick="window.location.href='item_detail.html?id=${item.id}'">
-                    <img src="${item.avatar_url || 'https://via.placeholder.com/150'}" class="w-12 h-12 ${item.item_type === 'author' ? 'rounded-full' : 'rounded'} object-cover border">
-                    <div>
-                        <h3 class="font-bold text-sm text-gray-900">${item.name}</h3>
-                        <p class="text-[10px] text-gray-400 font-mono uppercase mt-0.5">Type: ${item.item_type}</p>
-                    </div>
-                </div>
-            `;
-
-            // Lọc và đổ data tại chỗ
-            const authors = items.filter(i => i.item_type === 'author');
-            const booksets = items.filter(i => i.item_type === 'bookset');
-            const collections = items.filter(i => i.item_type === 'collection');
-
-            zoneAuthors.innerHTML = authors.length ? authors.map(renderItem).join('') : '<p class="text-xs italic text-gray-400">No authors yet.</p>';
-            zoneBooksets.innerHTML = booksets.length ? booksets.map(renderItem).join('') : '<p class="text-xs italic text-gray-400">No booksets yet.</p>';
-            zoneCollections.innerHTML = collections.length ? collections.map(renderItem).join('') : '<p class="text-xs italic text-gray-400">No collections yet.</p>';
-        });
-    </script>
+    <script src="index_logic.js"></script>
 </body>
 </html>

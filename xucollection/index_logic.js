@@ -76,7 +76,7 @@ window.renderStageBooks = function(itemId) {
     // Lọc ra tất cả các cuốn sách thuộc về Item này
     const itemBooks = globalBooks.filter(book => book.item_id === itemId);
 
-    // Nếu item này chưa có sách nào, hiển thị một thông báo nhẹ hoặc ảnh avatar
+    // Nếu item này chưa có sách nào, hiển thị ảnh avatar
     if (itemBooks.length === 0) {
         const item = globalItems.find(i => i.id === itemId);
         const avatarImg = item ? item.avatar_url : '';
@@ -88,10 +88,10 @@ window.renderStageBooks = function(itemId) {
         return;
     }
 
-    // Nếu có sách, rải toàn bộ danh sách sách dạng lưới, click hình nào bay sang Insta hình đó
+    // ĐÃ FIX LỖI "SỐNG NHĂN": Đổi book.image_url thành book.photo_url cho chuẩn tên cột DB của sếp
     container.innerHTML = itemBooks.map(book => `
         <a href="${book.original_url || 'https://instagram.com/xuxudocsach'}" target="_blank" class="aspect-[3/4] overflow-hidden border border-[var(--border-color)] bg-[var(--bg-main)] block group transition-transform hover:scale-[1.02] duration-200">
-            <img src="${book.image_url}" alt="Book cover" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
+            <img src="${book.photo_url}" alt="Book cover" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
         </a>
     `).join('');
 };

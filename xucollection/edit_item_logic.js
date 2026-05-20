@@ -3,14 +3,31 @@ const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 document.addEventListener('DOMContentLoaded', async () => {
     const { data: { user } } = await _supabase.auth.getUser();
-    if (!user) return window.location.href = 'index.html';
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get('id');
-    if (!id) return alert("Missing ID!");
-
-    loadItemData(id);
+    
+    if (!user) {
+        // Hiện khung login thay vì chuyển hướng
+        document.getElementById('auth-gate').classList.remove('hidden');
+        return;
+    }
+    
+    // Nếu có user, cứ tiếp tục load data bình thường...
+    initEditPage();
 });
+
+// Hàm login để mở cổng
+window.handleLogin = async () => {
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-pass').value;
+    
+    const { error } = await _supabase.auth.signInWithPassword({ email, pass });
+    
+    if (error) {
+        alert("Sai thông tin rồi!");
+    } else {
+        document.getElementById('auth-gate').classList.add('hidden'); // Ẩn khung login
+        location.reload(); // Tải lại để load data
+    }
+};
 
 async function loadItemData(id) {
     // Lấy thông tin Item

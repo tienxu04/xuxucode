@@ -19,12 +19,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         
-        // Gọi đúng hàm nạp dữ liệu thực tế phía dưới
+        // Gọi hàm nạp dữ liệu thực tế
         loadItemData(itemId); 
     }
 });
 
-// Hàm handleLogin dùng chung cho cả 3 file
+// Hàm handleLogin dùng chung cho hệ thống quản trị
 window.handleLogin = async () => {
     const email = document.getElementById('login-email').value;
     const pass = document.getElementById('login-pass').value;
@@ -33,11 +33,13 @@ window.handleLogin = async () => {
     if (error) {
         alert("Sai thông tin đăng nhập!");
     } else {
-        location.reload(); // Reload lại trang để vào thẳng giao diện quản trị
+        location.reload(); 
     }
 };
 
-// ĐỒNG BỘ CHUẨN: Hàm nạp data cũ của item lên form
+// ==========================================
+// NẠP DỮ LIỆU CŨ LÊN FORM
+// ==========================================
 async function loadItemData(id) {
     // Lấy thông tin Item
     const { data: item } = await _supabase.from('items').select('*').eq('id', id).single();
@@ -52,7 +54,8 @@ async function loadItemData(id) {
 
     document.getElementById('edit-id').value = item.id;
     document.getElementById('edit-name').value = item.name;
-    document.getElementById('edit-bio').value = item.bio;
+    // Nạp chuẩn xác cột bio từ DB
+    document.getElementById('edit-bio').value = item.bio || '';
 
     // Hiển thị sách cũ
     const booksContainer = document.getElementById('existing-books-list');
@@ -72,6 +75,10 @@ async function loadItemData(id) {
     document.getElementById('edit-item-form').classList.remove('hidden');
 }
 
+// ==========================================
+// CÁC HÀM XỬ LÝ (XÓA SÁCH, THÊM Ô LINK, LƯU DB)
+// ==========================================
+
 // XÓA 1 CUỐN SÁCH CŨ (Action ngay)
 window.deleteSingleBook = async function(bookId) {
     if(confirm("Xóa cuốn sách này?")) {
@@ -90,19 +97,35 @@ window.addEditInstaRow = function() {
 
 // LƯU TOÀN BỘ CHỈNH SỬA
 window.updateItem = async function() {
-    const id = document.getElementById('edit-id').value;
+    const id = document.getElementById('edit-id').value.trim();
     const name = document.getElementById('edit-name').value.trim();
-    const bio = document.getElementById('edit-bio').value.trim();
+    const bioValue = document.getElementById('edit-bio').value.trim();
+
+    if (!id) {
+        alert("Lỗi: Không tìm thấy ID hợp lệ để update!");
+        return;
+    }
 
     try {
-        // 1. Cập nhật Info
-        await _supabase.from('items').update({ name, bio }).eq('id', id);
+        // 1. Cập nhật Info - Dùng đúng cột 'bio'
+        const { data, error: itemError } = await _supabase.from('items')
+            .update({ 
+                name: name, 
+                bio: bioValue 
+            })
+            .eq('id', id)
+            .select();
+
+        if (itemError) throw itemError;
+
+        if (!data || data.length === 0) {
+            throw new Error(`Không có dòng nào trong DB được cập nhật. Vui lòng check lại ID: ${id}`);
+        }
 
         // 2. Thêm sách mới (nếu có nhập link)
         const instaInputs = document.querySelectorAll('.insta-input');
         const bookInserts = [];
         
-        // Cần đếm xem hiện tại đang có bao nhiêu Vol để đánh số tiếp
         const { data: currentBooks } = await _supabase.from('books').select('vol_number').eq('item_id', id);
         let nextVol = currentBooks && currentBooks.length > 0 ? Math.max(...currentBooks.map(b => b.vol_number)) + 1 : 1;
 
@@ -122,13 +145,15 @@ window.updateItem = async function() {
         });
 
         if (bookInserts.length > 0) {
-            await _supabase.from('books').insert(bookInserts);
+            const { error: bookError } = await _supabase.from('books').insert(bookInserts);
+            if (bookError) throw bookError;
         }
 
         alert('Update thành công!');
         window.location.href = 'admin.html';
 
     } catch (err) {
-        alert("Lỗi update: " + err.message);
+        alert("Lỗi hệ thống từ Supabase: " + err.message);
+        console.error("Chi tiết lỗi:", err);
     }
 }

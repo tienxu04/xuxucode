@@ -75,8 +75,14 @@ async function loadItemSpecification(itemId) {
                 </div>
             `;
         } else {
-            grid.innerHTML = books.map(book => `
-                <div class="bg-white border border-gray-100 p-3 shadow-sm hover:border-black transition-all flex flex-col justify-between group cursor-pointer">
+            grid.innerHTML = books.map(book => {
+                const targetUrl = book.original_url || `https://www.instagram.com/p/${book.instagram_embed_id}/`;
+                
+                return `
+                <div 
+                    class="bg-white border border-gray-100 p-3 shadow-sm hover:border-black transition-all flex flex-col justify-between group cursor-pointer"
+                    onclick="window.open('${targetUrl}', '_blank')"
+                >
                     <div class="aspect-[3/4] w-full overflow-hidden bg-gray-50 relative border border-gray-50">
                         <img src="${book.cover_url}" alt="${book.title}" class="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500">
                         <span class="absolute top-2 left-2 bg-black text-white font-mono text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider">
@@ -88,13 +94,12 @@ async function loadItemSpecification(itemId) {
                         <h4 class="font-bold text-xs text-gray-800 truncate" title="${book.title}">${book.title}</h4>
                         <div class="flex items-center justify-between pt-1 border-t border-gray-50 text-[10px] text-gray-400 font-mono">
                             <span>ID: ${book.instagram_embed_id}</span>
-                            <a href="https://www.instagram.com/p/${book.instagram_embed_id}/" target="_blank" class="font-bold text-blue-500 hover:underline uppercase">
-                                Insta ↗
-                            </a>
+                            <span class="font-bold text-blue-500 uppercase">Insta ↗</span>
                         </div>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Tắt loading, mở màn triển lãm

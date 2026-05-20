@@ -9,9 +9,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Cổng khóa: Hiện khung Login
         document.getElementById('auth-gate').classList.remove('hidden');
     } else {
-        // Cổng mở: Khởi động logic của trang
-        // (Trong admin_logic thì gọi loadAdminItems(), add_item thì gọi initAddPage() v.v...)
-        initializePage(); 
+        // Cổng mở: Bóc tách ID từ URL (?id=...) và khởi chạy trang Edit
+        const urlParams = new URLSearchParams(window.location.search);
+        const itemId = urlParams.get('id');
+        
+        if (!itemId) {
+            alert("Không tìm thấy ID của Item cần chỉnh sửa!");
+            window.location.href = 'admin.html';
+            return;
+        }
+        
+        // Gọi đúng hàm nạp dữ liệu thực tế phía dưới
+        loadItemData(itemId); 
     }
 });
 
@@ -28,11 +37,18 @@ window.handleLogin = async () => {
     }
 };
 
+// ĐỒNG BỘ CHUẨN: Hàm nạp data cũ của item lên form
 async function loadItemData(id) {
     // Lấy thông tin Item
     const { data: item } = await _supabase.from('items').select('*').eq('id', id).single();
     // Lấy sách
     const { data: books } = await _supabase.from('books').select('*').eq('item_id', id).order('vol_number');
+
+    if (!item) {
+        alert("Item không tồn tại hoặc đã bị xóa!");
+        window.location.href = 'admin.html';
+        return;
+    }
 
     document.getElementById('edit-id').value = item.id;
     document.getElementById('edit-name').value = item.name;
@@ -88,7 +104,7 @@ window.updateItem = async function() {
         
         // Cần đếm xem hiện tại đang có bao nhiêu Vol để đánh số tiếp
         const { data: currentBooks } = await _supabase.from('books').select('vol_number').eq('item_id', id);
-        let nextVol = currentBooks.length > 0 ? Math.max(...currentBooks.map(b => b.vol_number)) + 1 : 1;
+        let nextVol = currentBooks && currentBooks.length > 0 ? Math.max(...currentBooks.map(b => b.vol_number)) + 1 : 1;
 
         instaInputs.forEach(input => {
             const rawUrl = input.value.trim();

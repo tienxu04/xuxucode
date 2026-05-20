@@ -35,5 +35,14 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <script src="admin_logic.js"></script>
+
+    <div id="auth-gate" class="hidden fixed inset-0 bg-white z-[9999] flex items-center justify-center p-6">
+    <div class="w-full max-w-sm space-y-4">
+        <h2 class="font-bold text-lg uppercase tracking-widest text-center">Admin Login</h2>
+        <input type="email" id="login-email" placeholder="Email" class="w-full border p-3">
+        <input type="password" id="login-pass" placeholder="Password" class="w-full border p-3">
+        <button onclick="handleLogin()" class="w-full bg-black text-white py-3 font-bold uppercase hover:bg-gray-800">Login</button>
+    </div>
+</div>
 </body>
 </html>

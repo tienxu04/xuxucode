@@ -1,0 +1,78 @@
+// admin_logic.js
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Check Auth
+    const { data: { user } } = await _supabase.auth.getUser();
+    if (!user) {
+        window.location.href = 'index.html'; // Đuổi ra trang chủ nếu chưa login
+        return;
+    }
+    loadAdminItems();
+});
+
+async function loadAdminItems() {
+    const listContainer = document.getElementById('admin-item-list');
+    
+    const { data: items, error } = await _supabase
+        .from('items')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        listContainer.innerHTML = `<p class="text-red-500 text-sm">${error.message}</p>`;
+        return;
+    }
+
+    document.getElementById('total-count').innerText = `${items.length} Items`;
+
+    if (items.length === 0) {
+        listContainer.innerHTML = `<div class="p-8 text-center text-gray-400 border border-dashed text-sm">No items found.</div>`;
+        return;
+    }
+
+    listContainer.innerHTML = items.map(item => `
+        <div class="group flex items-center justify-between bg-white border border-gray-100 p-4 hover:border-black transition-colors">
+            
+            <div class="flex items-center gap-4">
+                <img src="${item.avatar_url || 'https://via.placeholder.com/150'}" class="w-10 h-10 object-cover ${item.item_type === 'author' ? 'rounded-full' : 'rounded-sm'} border">
+                <div>
+                    <h3 class="font-bold text-sm text-gray-900">${item.name}</h3>
+                    <p class="text-[10px] text-gray-400 font-mono uppercase mt-0.5">Type: ${item.item_type}</p>
+                </div>
+            </div>
+
+            <div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                <a href="edit_item.html?id=${item.id}" class="bg-gray-100 text-gray-700 px-3 py-1.5 text-xs font-bold uppercase hover:bg-black hover:text-white transition-colors">
+                    Edit
+                </a>
+                <button onclick="deleteItem('${item.id}', '${item.name}')" class="bg-red-50 text-red-600 px-3 py-1.5 text-xs font-bold uppercase hover:bg-red-600 hover:text-white transition-colors">
+                    Delete
+                </button>
+            </div>
+            
+        </div>
+    `).join('');
+}
+
+// XÓA ITEM: OK LÀ ACTION LUÔN KO NÓI NHIỀU
+window.deleteItem = async function(id, name) {
+    const confirmed = confirm(`WARNING: Bạn có chắc chắn muốn xóa vĩnh viễn [${name}] và TOÀN BỘ SÁCH của họ khỏi database? Hành động này không thể hoàn tác.`);
+    
+    if (confirmed) {
+        try {
+            // 1. Xóa toàn bộ sách liên kết trước (tránh lỗi Foreign Key)
+            await _supabase.from('books').delete().eq('item_id', id);
+            
+            // 2. Xóa Item
+            const { error } = await _supabase.from('items').delete().eq('id', id);
+            if (error) throw error;
+
+            alert('Đã xóa thành công!');
+            loadAdminItems(); // Reload danh sách ngay lập tức
+            
+        } catch (err) {
+            alert("Lỗi khi xóa: " + err.message);
+        }
+    }
+};

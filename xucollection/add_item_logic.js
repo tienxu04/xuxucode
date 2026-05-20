@@ -101,12 +101,15 @@ async function submitUnifiedItem() {
         const instaInputs = document.querySelectorAll('.insta-input');
         const bookInserts = [];
         instaInputs.forEach((input, index) => {
-            const instaId = extractInstagramId(input.value);
+            const rawUrl = input.value.trim(); // Lấy link nguyên bản
+            const instaId = extractInstagramId(rawUrl);
+            
             if (instaId) {
                 bookInserts.push({
                     title: `Item Book ${index + 1} - ${name}`,
                     item_id: itemData.id,
                     instagram_embed_id: instaId,
+                    original_url: rawUrl, // GẮN LINK GỐC VÀO ĐÂY
                     cover_url: `https://images.weserv.nl/?url=https://www.instagram.com/p/${instaId}/media/?size=l`,
                     vol_number: index + 1
                 });

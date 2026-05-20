@@ -2,35 +2,34 @@
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==========================================
-// 1. CƠ CHẾ QUẢN LÝ THEME (ĐẶT LÊN ĐẦU ĐỂ CHẠY NGAY)
+// 1. CƠ CHẾ QUẢN LÝ THEME (GIỮ NGUYÊN MƯỢT MÀ)
 // ==========================================
 window.setTheme = function(themeName) {
-    // Ốp thuộc tính data-theme vào thẻ body
     document.body.setAttribute('data-theme', themeName);
-    // Lưu vào localStorage để chuyển trang không bị mất
     localStorage.setItem('selected-theme', themeName);
 };
 
-// Hàm tự động nạp theme cũ khi vừa mở trang
 function initTheme() {
     const savedTheme = localStorage.getItem('selected-theme') || 'cream';
     setTheme(savedTheme);
 }
 
-// Khởi động hệ thống khi trang load xong
 document.addEventListener('DOMContentLoaded', () => {
-    initTheme();      // Khởi tạo màu sắc trước
-    initShowcase();   // Kéo data Supabase sau
+    initTheme();      
+    initShowcase();   
 });
 
 // ==========================================
-// 2. LOGIC KÉO DATA VÀ XỬ LÝ HOVER SHOWCASE
+// 2. LOGIC TRẢ VỀ NGUYÊN TÁC: HOVER HIỆN ẢNH SÁCH
 // ==========================================
 async function initShowcase() {
-    // Kéo toàn bộ Items (Tác giả, Bộ sách, Bộ sưu tập)
+    // SỬA ĐỔI: Kéo items và kèm luôn danh sách books liên kết (Foreign Key)
     const { data: items, error } = await _supabase
         .from('items')
-        .select('*')
+        .select(`
+            *,
+            books (*)
+        `)
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -38,12 +37,10 @@ async function initShowcase() {
         return;
     }
 
-    // Phân loại data vào 3 Zone tương ứng trong HTML mới
     const zoneAuthors = document.getElementById('zone-authors');
     const zoneBooksets = document.getElementById('zone-booksets');
     const zoneCollections = document.getElementById('zone-collections');
 
-    // Reset lại nội dung (Xóa chữ "Loading...")
     zoneAuthors.innerHTML = '';
     zoneBooksets.innerHTML = '';
     zoneCollections.innerHTML = '';
@@ -56,11 +53,16 @@ async function initShowcase() {
         return;
     }
 
-    // Duyệt qua từng item để render
     items.forEach(item => {
+        // Tìm ảnh của cuốn sách đầu tiên trong tập hợp (nếu có)
+        // Nếu không có cuốn nào, mới dùng tạm avatar_url làm cứu cánh
+        const firstBookImg = item.books && item.books.length > 0 
+            ? item.books[0].image_url 
+            : item.avatar_url;
+
         const itemHTML = `
             <div class="group/item py-2 border-b border-[var(--border-color)]/30 hover:border-[var(--text-main)] transition-colors cursor-pointer"
-                 onmouseenter="previewImage('${item.avatar_url}')"
+                 onmouseenter="previewImage('${firstBookImg}')"
                  onclick="window.location.href='item_detail.html?id=${item.id}'">
                 <div class="flex justify-between items-baseline">
                     <span class="font-bold text-base tracking-tight group-hover/item:translate-x-1 transition-transform inline-block">${item.name}</span>
@@ -69,7 +71,6 @@ async function initShowcase() {
             </div>
         `;
 
-        // Bỏ vào đúng vị trí dựa trên item_type
         if (item.item_type === 'author') {
             zoneAuthors.insertAdjacentHTML('beforeend', itemHTML);
         } else if (item.item_type === 'bookset') {
@@ -78,6 +79,12 @@ async function initShowcase() {
             zoneCollections.insertAdjacentHTML('beforeend', itemHTML);
         }
     });
+
+    // Điểm cộng tinh tế: Vừa mở trang, lấy ngay ảnh của item đầu tiên hiển thị sẵn trên sân khấu
+    if (items.length > 0) {
+        const defaultImg = items[0].books && items[0].books.length > 0 ? items[0].books[0].image_url : items[0].avatar_url;
+        previewImage(defaultImg);
+    }
 }
 
 // XỬ LÝ SÂN KHẤU HOVER ĐỔI ẢNH MƯỢT MÀ
@@ -90,11 +97,10 @@ window.previewImage = function(imgUrl) {
         return;
     }
 
-    // Làm mờ ảnh cũ đi trước khi đổi nguồn ảnh mới (tránh bị giật hình)
     stageImg.classList.add('opacity-0');
     
     setTimeout(() => {
         stageImg.src = imgUrl;
         stageImg.classList.remove('opacity-0');
-    }, 150); // Chờ 150ms cho hiệu ứng mượt
+    }, 150); 
 };

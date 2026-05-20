@@ -3,112 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Studio | Book Showcase</title>
+    <title>Studio | Control Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="admin_css.css">
 </head>
-<body class="relative min-h-screen bg-gray-50">
+<body class="bg-gray-50 text-black font-sans antialiased min-h-screen">
 
-    <div id="login-overlay" class="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4">
-        <div class="bg-white p-8 max-w-sm w-full border border-gray-200 shadow-2xl">
-            <h3 class="font-bold text-xl mb-1 uppercase tracking-wider text-center">Studio Verification</h3>
-            <p class="text-xs text-gray-400 text-center mb-6">Enter Supabase Credentials to Access Dashboard</p>
-            
-            <div class="space-y-4">
-                <input type="email" id="admin-email" placeholder="Admin Email" class="w-full border border-gray-300 p-3 focus:outline-none focus:border-black text-sm">
-                <input type="password" id="admin-password" placeholder="Password" class="w-full border border-gray-300 p-3 focus:outline-none focus:border-black text-sm">
-                <button onclick="handleAdminLogin()" class="w-full bg-black text-white py-3.5 text-sm font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors">
-                    Verify Identity
-                </button>
-            </div>
+    <header class="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center sticky top-0 z-40">
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+            <h1 class="font-black tracking-widest text-lg uppercase">Admin Portal</h1>
+        </div>
+        <div class="flex gap-4 items-center">
+            <a href="index.html" class="text-xs uppercase font-bold text-gray-400 hover:text-black">View Site ↗</a>
+            <a href="add_item.html" class="bg-black text-white px-4 py-2 text-xs font-bold uppercase tracking-wider hover:bg-gray-800">
+                + Add Item
+            </a>
+        </div>
+    </header>
+
+    <div class="max-w-4xl mx-auto px-6 py-12">
+        <div class="flex justify-between items-end mb-6 border-b border-gray-200 pb-2">
+            <h2 class="text-xs font-mono uppercase tracking-widest text-gray-500">Database Directory</h2>
+            <span id="total-count" class="text-xs font-bold text-gray-800">0 Items</span>
+        </div>
+
+        <div id="admin-item-list" class="space-y-1">
+            <p class="text-sm text-gray-400 italic py-4">Fetching database...</p>
         </div>
     </div>
 
-    <div id="main-dashboard" class="hidden">
-        
-        <div class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm">
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                <h1 class="font-bold tracking-tight uppercase text-sm">Studio Control Center</h1>
-            </div>
-            
-            <div class="flex gap-3">
-                <a href="author.html" class="border border-black px-4 py-2 text-xs font-bold uppercase tracking-wider hover:bg-black hover:text-white transition-colors">
-                    + Add Author
-                </a>
-                <button onclick="alert('Feature Add Collection coming soon!')" class="border border-gray-300 px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider hover:border-black hover:text-black transition-colors">
-                    + Add Collection
-                </button>
-                <button onclick="handleAdminLogout()" class="bg-red-50 text-red-600 border border-red-200 px-3 py-2 text-xs font-bold uppercase tracking-wider hover:bg-red-600 hover:text-white transition-colors">
-                    Logout
-                </button>
-            </div>
-        </div>
-
-        <div class="admin-grid">
-            <div class="column">
-                <div class="column-header">
-                    <h2 class="font-bold">Authors</h2>
-                    <button onclick="prepareNewAuthor()" class="bg-black text-white w-8 h-8 rounded-full">+</button>
-                </div>
-                <div id="authors-list" class="scroll-area">
-                    <p class="text-xs text-gray-400 p-4 italic">Demo mode: Login to load data...</p>
-                </div>
-            </div>
-
-            <div class="column">
-                <div class="column-header">
-                    <h2 id="form-title" class="font-bold">Author Detail</h2>
-                    <button onclick="saveAuthor()" class="bg-blue-600 text-white px-4 py-1 rounded text-sm">Save Author</button>
-                </div>
-                <div class="scroll-area">
-                    <input type="hidden" id="author-id">
-                    <input type="hidden" id="author-avatar-url">
-                    
-                    <div class="mb-4">
-                        <label class="text-xs uppercase font-bold text-gray-400">Avatar</label>
-                        <div id="dropzone" class="mt-1 border border-dashed border-gray-300 hover:bg-gray-50 cursor-pointer">
-                            <p class="text-gray-400 text-sm p-4 text-center">Drag avatar here</p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-xs uppercase font-bold text-gray-400">Name</label>
-                            <input type="text" id="author-name" class="w-full border-b py-2 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="text-xs uppercase font-bold text-gray-400">Slug</label>
-                            <input type="text" id="author-slug" class="w-full border-b py-2 focus:outline-none mono text-sm">
-                        </div>
-                        <div>
-                            <label class="text-xs uppercase font-bold text-gray-400">Bio</label>
-                            <textarea id="author-bio" class="w-full border p-2 mt-1 text-sm h-32 focus:outline-none"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="column" id="books-section">
-                <div class="column-header">
-                    <h2 class="font-bold">Books</h2>
-                </div>
-                <div class="p-4 border-bottom bg-gray-50">
-                    <input type="text" id="book-title" placeholder="Book Title" class="w-full p-2 text-sm mb-2 border">
-                    <div class="flex gap-2">
-                        <input type="text" id="insta-id" placeholder="Insta ID (e.g. C123...)" class="flex-1 p-2 text-sm border mono">
-                        <button onclick="addBook()" class="bg-black text-white px-3 text-sm">Add</button>
-                    </div>
-                </div>
-                <div id="books-list" class="scroll-area">
-                    </div>
-            </div>
-        </div>
-
-    </div>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
-
-    <script src="admin_js.js"></script>
+    <script src="admin_logic.js"></script>
 </body>
 </html>

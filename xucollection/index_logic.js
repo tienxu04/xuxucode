@@ -1,31 +1,7 @@
 // index_logic.js
-// XÓA dòng này: const _supabase = supabase.createClient(...)
-
-let globalItems = [];
-let globalBooks = [];
-
-async function initShowcase() {
-    try {
-        // Gọi thẳng vào Vercel API của nhà trồng được
-        const response = await fetch('/api/catalog');
-        const data = await response.json();
-
-        globalItems = data.items || [];
-        globalBooks = data.books || [];
-
-        renderCategories();
-
-        document.getElementById('loading-mask').classList.add('hidden');
-        document.getElementById('showcase-content').classList.remove('hidden');
-    } catch (error) {
-        console.error("Lỗi:", error);
-        document.getElementById('status-message').innerText = "Error loading archives.";
-    }
-}
-
 
 // ==========================================
-// 1. CƠ CHẾ QUẢN LÝ THEME MỚI
+// 1. CƠ CHẾ QUẢN LÝ THEME
 // ==========================================
 window.setTheme = function(themeName) {
     document.body.setAttribute('data-theme', themeName);
@@ -37,61 +13,71 @@ function initTheme() {
     setTheme(savedTheme);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    initTheme();      
-    initShowcase();   
-});
-
 // ==========================================
-// 2. LOGIC GỐC: HOVER SHOWCASE ALL BOOKS
+// 2. BIẾN TOÀN CỤC & TÍCH HỢP API VERCEL
 // ==========================================
-// Khai báo biến toàn cục để lưu trữ data sau khi kéo về
 let globalItems = [];
 let globalBooks = [];
 
 async function initShowcase() {
-    // Kéo dữ liệu từ 2 bảng độc lập để bypass lỗi kết nối ngầm
-    const { data: items } = await _supabase.from('items').select('*').order('created_at', { ascending: false });
-    const { data: books } = await _supabase.from('books').select('*');
+    try {
+        // Gọi thẳng vào Vercel API, không đụng tới _supabase ở client
+        const response = await fetch('/api/catalog');
+        const data = await response.json();
 
-    globalItems = items || [];
-    globalBooks = books || [];
+        globalItems = data.items || [];
+        globalBooks = data.books || [];
 
-    const zoneAuthors = document.getElementById('zone-authors');
-    const zoneBooksets = document.getElementById('zone-booksets');
-    const zoneCollections = document.getElementById('zone-collections');
+        const zoneAuthors = document.getElementById('zone-authors');
+        const zoneBooksets = document.getElementById('zone-booksets');
+        const zoneCollections = document.getElementById('zone-collections');
 
-    zoneAuthors.innerHTML = '';
-    zoneBooksets.innerHTML = '';
-    zoneCollections.innerHTML = '';
+        if (zoneAuthors) zoneAuthors.innerHTML = '';
+        if (zoneBooksets) zoneBooksets.innerHTML = '';
+        if (zoneCollections) zoneCollections.innerHTML = '';
 
-    if (globalItems.length === 0) return;
+        if (globalItems.length === 0) {
+            document.getElementById('loading-mask').classList.add('hidden');
+            document.getElementById('showcase-content').classList.remove('hidden');
+            return;
+        }
 
-    globalItems.forEach(item => {
-        const itemHTML = `
-            <div class="group/item py-2 border-b border-[var(--border-color)]/30 hover:border-[var(--text-main)] transition-colors cursor-pointer"
-                 onmouseenter="renderStageBooks('${item.id}')">
-                <div class="flex justify-between items-baseline">
-                    <span onclick="window.location.href='item_detail.html?id=${item.id}'" class="font-bold text-base tracking-tight hover:underline group-hover/item:translate-x-1 transition-transform inline-block">
-                        ${item.name}
-                    </span>
-                    <span class="text-[10px] font-mono uppercase opacity-40">Hover to view</span>
+        // Render giao diện theo từng loại
+        globalItems.forEach(item => {
+            const itemHTML = `
+                <div class="group/item py-2 border-b border-[var(--border-color)]/30 hover:border-[var(--text-main)] transition-colors cursor-pointer"
+                     onmouseenter="renderStageBooks('${item.id}')">
+                    <div class="flex justify-between items-baseline">
+                        <span onclick="window.location.href='item_detail.html?id=${item.id}'" class="font-bold text-base tracking-tight hover:underline group-hover/item:translate-x-1 transition-transform inline-block">
+                            ${item.name}
+                        </span>
+                        <span class="text-[10px] font-mono uppercase opacity-40">Hover to view</span>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
 
-        if (item.item_type === 'author') zoneAuthors.insertAdjacentHTML('beforeend', itemHTML);
-        else if (item.item_type === 'bookset') zoneBooksets.insertAdjacentHTML('beforeend', itemHTML);
-        else if (item.item_type === 'collection') zoneCollections.insertAdjacentHTML('beforeend', itemHTML);
-    });
+            if (item.item_type === 'author') zoneAuthors.insertAdjacentHTML('beforeend', itemHTML);
+            else if (item.item_type === 'bookset') zoneBooksets.insertAdjacentHTML('beforeend', itemHTML);
+            else if (item.item_type === 'collection') zoneCollections.insertAdjacentHTML('beforeend', itemHTML);
+        });
 
-    // Mới mở trang: Hiển thị sẵn toàn bộ sách của item đầu tiên
-    if (globalItems.length > 0) {
+        // Mới mở trang: Hiển thị sẵn toàn bộ sách của item đầu tiên
         renderStageBooks(globalItems[0].id);
+
+        // Tắt loading mask, hiện giao diện
+        document.getElementById('loading-mask').classList.add('hidden');
+        document.getElementById('showcase-content').classList.remove('hidden');
+
+    } catch (error) {
+        console.error("Lỗi:", error);
+        const statusMsg = document.getElementById('status-message');
+        if (statusMsg) statusMsg.innerText = "Error loading archives.";
     }
 }
 
-// HÀM KEY POINT: HOVER VÀO LÀ RẢI TOÀN BỘ ẢNH SÁCH + LINK INSTA LÊN SÂN KHẤU
+// ==========================================
+// 3. RENDER ẢNH LÊN SÂN KHẤU (Giữ nguyên logic của cậu)
+// ==========================================
 window.renderStageBooks = function(itemId) {
     const container = document.getElementById('stage-books-container');
     if (!container) return;
@@ -111,10 +97,16 @@ window.renderStageBooks = function(itemId) {
         return;
     }
 
-    // ĐÃ FIX LỖI "SỐNG NHĂN": Đổi book.image_url thành book.photo_url cho chuẩn tên cột DB của sếp
+    // Hiển thị sách
     container.innerHTML = itemBooks.map(book => `
         <a href="${book.original_url || 'https://instagram.com/xuxudocsach'}" target="_blank" class="aspect-[3/4] overflow-hidden border border-[var(--border-color)] bg-[var(--bg-main)] block group transition-transform hover:scale-[1.02] duration-200">
             <img src="${book.cover_url}" alt="Book cover" class="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity">
         </a>
     `).join('');
 };
+
+// Khởi chạy khi load xong trang
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();      
+    initShowcase();   
+});

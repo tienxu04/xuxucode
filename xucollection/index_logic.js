@@ -21,12 +21,15 @@ let globalBooks = [];
 
 async function initShowcase() {
     try {
-        // Gọi thẳng vào Vercel API, không đụng tới _supabase ở client
         const response = await fetch('/api/catalog');
         const data = await response.json();
 
-        globalItems = data.items || [];
-        globalBooks = data.books || [];
+        // Log ra xem Vercel API thực sự đang nhả ra cái gì
+        console.log("Dữ liệu từ API:", data);
+
+        // Bắt ép kiểu: Nếu là mảng thì lấy, không phải mảng (lỗi) thì cho thành mảng rỗng
+        globalItems = Array.isArray(data.items) ? data.items : [];
+        globalBooks = Array.isArray(data.books) ? data.books : [];
 
         const zoneAuthors = document.getElementById('zone-authors');
         const zoneBooksets = document.getElementById('zone-booksets');
@@ -36,7 +39,9 @@ async function initShowcase() {
         if (zoneBooksets) zoneBooksets.innerHTML = '';
         if (zoneCollections) zoneCollections.innerHTML = '';
 
+        // Nếu mảng rỗng (do không có data hoặc API báo lỗi), dừng luôn và hiện UI trống
         if (globalItems.length === 0) {
+            console.warn("Không có data hợp lệ để hiển thị.");
             document.getElementById('loading-mask').classList.add('hidden');
             document.getElementById('showcase-content').classList.remove('hidden');
             return;

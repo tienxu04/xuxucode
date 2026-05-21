@@ -1,5 +1,28 @@
 // index_logic.js
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// XÓA dòng này: const _supabase = supabase.createClient(...)
+
+let globalItems = [];
+let globalBooks = [];
+
+async function initShowcase() {
+    try {
+        // Gọi thẳng vào Vercel API của nhà trồng được
+        const response = await fetch('/api/catalog');
+        const data = await response.json();
+
+        globalItems = data.items || [];
+        globalBooks = data.books || [];
+
+        renderCategories();
+
+        document.getElementById('loading-mask').classList.add('hidden');
+        document.getElementById('showcase-content').classList.remove('hidden');
+    } catch (error) {
+        console.error("Lỗi:", error);
+        document.getElementById('status-message').innerText = "Error loading archives.";
+    }
+}
+
 
 // ==========================================
 // 1. CƠ CHẾ QUẢN LÝ THEME MỚI

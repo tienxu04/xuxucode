@@ -252,6 +252,8 @@
             const [y, m, d] = dateRaw.split('-');
             const dateFind = `${d}/${m}`; 
 
+
+
            let dataRaw = null;
 Array.from(items).forEach(item => {
     // Dùng getElementsByTagName cho cả title và description để đồng bộ
@@ -264,6 +266,12 @@ Array.from(items).forEach(item => {
             if(!dataRaw) throw new Error("Chưa có kết quả " + dateFind);
 
             const prizes = parseData(dataRaw);
+
+           //check log
+            
+            const dbResult = prizes['db'] ? prizes['db'].join(' - ') : 'Không tìm thấy';
+            console.log(`📡 Đài: ${code} | Ngày: ${dateRaw} | Link RSS: ${url} | ĐB hôm đó: ${dbResult}`);
+
             displayTable(prizes);
 
             let wins = [];

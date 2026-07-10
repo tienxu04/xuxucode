@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3x1 Hi-Res Collage Maker</title>
+    <title>Hi-Res Collage Maker (v2)</title>
     <style>
         :root {
             --bg-color: #f4f4f5;
@@ -20,26 +20,42 @@
             align-items: center;
         }
         .header {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             text-align: center;
         }
         .header h1 {
             margin: 0 0 10px 0;
             color: var(--accent-color);
         }
-        /* Grid 3x1 Layout */
+        .toolbar {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        select {
+            padding: 8px 16px;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            outline: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        /* Grid Layout */
         .collage-container {
             display: grid;
-            grid-template-columns: repeat(3, 300px);
-            gap: 15px; /* Khoảng cách giữa các ảnh */
+            grid-template-columns: repeat(3, 300px); /* Mặc định 3x1 */
+            gap: 15px;
             background: #fff;
             padding: 15px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: grid-template-columns 0.3s ease;
         }
         .cell {
             width: 300px;
-            height: 300px; /* Khung vuông 1:1, bạn có thể chỉnh lại thành 4:5 nếu muốn */
+            height: 300px;
             background-color: #fafafa;
             border: 2px dashed var(--border-color);
             position: relative;
@@ -102,8 +118,16 @@
 <body>
 
     <div class="header">
-        <h1>Collage Maker 3x1</h1>
+        <h1>Collage Maker v2</h1>
         <p style="color: #71717a;">Kéo thả ảnh vào từng ô. Nắm kéo để căn chỉnh vị trí.</p>
+    </div>
+
+    <div class="toolbar">
+        <label for="layoutSelect" style="font-weight: bold; color: var(--accent-color);">Layout:</label>
+        <select id="layoutSelect">
+            <option value="3">Grid 3x1 (3 ảnh)</option>
+            <option value="2">Grid 2x1 (2 ảnh)</option>
+        </select>
     </div>
 
     <div class="collage-container" id="collage">
@@ -119,25 +143,26 @@
         const container = document.getElementById('collage');
         const fileInput = document.getElementById('fileInput');
         const exportBtn = document.getElementById('exportBtn');
+        const layoutSelect = document.getElementById('layoutSelect');
         
         let activeCellIndex = null;
-        const cellsData = [null, null, null]; // Lưu trữ dữ liệu ảnh: img element, scale, x, y
+        const maxCells = 3; 
+        let activeCols = 3; // Mặc định 3x1
+        const cellsData = new Array(maxCells).fill(null); 
 
-        // Tạo 3 ô grid
-        for (let i = 0; i < 3; i++) {
+        // Khởi tạo các ô grid
+        for (let i = 0; i < maxCells; i++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
+            cell.id = `cell-${i}`;
             cell.dataset.index = i;
             cell.innerHTML = `<span>Click hoặc Kéo thả ảnh <br>vào đây</span>`;
             
-            // Events kéo thả file
             cell.addEventListener('dragover', (e) => { e.preventDefault(); cell.classList.add('dragover'); });
             cell.addEventListener('dragleave', () => cell.classList.remove('dragover'));
             cell.addEventListener('drop', (e) => handleDrop(e, i, cell));
             
-            // Event click để mở hộp thoại chọn file
             cell.addEventListener('click', (e) => {
-                // Không trigger nếu đang click vào ảnh (để dành cho sự kiện drag vị trí)
                 if (e.target.tagName === 'IMG') return;
                 activeCellIndex = i;
                 fileInput.click();
@@ -146,15 +171,29 @@
             container.appendChild(cell);
         }
 
-        // Xử lý chọn file qua input
+        // Logic đổi Layout
+        layoutSelect.addEventListener('change', (e) => {
+            activeCols = parseInt(e.target.value);
+            container.style.gridTemplateColumns = `repeat(${activeCols}, 300px)`;
+            
+            // Ẩn/hiện ô thứ 3 tùy theo layout được chọn
+            for (let i = 0; i < maxCells; i++) {
+                const cell = document.getElementById(`cell-${i}`);
+                if (i < activeCols) {
+                    cell.style.display = 'flex';
+                } else {
+                    cell.style.display = 'none';
+                }
+            }
+        });
+
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0 && activeCellIndex !== null) {
                 loadImage(e.target.files[0], activeCellIndex);
             }
-            fileInput.value = ''; // Reset input
+            fileInput.value = ''; 
         });
 
-        // Xử lý drop file
         function handleDrop(e, index, cell) {
             e.preventDefault();
             cell.classList.remove('dragover');
@@ -163,7 +202,6 @@
             }
         }
 
-        // Đọc ảnh và render vào ô
         function loadImage(file, index) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -174,13 +212,11 @@
             reader.readAsDataURL(file);
         }
 
-        // Thiết lập logic hiển thị và pan ảnh
         function setupImageDrag(img, index) {
-            const cell = container.children[index];
-            cell.innerHTML = ''; // Xóa text hướng dẫn
-            cell.style.borderStyle = 'none'; // Bỏ viền nét đứt khi đã có ảnh
+            const cell = document.getElementById(`cell-${index}`);
+            cell.innerHTML = ''; 
+            cell.style.borderStyle = 'none'; 
             
-            // Tính toán scale để ảnh cover toàn bộ ô
             const cellW = cell.clientWidth;
             const cellH = cell.clientHeight;
             const scale = Math.max(cellW / img.naturalWidth, cellH / img.naturalHeight);
@@ -188,7 +224,6 @@
             const displayW = img.naturalWidth * scale;
             const displayH = img.naturalHeight * scale;
             
-            // Căn giữa ban đầu
             let currentX = (cellW - displayW) / 2;
             let currentY = (cellH - displayH) / 2;
 
@@ -198,10 +233,8 @@
             
             cell.appendChild(img);
 
-            // Lưu dữ liệu để lát export
-            cellsData[index] = { img, scale, currentX, currentY, baseW: img.naturalWidth, baseH: img.naturalHeight };
+            cellsData[index] = { img, scale, currentX, currentY };
 
-            // Logic Drag / Pan
             let isDragging = false;
             let startX, startY, initialX, initialY;
 
@@ -222,7 +255,6 @@
                 let newX = initialX + dx;
                 let newY = initialY + dy;
 
-                // Giới hạn vùng kéo (Bounding Box)
                 const minX = cellW - displayW;
                 const minY = cellH - displayH;
                 
@@ -237,52 +269,47 @@
             window.addEventListener('mouseup', () => { isDragging = false; });
         }
 
-        // Xử lý Export
+        // Xuất file dựa trên số lượng cột đang active
         exportBtn.addEventListener('click', () => {
-            // Kiểm tra xem đã đủ 3 ảnh chưa (không bắt buộc, nhưng nên có)
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
-            // Định nghĩa độ phân giải xuất ra. 
-            // Mỗi ô sẽ là 1000x1000 px -> Tổng: 3000x1000 px (hoặc có thể thêm gap)
             const outCellSize = 1000;
-            const gap = 20; // Khung trắng giữa các ảnh 20px
-            canvas.width = (outCellSize * 3) + (gap * 2);
+            const gap = 20; 
+            
+            // Tính toán width dựa trên 2x1 hoặc 3x1
+            canvas.width = (outCellSize * activeCols) + (gap * (activeCols - 1));
             canvas.height = outCellSize;
 
-            // Fill nền trắng
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Vẽ từng ô lên canvas hi-res
-            cellsData.forEach((data, i) => {
-                if (!data) return; // Bỏ qua nếu ô trống
+            // Chỉ loop qua các ô đang active
+            for (let i = 0; i < activeCols; i++) {
+                const data = cellsData[i];
+                if (!data) continue;
                 
-                const cellUIWidth = 300; // Kích thước UI hiển thị
+                const cellUIWidth = 300; 
                 
-                // Tính toán vùng tọa độ gốc trên ảnh thực tế (Natural Px)
                 const sourceX = Math.abs(data.currentX) / data.scale;
                 const sourceY = Math.abs(data.currentY) / data.scale;
                 const sourceW = cellUIWidth / data.scale;
-                const sourceH = cellUIWidth / data.scale; // cellUIHeight cũng là 300
+                const sourceH = cellUIWidth / data.scale; 
 
-                // Tọa độ đích trên Canvas
                 const destX = i * (outCellSize + gap);
                 const destY = 0;
                 const destW = outCellSize;
                 const destH = outCellSize;
 
-                // Cắt phần ảnh đang hiển thị và phóng lớn lên canvas đích
                 ctx.drawImage(
                     data.img, 
                     sourceX, sourceY, sourceW, sourceH, 
                     destX, destY, destW, destH
                 );
-            });
+            }
 
-            // Tải file xuống
             const link = document.createElement('a');
-            link.download = `collage_3x1_${Date.now()}.png`;
+            link.download = `collage_${activeCols}x1_${Date.now()}.png`;
             link.href = canvas.toDataURL('image/png', 1.0);
             link.click();
         });

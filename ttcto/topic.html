@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor's Pick - Tuổi Trẻ Magazine</title>
+    <style>
+        /* CSS Variables & Global Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,400;1,700&display=swap');
+
+        :root {
+            --primary-red: #cc0000;
+            --pure-white: #ffffff;
+            --text-main: #111111;
+            --text-muted: #555555;
+            --text-light: #888888;
+            --bg-light: #f9f9f9;
+            --border-color: #eeeeee;
+            --overlay-bg: rgba(0, 0, 0, 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text-main); background-color: var(--pure-white); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        a { text-decoration: none; color: inherit; transition: color 0.2s ease; }
+        img { max-width: 100%; display: block; object-fit: cover; }
+        .container { max-width: 1140px; margin: 0 auto; padding: 0 20px; }
+
+        /* ================= HEADER & NAV ================= */
+        .logo-bar { background-color: var(--primary-red); padding: 15px 0; position: relative; }
+        .logo-bar .nav-container { display: flex; align-items: center; justify-content: center; position: relative; }
+        .top-left-actions { position: absolute; left: 20px; display: flex; align-items: center; gap: 20px; }
+        .icon-btn { background: none; border: none; color: var(--pure-white); cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
+        .icon-btn:hover { opacity: 0.8; }
+        .icon-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .main-nav { border-bottom: 1px solid var(--border-color); padding: 15px 0; }
+        .main-nav ul { list-style: none; display: flex; justify-content: center; gap: 50px; }
+        .main-nav a { font-size: 14px; font-weight: 600; color: var(--text-main); text-transform: uppercase; letter-spacing: 1px; }
+        .main-nav a:hover { color: var(--primary-red); }
+
+        /* ================= OVERLAY, SIDEBAR & MODAL ================= */
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--overlay-bg); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .overlay.show { opacity: 1; pointer-events: auto; }
+        
+        .sidebar { position: fixed; top: 0; left: -340px; width: 340px; height: 100%; background-color: var(--pure-white); box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: left 0.3s cubic-bezier(0.25, 1, 0.5, 1); display: flex; flex-direction: column; }
+        .sidebar.open { left: 0; }
+        .sidebar-header { padding: 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header h2 { font-size: 16px; color: var(--primary-red); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .close-sidebar { background: none; border: none; font-size: 32px; cursor: pointer; color: var(--text-light); line-height: 1; }
+        .sidebar-content { overflow-y: auto; padding: 25px; }
+        .sidebar-menu-list { list-style: none; }
+        .sidebar-menu-list a { display: block; padding: 12px 0; font-size: 15px; font-weight: 500; color: var(--text-main); border-bottom: 1px solid #fcfcfc;}
+        .sidebar-menu-list a:hover { color: var(--primary-red); padding-left: 5px; }
+
+        .search-modal { position: fixed; top: 45%; left: 50%; transform: translate(-50%, -50%) scale(0.95); width: 90%; max-width: 580px; background-color: var(--pure-white); padding: 35px; border-radius: 6px; box-shadow: 0 15px 40px rgba(0,0,0,0.12); z-index: 1001; opacity: 0; pointer-events: none; transition: transform 0.3s ease, opacity 0.3s ease; }
+        .search-modal.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+        .search-modal h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 24px; margin-bottom: 15px; }
+        .search-form { display: flex; gap: 10px; }
+        .search-input { flex: 1; padding: 12px 16px; font-size: 16px; border: 1px solid #dddddd; border-radius: 4px; outline: none; }
+        .search-submit { background-color: var(--primary-red); color: var(--pure-white); border: none; padding: 0 25px; font-size: 15px; font-weight: 600; border-radius: 4px; cursor: pointer; }
+
+        /* ================= CATEGORY PAGE LAYOUT ================= */
+        .category-header {
+            text-align: center;
+            margin: 60px 0 70px;
+            position: relative;
+        }
+
+        .category-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 48px;
+            font-weight: 700;
+            color: #111;
+            display: inline-block;
+            position: relative;
+            letter-spacing: -0.5px;
+        }
+
+        .category-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary-red);
+        }
+
+        /* Grid 3x3 */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 50px 30px;
+            margin-bottom: 60px;
+        }
+
+        .cat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cat-item .cat-thumb {
+            width: 100%;
+            height: 230px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 18px;
+            background-color: var(--bg-light);
+        }
+
+        .cat-item .cat-meta {
+            font-size: 11px;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .cat-item .cat-meta span.author { color: var(--text-main); }
+
+        .cat-item h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 24px;
+            line-height: 1.3;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .cat-item h3 a:hover { color: var(--primary-red); }
+
+        .cat-item p {
+            font-size: 15px;
+            color: var(--text-muted);
+            line-height: 1.65;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex-grow: 1; /* Đẩy nội dung cho các card bằng nhau */
+        }
+
+        /* ================= PAGINATION ================= */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 80px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 40px;
+        }
+
+        .page-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 15px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            border: 1px solid transparent;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .page-link:hover:not(.active):not(.disabled) {
+            border-color: var(--border-color);
+            background: var(--bg-light);
+        }
+
+        .page-link.active {
+            background-color: var(--primary-red);
+            color: var(--pure-white);
+        }
+
+        .page-link.disabled {
+            color: #cccccc;
+            pointer-events: none;
+        }
+
+        /* ================= FOOTER & BACK TO TOP ================= */
+        .main-footer { border-top: 1px solid var(--border-color); background-color: #fafafa; padding: 50px 0; text-align: center; }
+        .footer-menu { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 30px; font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .footer-menu span { color: #ccc; font-weight: 300; }
+        .footer-menu a:hover { color: var(--primary-red); }
+        .footer-logo { margin-bottom: 30px; display: flex; justify-content: center; }
+        .footer-logo img { height: 75px; width: auto; display: block; }
+        .footer-copyright { font-size: 13px; color: var(--text-light); line-height: 1.8; max-width: 600px; margin: 0 auto; }
+
+        .back-to-top { position: fixed; bottom: 30px; right: 30px; background-color: var(--primary-red); color: var(--pure-white); border: none; width: 46px; height: 46px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.12); z-index: 998; transition: all 0.2s ease; }
+        .back-to-top svg { width: 22px; height: 22px; fill: currentColor; }
+        .back-to-top:hover { background-color: #222222; transform: translateY(-3px); }
+
+        /* ================= RESPONSIVE ================= */
+        @media (max-width: 992px) {
+            .category-grid { grid-template-columns: repeat(2, 1fr); gap: 40px 30px; }
+        }
+        @media (max-width: 768px) {
+            .category-grid { grid-template-columns: 1fr; gap: 40px; }
+            .category-title { font-size: 38px; }
+            .main-nav ul { gap: 25px; }
+            .back-to-top { bottom: 20px; right: 20px; width: 40px; height: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="globalOverlay"></div>
+
+    <div class="sidebar" id="sidebarMenu">
+        <div class="sidebar-header">
+            <h2>Chuyên mục</h2>
+            <button class="close-sidebar" id="closeSidebarBtn">&times;</button>
+        </div>
+        <div class="sidebar-content">
+            <ul class="sidebar-menu-list">
+                <li><a href="topic.html">Thời sự quốc tế</a></li>
+                <li><a href="topic.html">Tiêu điểm</a></li>
+                <li><a href="topic.html">Chuyên đề</a></li>
+                <li><a href="topic.html">Kinh tế</a></li>
+                <li><a href="topic.html">Hồ sơ</a></li>
+                <li><a href="topic.html">Văn hóa giải trí</a></li>
+                <li><a href="topic.html">Thể thao</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="search-modal" id="searchModal">
+        <h3>Tìm kiếm bài viết</h3>
+        <form class="search-form" action="#" method="GET">
+            <input type="text" class="search-input" placeholder="Nhập từ khóa..." required>
+            <button type="submit" class="search-submit">Tìm kiếm</button>
+        </form>
+    </div>
+
+    <header class="logo-bar">
+        <div class="container nav-container">
+            <div class="top-left-actions">
+                <button class="icon-btn" id="openSidebarBtn" aria-label="Mở menu">
+                    <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+                </button>
+                <button class="icon-btn" id="openSearchBtn" aria-label="Tìm kiếm">
+                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                </button>
+            </div>
+            <a href="index.html" class="logo-link" style="display: flex; align-items: flex-end; gap: 15px; text-decoration: none;">
+                <img src="logo.svg" alt="Tuổi Trẻ Online" style="height: 48px; width: auto; display: block;">
+                <span style="font-family: 'Playfair Display', Georgia, serif; font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: 1px; line-height: 0.9; padding-bottom: 2px;">Magazine</span>
+            </a>
+        </div>
+    </header>
+
+    <nav class="main-nav">
+        <div class="container">
+            <ul>
+                <li><a href="category.html">Đọc nhiều</a></li>
+                <li><a href="category.html">Khuyên đọc</a></li>
+                <li><a href="category.html">Long form</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        
+        <header class="category-header">
+            <h1 class="category-title">Chủ đề: Kinh tế</h1>
+        </header>
+
+        <div class="category-grid">
+            
+            <article class="cat-item">
+                <a href="detail.html">
+                    <img src="thumb1.webp" alt="Mỹ và NATO: Trục trặc" class="cat-thumb">
+                </a>
+                <div class="cat-meta">
+                    <span class="author">Tường Anh</span> • 02/06/2026
+                </div>
+                <h3><a href="detail.html">Mỹ và NATO: Trục trặc</a></h3>
+                <p>Căng thẳng giữa Mỹ và các đối tác trong liên minh NATO đang gia tăng. Hoa Kỳ dần xem xét lại vai trò toàn cầu và tìm cách giảm bớt gánh nặng đảm bảo an ninh cho châu Âu.</p>
+            </article>
+
+            <article class="cat-item">
+                <a href="detail.html">
+                    <img src="thumb2.webp" alt="Nhà ở xã hội" class="cat-thumb">
+                </a>
+                <div class="cat-meta">
+                    <span class="author">C. Văn</span> • 02/06/2026
+                </div>
+                <h3><a href="detail.html">Nhà ở xã hội: Trong góc nhìn thúc đẩy tăng trưởng</a></h3>
+                <p>Tình hình thiếu hụt nhà ở với chi phí phải chăng, nhất là ở các siêu đô thị châu Á, đã khiến tờ The Economist đưa ra cảnh báo đáng chú ý về việc tái cơ cấu quy hoạch.</p>
+            </article>
+
+            <article class="cat-item">
+                <a href="detail.html">
+                    <img src="thumb3.webp" alt="Lệnh cấm đánh cá Trung Quốc" class="cat-thumb">
+                </a>
+                <div class="cat-meta">
+                    <span class="author">Danh Đức</span> • 02/06/2026
+                </div>
+                <h3><a href="detail.html">Lệnh cấm đánh cá đơn phương của Trung Quốc trên Biển Đông: Bất an</a></h3>
+                <p>Lệnh cấm đánh bắt đơn phương và không có giá trị pháp lý của Trung Quốc ở Biển Đông có lớp vỏ bọc bảo vệ nguồn lợi thủy sản, nhưng thực chất đang dấy lên nhiều quan ngại.</p>
+            </article>
+
+            <article class="cat-item">
+                <a href="detail.html">
+                    <img src="thumb4.webp" alt="Chính sách đối ngoại NATO" class="cat-thumb">
+                </a>
+                <div class="cat-meta">
+                    <span class="author">Tường Anh</span> • 01/06/2026
+                </div>
+                <h3><a href="detail.html">Sự phân mảnh trong cách tiếp cận an ninh của các nước phương Tây</a></h3>
+                <p>Thực tế địa chính trị vẫn đòi hỏi một cường quốc với sức mạnh áp đảo để duy trì nguyên trạng một cách đáng tin cậy ở những điểm nghẽn yết hầu của thế giới.</p>
+            </article>
+
+            <article class="cat-item">
+                <a href="detail.html">
+                    <img src="thumb5.webp" alt="Siêu đô thị châu Á" class="cat-thumb">
+                </a>
+                <div class="cat-meta">
+                    <span class="author">C. Văn</span> • 30/05/2026
+                </div>
+                <h3><a href="detail.html">Giấc mơ an cư ở những đại đô thị đông đúc nhất hành tinh</a></h3>
+                <p>Hàng triệu lao động nhập cư đang phải đối mặt với mức giá bất động sản ngoài tầm với. Giải pháp từ chính quyền địa phương vẫn chưa thể bắt kịp tốc độ tăng trưởng dân số.</p>
+            </article>
+
+            <article class="cat-item">
+                <a href="detail.html">
+                    <img src="thumb6.webp" alt="Ngư dân Biển Đông" class="cat-thumb">
+                </a>
+                <div class="cat-meta">
+                    <span class="author">Danh Đức</span> • 25/05/2026
+                </div>
+                <h3><a href="detail.html">Sinh kế của hàng ngàn ngư dân trước những sức ép phi lý trên biển</a></h3>
+                <p>Quyền tự do hàng hải và khai thác hợp pháp theo luật pháp quốc tế UNCLOS 1982 đang cần được cộng đồng quốc tế lên tiếng bảo vệ mạnh mẽ hơn bao giờ hết.</p>
+            </article>
+
+            <article class="cat-item">
+                <a href="detail.html">
+                    <img src="thumb7.webp" alt="Quán cà phê Việt" class="cat-thumb">
+                </a>
+                <div class="cat-meta">
+                    <span class="author">Phạm Công Luận</span> • 13/05/2026
+                </div>
+                <h3><a href="detail.html">Quán cà phê Việt đầu tiên ở Sài Gòn và cuộc tranh thương đầu thế kỷ 20</a></h3>
+                <p>Đây là sự kiện có ý nghĩa của ngành dịch vụ ăn uống do chính người Việt thiết lập ở Nam kỳ đầu thế kỷ 20 - trận địa mà họ đã buông bỏ và bị Hoa kiều thao túng trước đó.</p>
+            </article>
+
+            <article class="cat-item">
+                <a href="detail.html">
+                    <img src="thumb8.webp" alt="Di cảo Bùi Giáng" class="cat-thumb">
+                </a>
+                <div class="cat-meta">
+                    <span class="author">Phạm Công Luận</span> • 13/05/2026
+                </div>
+                <h3><a href="detail.html">Sài Gòn hồi mới vào trong di cảo Bùi Giáng</a></h3>
+                <p>Nhiều trang di cảo quý viết tay của nhà thơ nổi tiếng Bùi Giáng vốn chưa được công bố, chất chứa tâm tình chân thật và thú vị về Sài Gòn một thuở.</p>
+            </article>
+
+            <article class="cat-item">
+                <a href="detail.html">
+                    <img src="thumb9.webp" alt="Ẩm thực thượng lưu" class="cat-thumb">
+                </a>
+                <div class="cat-meta">
+                    <span class="author">Phan Bảo</span> • 09/05/2026
+                </div>
+                <h3><a href="detail.html">Ẩm thực thượng lưu và căn bếp độc hại</a></h3>
+                <p>Đằng sau sự hào nhoáng của những phần ăn được bày biện như tác phẩm nghệ thuật, những lời tán dương trên các bảng xếp hạng danh giá và ánh đèn nhà hàng Michelin.</p>
+            </article>
+
+        </div>
+
+        <div class="pagination">
+            <a href="#" class="page-link disabled">&lt; Trước</a>
+            <a href="#" class="page-link active">1</a>
+            <a href="#" class="page-link">2</a>
+            <a href="#" class="page-link">3</a>
+            <span class="page-link" style="border: none; pointer-events: none;">...</span>
+            <a href="#" class="page-link">12</a>
+            <a href="#" class="page-link">Sau &gt;</a>
+        </div>
+
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-menu">
+                <a href="#">Tuổi Trẻ Online</a>
+                <span>|</span>
+                <a href="#">Liên hệ</a>
+            </div>
+            <div class="footer-logo">
+                <img src="logo.png" alt="Tuổi Trẻ Online Magazine">
+            </div>
+            <p class="footer-copyright">
+                &copy; Copyright 2026 TuoiTre Online. All rights reserved <br>
+                &reg; Tuổi Trẻ Online giữ bản quyền nội dung trên website này
+            </p>
+        </div>
+    </footer>
+
+    <button id="backToTopBtn" class="back-to-top" title="Lên đầu trang">
+        <svg viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
+    </button>
+
+    <script>
+        const overlay = document.getElementById('globalOverlay');
+        const sidebar = document.getElementById('sidebarMenu');
+        const searchModal = document.getElementById('searchModal');
+        const backToTopBtn = document.getElementById('backToTopBtn');
+
+        const openSidebarBtn = document.getElementById('openSidebarBtn');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+        const openSearchBtn = document.getElementById('openSearchBtn');
+
+        function closeAll() {
+            sidebar.classList.remove('open');
+            searchModal.classList.remove('show');
+            overlay.classList.remove('show');
+        }
+
+        openSidebarBtn.addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('show'); });
+        closeSidebarBtn.addEventListener('click', closeAll);
+
+        openSearchBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            searchModal.classList.add('show');
+            overlay.classList.add('show');
+            setTimeout(() => searchModal.querySelector('.search-input').focus(), 100);
+        });
+
+        overlay.addEventListener('click', closeAll);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
+
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning Reader • Cloud Edition v1.5</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+    
+    <style>
+        * { box-sizing: border-box; }
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f5f2eb;
+            color: #2c2c2c;
+            font-family: -apple-system, BlinkMacSystemFont, "New York", "Georgia", serif;
+            overflow: hidden;
+        }
+
+        #viewer-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #viewer {
+            width: 100%;
+            max-width: 640px;
+            height: 82vh;
+            position: relative;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+
+        #viewer::-webkit-scrollbar {
+            width: 6px;
+        }
+        #viewer::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #viewer::-webkit-scrollbar-thumb {
+            background: #e6e1d5;
+            border-radius: 4px;
+        }
+
+        /* Menu điều khiển đa năng tinh gọn */
+        #controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, rgba(245, 242, 235, 1) 85%, rgba(245, 242, 235, 0));
+            padding: 40px 20px 20px 20px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 10;
+        }
+
+        #controls:hover, #controls:focus-within {
+            opacity: 1; /* Giữ menu hiện khi đang tương tác hoặc nhập liệu */
+        }
+
+        .nav-group {
+            margin-bottom: 15px;
+        }
+
+        /* Khu vực điều khiển Kindle Location & Jump */
+        .sync-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .btn {
+            background: #e6e1d5;
+            border: 1px solid #d2caa9;
+            color: #555;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: -apple-system, sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #dcd6c5;
+            color: #2c2c2c;
+        }
+
+        /* Ô nhập tọa độ thiết kế tiệp màu với nền giấy */
+        .location-input {
+            background: #faf8f5;
+            border: 1px solid #d2caa9;
+            color: #666;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: monospace;
+            width: 280px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .location-input:focus {
+            outline: none;
+            border-color: #8c8573;
+            background: #ffffff;
+            color: #2c2c2c;
+        }
+
+        #progress-indicator {
+            font-size: 11px;
+            color: #8c8573;
+            margin-top: 12px;
+            letter-spacing: 0.05em;
+            transition: color 0.3s ease;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            letter-spacing: 0.1em;
+            color: #8c8573;
+            font-style: italic;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading">Đang mở sách bình minh...</div>
+    
+    <div id="viewer-container">
+        <div id="viewer"></div>
+    </div>
+
+    <div id="controls">
+        <div class="nav-group">
+            <button id="prev" class="btn">◀ Chương trước</button>
+            <button id="next" class="btn">Chương sau ▶</button>
+        </div>
+
+        <div class="sync-group">
+            <input type="text" id="location-box" class="location-input" placeholder="Tọa độ đang đọc..." title="Click để chọn, Double Click để tự động Copy">
+            <button id="jump-btn" class="btn" style="background: #8c8573; color: white; border: none;">Jump ➔</button>
+        </div>
+
+        <div id="progress-indicator">Đang tính toán số trang...</div>
+    </div>
+
+    <script>
+        const BOOK_PATH = "book.epub";
+        const STORAGE_KEY = "morning_reader_cfi_" + BOOK_PATH;
+
+        const book = ePub(BOOK_PATH);
+        const rendition = book.renderTo("viewer", {
+            width: "100%",
+            height: "100%",
+            spread: "none", 
+            flow: "scrolled",        
+            manager: "continuous",   
+            allowScriptedContent: true 
+        });
+
+        rendition.themes.default({
+            "p": {
+                "font-family": '-apple-system, BlinkMacSystemFont, "New York", "Georgia", serif !important',
+                "font-size": "17px !important",
+                "line-height": "1.75 !important",
+                "color": "#2c2c2c !important",
+                "margin-bottom": "1.5em !important",
+                "text-align": "justify !important"
+            },
+            "body": {
+                "background-color": "#f5f2eb !important",
+                "padding": "0 !important",
+                "margin": "0 !important"
+            }
+        });
+
+        const savedCfi = localStorage.getItem(STORAGE_KEY);
+
+        book.ready.then(() => {
+            document.getElementById("loading").style.display = "none";
+            return rendition.display(savedCfi || undefined);
+        }).then(() => {
+            updateProgress();
+        });
+
+        // Xử lý khi vị trí đọc thay đổi (khi cuộn chuột)
+        rendition.on("relocated", (location) => {
+            const currentCfi = location.start.cfi;
+            
+            // Tự động lưu vào LocalStorage cho máy hiện tại
+            localStorage.setItem(STORAGE_KEY, currentCfi);
+            
+            // Đẩy dữ liệu tọa độ vào ô nhập (Chỉ ghi đè nếu người dùng đang không tự gõ/pasted)
+            const locationBox = document.getElementById("location-box");
+            if (document.activeElement !== locationBox) {
+                locationBox.value = currentCfi;
+            }
+
+            updateProgress(location);
+        });
+
+        function updateProgress(location) {
+            const indicator = document.getElementById("progress-indicator");
+            if (location && book.locations && book.locations.length > 0) {
+                const progress = book.locations.percentageFromCfi(location.start.cfi);
+                indicator.textContent = `Tiến độ: ${Math.round(progress * 100)}% cuốn sách • Vị trí đã được đồng bộ local`;
+            } else {
+                indicator.textContent = "Sẵn sàng cho trang đọc hôm nay";
+            }
+        }
+
+        book.ready.then(() => {
+            return book.locations.generate(1600); 
+        }).then(() => {
+            if (rendition.currentLocation()) {
+                updateProgress(rendition.currentLocation());
+            }
+        });
+
+        // --- HỆ THỐNG UX ĐỒNG BỘ MỚI TỐI ƯU ---
+        const locationBox = document.getElementById("location-box");
+
+        // 1. Click đơn: Tự động bôi đen toàn bộ chuỗi để dễ nhìn hoặc dán đè
+        locationBox.addEventListener("click", () => {
+            locationBox.select();
+        });
+
+        // 2. Double Click: Tự động copy thẳng vào Clipboard không cần phím tắt
+        locationBox.addEventListener("dblclick", () => {
+            if (locationBox.value) {
+                navigator.clipboard.writeText(locationBox.value).then(() => {
+                    // Hiển thị feedback trực quan và tinh tế ở dòng progress
+                    const indicator = document.getElementById("progress-indicator");
+                    const originalText = indicator.textContent;
+                    
+                    indicator.innerHTML = "<strong>📋 Đã tự động copy tọa độ vào Clipboard!</strong>";
+                    indicator.style.color = "#2c2c2c";
+                    
+                    // Trả lại chữ cũ sau 2 giây
+                    setTimeout(() => {
+                        indicator.textContent = originalText;
+                        indicator.style.color = "#8c8573";
+                    }, 2000);
+                }).catch(err => {
+                    console.error("Lỗi copy: ", err);
+                });
+            }
+        });
+
+        // Hàm xử lý Lệnh JUMP
+        function performJump() {
+            const targetCfi = locationBox.value.trim();
+            if (targetCfi && targetCfi.startsWith("epubcfi")) {
+                rendition.display(targetCfi).then(() => {
+                    // Đồng bộ luôn vào local storage của máy hiện tại sau khi Jump thành công
+                    localStorage.setItem(STORAGE_KEY, targetCfi);
+                }).catch(err => {
+                    alert("Tọa độ không hợp lệ, vui lòng kiểm tra lại.");
+                });
+            } else {
+                alert("Vui lòng dán một chuỗi tọa độ (bắt đầu bằng 'epubcfi') vào ô nhập.");
+            }
+        }
+
+        // Kích hoạt Jump
+        document.getElementById("jump-btn").addEventListener("click", performJump);
+        locationBox.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                performJump();
+                e.preventDefault();
+            }
+        });
+
+        // Các nút điều hướng chương cơ bản
+        document.getElementById("prev").addEventListener("click", () => rendition.prev());
+        document.getElementById("next").addEventListener("click", () => rendition.next());
+
+        document.addEventListener("keydown", (e) => {
+            if (document.activeElement !== locationBox) {
+                if (e.key === "ArrowRight") {
+                    rendition.next();
+                    e.preventDefault();
+                }
+                if (e.key === "ArrowLeft") {
+                    rendition.prev();
+                    e.preventDefault();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

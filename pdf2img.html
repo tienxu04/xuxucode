@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to Hi-Res Image</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+        #drop-zone {
+            border: 3px dashed #007bff;
+            border-radius: 10px;
+            padding: 50px;
+            background-color: #f8f9fa;
+            color: #007bff;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 30px;
+        }
+        #drop-zone.dragover {
+            background-color: #e2e6ea;
+            border-color: #0056b3;
+            transform: scale(1.02);
+        }
+        .page-container {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+            margin-top: 15px;
+        }
+        .download-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .download-btn:hover { background-color: #218838; }
+        #loading { display: none; font-size: 18px; color: #555; }
+    </style>
+</head>
+<body>
+
+    <h2>Chuyển PDF sang Ảnh Hi-Res (Chạy Local)</h2>
+    
+    <div id="drop-zone">Kéo thả file PDF vào đây hoặc Click để chọn file</div>
+    <input type="file" id="file-input" accept="application/pdf" style="display: none;">
+    
+    <div id="loading">⏳ Đang xử lý chất lượng cao, vui lòng đợi...</div>
+    <div id="output"></div>
+
+    <script>
+        // Cấu hình worker cho PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const output = document.getElementById('output');
+        const loading = document.getElementById('loading');
+
+        // Xử lý sự kiện kéo thả và click
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        async function handleFile(file) {
+            if (file.type !== 'application/pdf') {
+                alert('Vui lòng chỉ chọn file PDF!');
+                return;
+            }
+
+            output.innerHTML = '';
+            loading.style.display = 'block';
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+                // Duyệt qua từng trang của PDF
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    
+                    // CHÌA KHÓA CHẤT LƯỢNG CAO (HI-RES) Ở ĐÂY:
+                    // Tăng scale lên 3 hoặc 4 để độ phân giải cực nét (~300 DPI)
+                    const scale = 3; 
+                    const viewport = page.getViewport({ scale: scale });
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+
+                    // Render PDF lên Canvas
+                    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+                    // Tạo giao diện chứa ảnh và nút tải xuống
+                    const container = document.createElement('div');
+                    container.className = 'page-container';
+
+                    const title = document.createElement('h3');
+                    title.textContent = `Trang ${pageNum}`;
+                    container.appendChild(title);
+
+                    const btn = document.createElement('button');
+                    btn.className = 'download-btn';
+                    btn.textContent = `⬇️ Tải Trang ${pageNum} (PNG Hi-Res)`;
+                    btn.onclick = () => {
+                        const link = document.createElement('a');
+                        link.download = `${file.name.replace('.pdf', '')}_page_${pageNum}_hires.png`;
+                        link.href = canvas.toDataURL('image/png', 1.0);
+                        link.click();
+                    };
+                    
+                    container.appendChild(btn);
+                    container.appendChild(document.createElement('br'));
+                    container.appendChild(canvas);
+                    output.appendChild(container);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Có lỗi xảy ra khi đọc file PDF.');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

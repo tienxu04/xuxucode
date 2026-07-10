@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Làm sao để quản lý một nút thắt địa chính trị - Tuổi Trẻ Magazine</title>
+    <style>
+        /* CSS Variables & Global Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,400;1,700&display=swap');
+
+        :root {
+            --primary-red: #cc0000;
+            --pure-white: #ffffff;
+            --text-main: #222222;
+            --text-muted: #444444;
+            --text-light: #777777;
+            --bg-light: #f5f5f5;
+            --border-color: #e5e5e5;
+            --overlay-bg: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Reset & Typography */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text-main); background-color: var(--pure-white); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        a { text-decoration: none; color: inherit; transition: color 0.2s ease; }
+        img { max-width: 100%; display: block; object-fit: cover; }
+
+        /* Containers */
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+        /* ================= HEADER & NAV (TỪ BẢN TRƯỚC) ================= */
+        .logo-bar { background-color: var(--primary-red); padding: 15px 0; position: relative; }
+        .logo-bar .nav-container { display: flex; align-items: center; justify-content: center; position: relative; }
+        .top-left-actions { position: absolute; left: 20px; display: flex; align-items: center; gap: 20px; }
+        .icon-btn { background: none; border: none; color: var(--pure-white); cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
+        .icon-btn:hover { opacity: 0.8; }
+        .icon-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .main-nav { border-bottom: 1px solid var(--border-color); padding: 15px 0; margin-bottom: 40px; }
+        .main-nav ul { list-style: none; display: flex; justify-content: center; gap: 50px; }
+        .main-nav a { font-size: 15px; font-weight: 600; color: var(--text-main); text-transform: uppercase; letter-spacing: 1px; }
+        .main-nav a:hover { color: var(--primary-red); }
+
+        /* ================= SIDEBAR & MODAL (TỪ BẢN TRƯỚC) ================= */
+        .sidebar { position: fixed; top: 0; left: -320px; width: 320px; height: 100%; background-color: var(--pure-white); box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: left 0.3s ease; display: flex; flex-direction: column; }
+        .sidebar.open { left: 0; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header h2 { font-size: 16px; color: var(--primary-red); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .close-sidebar { background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-light); line-height: 1; }
+        .sidebar-content { overflow-y: auto; padding: 20px; }
+        .sidebar-menu-list { list-style: none; }
+        .sidebar-menu-list a { display: block; padding: 12px 0; font-size: 15px; font-weight: 500; color: var(--text-main); border-bottom: 1px solid #fcfcfc; }
+        .sidebar-menu-list a:hover { color: var(--primary-red); padding-left: 5px; }
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--overlay-bg); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .overlay.show { opacity: 1; pointer-events: auto; }
+
+        .search-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -60%) scale(0.9); width: 90%; max-width: 600px; background-color: var(--pure-white); padding: 30px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1001; opacity: 0; pointer-events: none; transition: transform 0.3s ease, opacity 0.3s ease; }
+        .search-modal.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+        .search-modal h3 { font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 15px; }
+        .search-form { display: flex; gap: 10px; }
+        .search-input { flex: 1; padding: 12px 15px; font-size: 16px; border: 1px solid #cccccc; border-radius: 4px; outline: none; }
+        .search-submit { background-color: var(--primary-red); color: var(--pure-white); border: none; padding: 0 25px; font-size: 15px; font-weight: 600; border-radius: 4px; cursor: pointer; }
+
+        /* ================= TTO DETAIL LAYOUT ================= */
+        .article-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        /* 1. Thanh Social Toolbar nổi bên trái */
+        .left-toolbar {
+            position: sticky;
+            top: 20px;
+            width: 44px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-shrink: 0;
+            padding-top: 5px;
+        }
+
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: var(--pure-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .tool-btn:hover { border-color: var(--text-light); color: var(--text-main); }
+        .tool-btn svg { width: 18px; height: 18px; fill: currentColor; }
+        .tool-btn.text-icon { font-size: 15px; font-weight: 600; }
+        .tool-btn.text-icon.small { font-size: 13px; }
+        
+        .tool-btn .badge {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .separator { width: 20px; height: 1px; background-color: var(--border-color); margin: 5px auto; }
+
+        /* 2. Nội dung chính bên phải */
+        .main-content {
+            flex: 1;
+            min-width: 0; /* Tránh tràn layout flex */
+        }
+
+        /* Breadcrumb & Date */
+        .top-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .breadcrumb { font-weight: 700; color: var(--text-muted); display: flex; align-items: center; gap: 5px; }
+        .breadcrumb svg { width: 16px; height: 16px; fill: currentColor; }
+        .breadcrumb span { color: var(--text-light); font-weight: 400; margin-left: 5px;}
+        .publish-date { color: var(--text-light); }
+
+        /* Tiêu đề bài viết */
+        .article-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 34px;
+            line-height: 1.3;
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 25px;
+        }
+
+        .comment-badge-title {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary-red);
+            color: white;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            vertical-align: middle;
+            margin-left: 8px;
+            margin-top: -15px;
+        }
+
+        /* Thanh Tác giả & Audio */
+        .author-audio-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .author-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .author-avatar svg { width: 20px; height: 20px; fill: #ccc; }
+        .author-name { font-weight: 700; font-size: 14px; text-transform: uppercase; }
+
+        /* Audio Feature Component */
+        .audio-feature {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 13px;
+            color: var(--text-muted);
+            gap: 10px;
+        }
+
+        .audio-play {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .audio-play svg { width: 14px; height: 14px; fill: var(--text-muted); }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 1px solid var(--border-color);
+            padding-left: 10px;
+        }
+
+        .audio-select {
+            border: 1px solid var(--border-color);
+            background: var(--pure-white);
+            color: var(--text-muted);
+            font-size: 12px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .voice-icon { width: 12px; height: 12px; fill: var(--text-muted); margin-right: -4px;}
+
+        /* Google News Button */
+        .gg-news-btn {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--bg-light);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .gg-news-btn img { height: 14px; margin-left: 6px; }
+
+        /* Sapo (Đoạn mở đầu) */
+        .article-sapo {
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #222;
+        }
+
+        /* Cover & Body (Mix với Reading Style Magazine) */
+        .article-cover { margin-bottom: 30px; }
+        .article-cover img { width: 100%; border-radius: 4px; }
+        .article-cover figcaption { font-size: 14px; color: var(--text-light); text-align: left; margin-top: 10px; font-style: italic; background-color: var(--bg-light); padding: 8px 12px; border-left: 3px solid var(--primary-red);}
+
+        .article-body {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 19px;
+            line-height: 1.8;
+            color: #222;
+        }
+
+        .article-body p { margin-bottom: 20px; }
+
+        /* ================= FOOTER & BACK TO TOP ================= */
+        .main-footer { border-top: 1px solid var(--border-color); background-color: #fafafa; padding: 50px 0; text-align: center; margin-top: 20px; }
+        .footer-menu { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 30px; font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .footer-menu span { color: #ccc; font-weight: 300; }
+        .footer-logo { margin-bottom: 30px; display: flex; justify-content: center; }
+        .footer-logo img { height: 75px; width: auto; display: block; }
+        .footer-copyright { font-size: 13px; color: var(--text-light); line-height: 1.8; max-width: 600px; margin: 0 auto; }
+
+        .back-to-top { position: fixed; bottom: 30px; right: 30px; background-color: var(--primary-red); color: var(--pure-white); border: none; width: 46px; height: 46px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.12); z-index: 998; transition: all 0.2s ease; }
+        .back-to-top svg { width: 24px; height: 24px; fill: currentColor; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .left-toolbar { display: none; /* Ẩn toolbar trái trên mobile */ }
+            .article-title { font-size: 28px; }
+            .article-sapo { font-size: 16px; }
+            .author-audio-bar { flex-direction: column; align-items: flex-start; }
+            .audio-feature { width: 100%; justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="globalOverlay"></div>
+
+    <div class="sidebar" id="sidebarMenu">
+        <div class="sidebar-header">
+            <h2>Chuyên mục</h2>
+            <button class="close-sidebar" id="closeSidebarBtn">&times;</button>
+        </div>
+        <div class="sidebar-content">
+            <ul class="sidebar-menu-list">
+                <li><a href="topic.html">Thời sự quốc tế</a></li>
+                <li><a href="topic.html">Thể thao</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <header class="logo-bar">
+        <div class="container nav-container">
+            <div class="top-left-actions">
+                <button class="icon-btn" id="openSidebarBtn" aria-label="Mở menu">
+                    <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+                </button>
+                <button class="icon-btn" id="openSearchBtn" aria-label="Tìm kiếm">
+                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                </button>
+            </div>
+            <a href="index.html" class="logo-link" style="display: flex; align-items: flex-end; gap: 15px; text-decoration: none;">
+                <img src="logo.svg" alt="Tuổi Trẻ Online" style="height: 48px; width: auto; display: block;">
+                <span style="font-family: 'Playfair Display', Georgia, serif; font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: 1px; line-height: 0.9; padding-bottom: 2px;">Magazine</span>
+            </a>
+        </div>
+    </header>
+
+    <nav class="main-nav">
+        <div class="container">
+            <ul>
+                <li><a href="category.html">Đọc nhiều</a></li>
+                <li><a href="category.html">Khuyên đọc</a></li>
+                <li><a href="category.html">Long form</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="article-wrapper">
+            
+            <aside class="left-toolbar">
+                <button class="tool-btn text-icon" title="Phóng to chữ">+</button>
+                <button class="tool-btn text-icon small" title="Cỡ chữ mặc định">aa</button>
+                <button class="tool-btn text-icon" title="Thu nhỏ chữ">-</button>
+                <div class="separator"></div>
+                <button class="tool-btn" title="Copy Link">
+                    <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+                </button>
+                <button class="tool-btn" title="Chia sẻ Facebook">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.55 10.45h-1.6v6h-2.5v-6H9.3v-2.1h1.15v-1.37c0-1.57.73-2.48 2.62-2.48h1.61v2.04h-1c-.49 0-.58.19-.58.64v1.17h1.68l-.23 2.1z"/></svg>
+                </button>
+                <button class="tool-btn" title="Bình luận">
+    <svg width="20" height="22" viewBox="0 0 20 22" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-top: -3px;">
+        <path d="M0 2.65739V21.1666L3.09366 17.5456H17.863C19.4176 17.5456 19.8433 15.8428 19.8618 14.9915V2.27655C19.8618 0.544214 18.5293 0.0370431 17.863 0H2.42737C0.517357 0 0.0132843 1.77159 0 2.65739Z" fill="#A8A8A8"></path>
+        <rect x="2.81641" y="3.22046" width="13.9919" height="1.72117" rx="0.860586" fill="white"></rect>
+        <rect x="2.81641" y="7.40601" width="13.9919" height="1.72117" rx="0.860586" fill="white"></rect>
+        <rect x="2.81641" y="11.5913" width="13.9919" height="1.72117" rx="0.860586" fill="white"></rect>
+    </svg>
+    <span class="badge" style="background-color: var(--primary-red); color: white; border-color: var(--primary-red);">2</span>
+</button>
+                <div class="separator"></div>
+                <button class="tool-btn" title="Lưu bài viết">
+                    <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+                </button>
+                <button class="tool-btn" title="In trang">
+                    <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                </button>
+            </aside>
+
+            <div class="main-content">
+                
+                <div class="top-meta">
+                    <div class="breadcrumb">
+                        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                        Trở lại trang đầu <span> Hồ sơ</span>
+                    </div>
+                    <div class="publish-date">22/06/2026 12:52 GMT+7</div>
+                </div>
+
+                <h1 class="article-title">
+                    Làm sao để quản lý một nút thắt địa chính trị
+                   <span style="display: inline-block; position: relative; margin-left: 10px; vertical-align: middle; width: 24px; height: 26px;">
+    <svg width="24" height="26" viewBox="0 0 20 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0 2.65739V21.1666L3.09366 17.5456H17.863C19.4176 17.5456 19.8433 15.8428 19.8618 14.9915V2.27655C19.8618 0.544214 18.5293 0.0370431 17.863 0H2.42737C0.517357 0 0.0132843 1.77159 0 2.65739Z" fill="#E53935"></path>
+        <rect x="2.81641" y="3.22046" width="13.9919" height="1.72117" rx="0.860586" fill="white"></rect>
+        <rect x="2.81641" y="7.40601" width="13.9919" height="1.72117" rx="0.860586" fill="white"></rect>
+        <rect x="2.81641" y="11.5913" width="13.9919" height="1.72117" rx="0.860586" fill="white"></rect>
+    </svg>
+    <span style="position: absolute; top: -5px; right: -5px; background-color: var(--primary-red); color: white; font-size: 11px; font-weight: 700; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid white; font-family: sans-serif;">2</span>
+</span>
+                </h1>
+
+                <div class="author-audio-bar">
+                    <div class="author-info">
+                        <div class="author-avatar">
+                            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        </div>
+                        <span class="author-name">HẢI MINH</span>
+                    </div>
+
+                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <div class="audio-feature">
+                            <div class="audio-play">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                Nghe đọc bài 2:29
+                            </div>
+                            <div class="audio-controls">
+                                <select class="audio-select">
+                                    <option value="1.0">1.00x</option>
+                                    <option value="1.25">1.25x</option>
+                                    <option value="1.5" selected>1.50x</option>
+                                    <option value="2.0">2.00x</option>
+                                </select>
+                                <svg class="voice-icon" viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+                                <select class="audio-select" style="border: none; background: transparent; padding-left: 0;">
+                                    <option>Nữ miền Bắc</option>
+                                    <option>Nam miền Nam</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <a href="#" class="gg-news-btn">
+                            Tuổi Trẻ trên <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Google_News_icon.png" alt="Google News">
+                        </a>
+                    </div>
+                </div>
+
+                <p class="article-sapo">
+                   TTCT - Thực tế địa chính trị vẫn đòi hỏi một cường quốc với sức mạnh áp đảo để duy trì nguyên trạng một cách đáng tin cậy ở những điểm nghẽn yết hầu của thế giới.
+                </p>
+
+                <figure class="article-cover">
+                    <img src="vedette.webp" alt="Junya Ito">
+                    <figcaption>Ảnh: Reuters</figcaption>
+                </figure>
+
+                <div class="article-body">
+                   <p>Cuộc khủng hoảng eo biển Hormuz, bùng lên sau khi Mỹ và Israel tấn công Iran vào cuối tháng 2-2026, cho thấy ngoài luật pháp quốc tế và hy vọng vào cách hành xử có đạo đức của các quốc gia, thực tế địa chính trị vẫn đòi hỏi một cường quốc với sức mạnh áp đảo để duy trì nguyên trạng một cách đáng tin cậy ở những điểm nghẽn yết hầu của thế giới</p><p>"Câu hỏi Hormuz" thực ra là vấn đề đã được nhìn ra từ lâu, khi người Bồ Đào Nha từng dựng lên các pháo đài và bố trí phòng thủ ở khu vực này từ tận những năm đầu thế kỷ 16. Năm 1507, trong nỗ lực khống chế thương mại của người Hồi giáo ở Ấn Độ Dương, vua Bồ Đào Nha Manuel I đã xua các pháo hạm xâm chiếm và kiểm soát hàng loạt pháo đài - thương điếm trải dài từ Aden qua biển Đỏ tới Alexandria ở một bên, và Hormuz tới tận Malacca ở bên kia.</p><h3><b><font color="#ff0000" style="color: rgb(255, 0, 0);">Chiến tranh nhưng eo biển vẫn mở</font></b></h3><p>Gần với thời hiện đại hơn, một so sánh tương đương là các eo biển của Thổ Nhĩ Kỳ nối Địa Trung Hải với biển Đen: Bosporus và Dardanelles.&nbsp;</p><p>So sánh này càng trở nên thuyết phục khi ở đây nữa, cũng đã diễn ra một cuộc chiến quy mô lớn kéo dài hơn 4 năm giữa hai quốc gia ven biển Đen: Nga và Ukraine. Việc tuyến đường thủy huyết mạch này ở châu Âu và châu Á hầu như không bị đe dọa trong những xung đột hiện giờ bản thân nó đã là một thắng lợi ngoại giao lớn.</p><p>Giữa cuộc xung đột, các eo biển này vẫn tiếp tục cho phép vận chuyển thương mại diễn ra tương đối bình thường. Tất cả nhờ vào thành tựu ngoại giao quốc tế còn ít được biết đến, nhưng đã rất lâu đời: Công ước Montreux, được ký kết từ tận 90 năm trước, vào tháng 7-1936, đến nay vẫn còn nguyên hiệu lực.&nbsp;</p><p>Trong những ngày đầu tiên của cuộc chiến ở Ukraine vào năm 2022, Thổ Nhĩ Kỳ đã viện dẫn Điều 19 của Công ước tự thực thi này để đóng cửa các eo biển với tất cả tàu chiến. Không giống eo biển Hormuz, nhờ có Công ước Montreux, các eo biển Thổ Nhĩ Kỳ sau đó vẫn mở cho tàu bè thương mại.</p><p>Ở Trung Đông hai tháng qua, cả thế giới bàng hoàng khi giá dầu tăng vọt, các thị trường tài chính toàn cầu đảo lộn, Cơ quan Năng lượng Quốc tế cảnh báo về tình trạng gián đoạn nguồn cung lớn nhất với thị trường dầu mỏ toàn cầu trong lịch sử, khi vận chuyển qua eo biển Hormuz gần như tê liệt.&nbsp;</p><p>Iran nhanh chóng phô trương năng lực của họ trong việc siết chặt kiểm soát với tuyến hàng hải dài 39km này. Hỗn loạn bùng lên dọc eo biển Hormuz một lần nữa chứng minh rằng các điểm nghẽn hàng hải mà thương mại quốc tế phụ thuộc chặt chẽ vẫn là gót chân Achilles của nền kinh tế toàn cầu.</p><p>Mối lo tương tự từng được nêu lên ở các eo biển Thổ Nhĩ Kỳ khi gián đoạn do chiến tranh có thể cắt đứt 1/3 nguồn cung ngũ cốc và phân bón thế giới, không khác gì Hormuz hiện nay. Dardanelles và Bosporus, nằm kẹp giữa phần châu Á và châu Âu của lãnh thổ Thổ Nhĩ Kỳ, là cửa ngõ hàng hải duy nhất giữa biển Đen và Địa Trung Hải.&nbsp;</p><p>Nằm ở ngã ba Âu-Á-Phi, các eo biển này đã là mục tiêu của tranh giành địa chính trị khốc liệt suốt từ thời cổ đại, từ người Hy Lạp đến người Byzantine, từ các sultan Ottoman đến các Sa hoàng Nga.</p><p>Hoạt động điều tiết các eo biển này là trọng tâm của "Vấn đề phương Đông" vốn chi phối rất nhiều chính sách ngoại giao châu Âu suốt thế kỷ 19. Sau Thế chiến I và sự sụp đổ của Đế chế Ottoman, nó trở thành vấn đề phức tạp nhất của lục địa già, lúc đó đang thống trị thế giới qua hệ thống thuộc địa rộng khắp.&nbsp;</p><p>Năm 1936, Công ước Montreux được phê chuẩn, đến nay vẫn có thể coi là giải pháp thực tế hữu hiệu nhất để xây dựng một cơ chế quản trị các điểm nghẽn hàng hải. Suốt 90 năm kể từ đó, các eo biển này đã vượt qua mọi cuộc chiến lớn mà không rơi vào tình trạng như Hormuz hiện nay.</p><h3><b><font color="#ff0000" style="color: rgb(255, 0, 0);">Giải pháp nào cho Hormuz</font></b></h3><p>Nhiều bài học từ biết bao thế kỷ biến động ở các eo biển Thổ Nhĩ Kỳ làm nổi bật những gì sẽ không hiệu quả trong nỗ lực quản trị đó: (1) Sự thống trị của một cường quốc xét lại, muốn yêu sách với các eo biển, trong trường hợp này là nước Nga Sa hoàng; (2) khuôn khổ quốc tế hóa lỏng lẻo, không có tính ràng buộc, tiền thân của Công ước Montreux: Công ước Lausanne (ký năm 1923).&nbsp;</p><p>Lịch sử cũng làm sáng tỏ những gì sẽ giúp các eo biển huyết mạch vận hành bình thường trong biến cố: (1) bên chịu trách nhiệm phải là một cường quốc duy trì nguyên trạng, và (2) sự sắp xếp phải phù hợp với lợi ích của tất cả các cường quốc chính.</p><p>Giảm thiểu rủi ro xung quanh một điểm nghẽn hàng hải là tối quan trọng để ngăn chặn hóa đơn bảo hiểm hàng hải tăng vọt, hay thậm chí là hoạt động giao thương bế tắc, trong thời chiến.&nbsp;</p><p>Ở điểm (1), Thổ Nhĩ Kỳ đáp ứng hoàn hảo các tiêu chí: cường quốc khu vực, muốn duy trì nguyên trạng, và có đủ sức mạnh và sự kiên định, với lực lượng quân đội thường trực lớn thứ hai trong NATO.</p><p>Tuy nhiên, mọi thứ không mấy khả quan cho eo biển Hormuz, nơi cũng đang có không chỉ một cường quốc xét lại và yêu sách quyền kiểm soát: Iran, và cả Mỹ. Tình hình hiện tại càng làm nổi bật tình trạng bất lực của các lời kêu gọi dựa trên Công ước Liên hợp quốc về Luật Biển (UNCLOS).&nbsp;</p><p>Iran không cần tấn công mọi tàu đi qua eo biển, thậm chí không cần tấn công một số lượng lớn, chỉ cần thỉnh thoảng một con tàu dân sự trúng đạn "không rõ từ đâu" đã đủ khiến eo biển này gần như tê liệt.</p><p>Nhiều thập kỷ đã trôi qua, nhưng một trật tự kiểu Montreux chưa bao giờ được xác lập ở Hormuz, một phần quan trọng là bởi các cường quốc hiện tại đã không dành đủ thời gian và công sức cho một trật tự như vậy. Do đó, nhìn lại Montreux lúc này là hợp lý hơn bao giờ hết.&nbsp;</p><p>Tháng 7-1936, các chính khách châu Âu tề tựu về Montreux, Thụy Sĩ - một thị trấn ven hồ đẹp như tranh vẽ: Hitler củng cố quyền lực tối cao ở Đức từ năm 1934; nước Ý của Mussolini đã xâm lược Bắc Phi vào tháng 10-1935; quy định về an ninh tập thể của Hội Quốc Liên đã bên bờ vực sụp đổ.&nbsp;</p><p>Với nước Cộng hòa Thổ Nhĩ Kỳ mới thành lập dưới thời Mustafa Kemal Atatürk, không thể đảm bảo chủ quyền với lối vào biển Đen sẽ là mối đe dọa sống còn cho chế độ mới. Quan trọng hơn, Atatürk ủng hộ duy trì nguyên trạng, với phương châm: "Hòa bình cho quê hương, hòa bình cho thế giới". Do đó, Thổ Nhĩ Kỳ quyết liệt vận động để quốc hữu hóa các eo biển.</p><p>Thỏa thuận 1936 đã đạt được qua cân bằng những căng thẳng rất phức tạp và bấp bênh giữa London, Berlin và Moscow.&nbsp;</p><p>Trong mắt người Đức, Liên Xô có lợi hơn trong Công ước Montreux: Thổ Nhĩ Kỳ có thể đóng cửa Dardanelles trong thời chiến vì lợi ích của Moscow, trong khi tàu chiến Nga giành được các đặc quyền hàng hải. Đức do đó đe dọa tăng quy mô hạm đội và cảnh báo nguy cơ Thổ Nhĩ Kỳ khuất phục trước ảnh hưởng của Nga trong khu vực.</p><figure class="VCSortableInPreviewMode" type="Photo" style=""><div><a href="https://cdn2.tuoitre.vn/471584752817336320/2026/4/28/ttct430-4p14-17773609341801922294422.jpg" data-fancybox="img-lightbox" title="Ảnh: Axios" target="_blank" class="detail-img-lightbox"><img data-author="" src="https://cdn2.tuoitre.vn/thumb_w/730/471584752817336320/2026/4/28/ttct430-4p14-17773609341801922294422.jpg" id="img_219848280547020800" w="1919" h="1080" alt="a - Ảnh 2." title="Làm sao để quản lý một nút thắt địa chính trị - Ảnh 2." rel="lightbox" photoid="219848280547020800" data-original="https://cdn2.tuoitre.vn/471584752817336320/2026/4/28/ttct430-4p14-17773609341801922294422.jpg" type="photo" style="max-width:100%;" width="1919" height="1080" loading="lazy" class="lightbox-content"></a></div><figcaption class="PhotoCMS_Caption ck_legend caption"><p data-placeholder="Nhập chú thích ảnh">Ảnh: Axios</p></figcaption></figure><p>Anthony Eden, khi đó là Ngoại trưởng Anh chỉ ra rằng Nga sẽ không bao giờ sẵn lòng giao phó việc phòng thủ biển Đen cho một đối thủ lâu đời. Và sự can thiệp của Eden không phải là do lòng nhân từ với Thổ Nhĩ Kỳ.&nbsp;</p><p>Quan điểm ở London là cho phép chế độ Atatürk ở đó sẽ giúp Anh ngăn chặn tham vọng của Đức và Liên Xô, cũng như đảm bảo các lợi ích thương mại của Anh, vốn là một siêu cường thuộc địa toàn cầu.</p><p>Bảo vệ các tuyến đường đến Ấn Độ đã là yếu tố định hình chính sách đối ngoại Anh suốt từ thế kỷ 19. Vận tải biển của Anh luôn chiếm hơn 20% tổng trọng tải hàng năm đi qua các eo biển Thổ Nhĩ Kỳ, đạt đỉnh 26,8% vào năm 1938. Một chế độ eo biển ổn định và quan hệ thân thiện với Ankara do đó là tối cần thiết với London.</p><p>Cuối cùng, Montreux nhất trí đặt các eo biển dưới quyền kiểm soát của Thổ Nhĩ Kỳ, kèm theo quy định chi tiết riêng biệt về trọng tải, thời gian lưu trú, thông báo trước với tàu buôn và quân sự, đồng thời dành ưu đãi cho các quốc gia ven biển biển Đen.&nbsp;</p><p>Chính sự rõ ràng và chính xác về quyền hạn tùy nghi trong thời chiến của Thổ Nhĩ Kỳ được đảm bảo qua Montreux đã bảo vệ sự ổn định của điểm nghẽn này suốt gần một thế kỷ sau đó.</p><p>Cuộc chiến Ukraine hiện giờ thậm chí chưa phải là bài kiểm tra áp lực mạnh nhất với Công ước Montreux. Thời chiến tranh lạnh, Liên Xô đã thúc ép sửa đổi Montreux nhằm đảm bảo quyền tiếp cận đặc quyền hơn của họ với biển Đen.</p><p>Stalin hình dung về việc biến biển Đen thành "ao nhà" qua một hiệp ước hữu nghị với Thổ Nhĩ Kỳ theo mô hình Ba Lan và các nước Đông Âu. Kế hoạch này, lần đầu tiên được đề xuất ở Hội nghị Yalta, đã khiến Churchill lo lắng rõ rệt.&nbsp;</p><p>Lo sợ sự đảo lộn cán cân quyền lực ở châu Âu, Mỹ và Anh đã liên kết ủng hộ Thổ Nhĩ Kỳ duy trì chế độ Montreux và kềm chế Liên Xô, không khỏi gợi lại cuộc chiến Crimea 1853-1856 khi Anh và Pháp liên kết để kềm chế tham vọng của Nga ở Balkan và Thổ Nhĩ Kỳ, dù lần này các bên đã không phải nổ súng.</p><p>Hoa Kỳ đã nhanh chóng chào đón Thổ Nhĩ Kỳ trở thành thành viên của NATO vào năm 1952 - một sự kiện trọng đại với các eo biển huyết mạch. Trở lại với Hormuz thời hiện đại, tuyên bố của Tổng thống Mỹ Donald Trump vào giữa tháng 4-2026 về việc Mỹ sẽ "phong tỏa" eo biển này có thể coi là một bài học rút ra từ Montreux.&nbsp;</p><p>Tuy nhiên, để đảm bảo một cơ chế như vậy, sự hợp tác của Iran vẫn là điều bắt buộc. Tehran hiện biết rằng bóp nghẹt eo biển Hormuz là vũ khí hiệu nghiệm nhất mà họ có thể sử dụng trong cuộc chiến với Mỹ.&nbsp;</p><p>Do đó, để một chế độ Hormuz trong tương lai có thể được thể chế hóa theo phong cách Montreux, việc xây dựng lại lòng tin sẽ là thiết yếu để duy trì nó; đồng thời đòi hỏi một cường quốc duy trì nguyên trạng mạnh mẽ, đáng tin cậy với sự hiện diện quân sự khả tín đóng vai trò người gác cổng.</p><p>Chỉ có điều, sau gần năm thập kỷ đối đầu, việc xây dựng dựa trên bất kỳ lòng tin mong manh nào còn sót lại giữa Iran và các đối thủ của họ sẽ không phải là một nhiệm vụ đơn giản.■</p> 
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-menu">
+                <a href="#">Tuổi Trẻ Online</a>
+                <span>|</span>
+                <a href="#">Liên hệ</a>
+            </div>
+            <div class="footer-logo">
+                <img src="logo.png" alt="Tuổi Trẻ Online Magazine">
+            </div>
+            <p class="footer-copyright">
+                &copy; Copyright 2026 TuoiTre Online. All rights reserved <br>
+                &reg; Tuổi Trẻ Online giữ bản quyền nội dung trên website này
+            </p>
+        </div>
+    </footer>
+
+    <button id="backToTopBtn" class="back-to-top" title="Lên đầu trang">
+        <svg viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
+    </button>
+
+    <script>
+        const overlay = document.getElementById('globalOverlay');
+        const sidebar = document.getElementById('sidebarMenu');
+        const backToTopBtn = document.getElementById('backToTopBtn');
+
+        document.getElementById('openSidebarBtn').addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('show'); });
+        document.getElementById('closeSidebarBtn').addEventListener('click', closeAll);
+        overlay.addEventListener('click', closeAll);
+
+        function closeAll() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        }
+
+        backToTopBtn.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    </script>
+</body>
+</html>

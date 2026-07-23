@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Reuters Carousel Image Grabber</title>
+<style>
+  :root {
+    --bg: #14171c;
+    --panel: #1c2028;
+    --border: #2a2f3a;
+    --text: #e6e8eb;
+    --muted: #8b93a1;
+    --accent: #ff8000; /* Reuters orange */
+    --accent-dim: #b35b00;
+    --ok: #4caf7d;
+    --err: #e5534b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    padding: 32px 20px 80px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 4px;
+  }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+  .tab-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 8px 14px;
+    font-size: 13px;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    border-bottom: none;
+  }
+  .tab-btn.active { color: var(--text); background: var(--panel); border-color: var(--border); }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 0 8px 8px 8px;
+    padding: 20px;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  input[type=text], textarea {
+    width: 100%;
+    background: #0f1216;
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+  }
+  textarea { min-height: 160px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+
+  .row { display: flex; gap: 10px; margin-top: 14px; align-items: center; flex-wrap: wrap; }
+
+  button.primary {
+    background: var(--accent);
+    color: #1a1200;
+    border: none;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  button.primary:hover { background: #ff9020; }
+  button.primary:disabled { opacity: 0.5; cursor: default; }
+
+  select {
+    background: #0f1216;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 9px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+
+  .hint { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+  .hint code { background: #0f1216; padding: 1px 5px; border-radius: 3px; }
+
+  .status { font-size: 13px; margin-top: 14px; padding: 10px 12px; border-radius: 6px; display: none; }
+  .status.show { display: block; }
+  .status.ok { background: rgba(76,175,125,0.12); color: var(--ok); border: 1px solid rgba(76,175,125,0.3); }
+  .status.err { background: rgba(229,83,75,0.12); color: var(--err); border: 1px solid rgba(229,83,75,0.3); }
+  .status.info { background: rgba(139,147,161,0.12); color: var(--muted); border: 1px solid var(--border); }
+
+  .results { margin-top: 28px; }
+  .results h2 { font-size: 14px; color: var(--muted); font-weight: 600; margin-bottom: 12px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .card img { width: 100%; height: 130px; object-fit: cover; display: block; background: #0f1216; }
+  .card-body { padding: 10px; }
+  .card-body .idx { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .card-body a.dl {
+    display: inline-block;
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .card-body a.dl:hover { text-decoration: underline; }
+
+  .dl-all {
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Reuters Carousel Image Grabber</h1>
+  <div class="sub">Lấy ảnh full-res từ carousel bài viết Reuters (chỉ dùng cho ảnh đã có license hợp lệ).</div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="url">Nhập URL</button>
+    <button class="tab-btn" data-tab="html">Dán HTML source</button>
+  </div>
+
+  <div class="panel">
+    <div class="tab-content active" id="tab-url">
+      <label for="urlInput">URL bài viết Reuters</label>
+      <input type="text" id="urlInput" placeholder="https://www.reuters.com/world/...">
+      <div class="row">
+        <button class="primary" id="fetchBtn">Fetch &amp; Grab</button>
+      </div>
+      <div class="hint">
+        Cách này gọi <code>fetch()</code> trực tiếp từ trình duyệt. Nếu Reuters chặn CORS
+        (rất hay xảy ra), bạn sẽ thấy lỗi bên dưới — khi đó chuyển qua tab
+        <b>"Dán HTML source"</b> thay vào.
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-html">
+      <label for="htmlInput">Paste HTML source của trang</label>
+      <textarea id="htmlInput" placeholder="Mở trang Reuters → chuột phải &gt; View Page Source (hoặc Ctrl+U) → Ctrl+A, Ctrl+C → dán vào đây"></textarea>
+      <div class="row">
+        <button class="primary" id="parseBtn">Grab từ HTML này</button>
+      </div>
+      <div class="hint">
+        Cách này luôn hoạt động vì không cần gọi mạng — chỉ đọc HTML bạn đã có sẵn.
+        Nếu View Source không cho ra HTML đầy đủ (trang render bằng JS), thay vào đó vào
+        DevTools (F12) → chọn thẻ <code>&lt;html&gt;</code> ở tab Elements → chuột phải →
+        <b>Copy &gt; Copy outerHTML</b> → dán vào đây.
+      </div>
+    </div>
+
+    <div class="row">
+      <label style="margin:0;">Độ rộng ảnh mong muốn:</label>
+      <select id="widthSelect">
+        <option value="2048">2048px (lớn nhất thường gặp)</option>
+        <option value="1200">1200px</option>
+        <option value="1080">1080px</option>
+        <option value="original">Giữ nguyên (không đổi)</option>
+      </select>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="results" id="results" style="display:none;">
+    <h2 id="resultsTitle">Ảnh tìm được</h2>
+    <div class="row dl-all">
+      <button class="primary" id="dlAllBtn">Tải tất cả</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+
+<script>
+const tabBtns = document.querySelectorAll('.tab-btn');
+const tabContents = document.querySelectorAll('.tab-content');
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabBtns.forEach(b => b.classList.remove('active'));
+    tabContents.forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+const statusEl = document.getElementById('status');
+function setStatus(msg, type) {
+  statusEl.textContent = msg;
+  statusEl.className = 'status show ' + type;
+}
+function clearStatus() {
+  statusEl.className = 'status';
+}
+
+function extractImagesFromHtml(htmlString) {
+  const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+  const slides = doc.querySelectorAll('[data-testid="CarouselSlide"]');
+  const results = [];
+  const seen = new Set();
+
+  const widthChoice = document.getElementById('widthSelect').value;
+
+  function pushImg(imgEl, idx) {
+    if (!imgEl || !imgEl.src) return;
+    let url = imgEl.src;
+    if (widthChoice !== 'original' && /width=\d+/.test(url)) {
+      url = url.replace(/width=\d+/, `width=${widthChoice}`);
+    }
+    if (seen.has(url)) return;
+    seen.add(url);
+    results.push({
+      index: results.length + 1,
+      alt: imgEl.alt || `image_${idx}`,
+      url
+    });
+  }
+
+  if (slides.length) {
+    slides.forEach((slide, idx) => {
+      const noscript = slide.querySelector('noscript');
+      if (noscript) {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = noscript.textContent || noscript.innerHTML;
+        pushImg(wrapper.querySelector('img'), idx + 1);
+      } else {
+        // fallback: img trực tiếp trong slide (vd EagerImage)
+        const img = slide.querySelector('img[src]');
+        pushImg(img, idx + 1);
+      }
+    });
+  }
+
+  // fallback toàn cục nếu không tìm thấy CarouselSlide nào
+  if (!results.length) {
+    doc.querySelectorAll('noscript').forEach((ns, idx) => {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = ns.textContent || ns.innerHTML;
+      const img = wrapper.querySelector('img');
+      if (img && /resizer/.test(img.src || '')) pushImg(img, idx + 1);
+    });
+  }
+
+  return results;
+}
+
+function renderResults(results) {
+  const resultsBox = document.getElementById('results');
+  const grid = document.getElementById('grid');
+  const title = document.getElementById('resultsTitle');
+  grid.innerHTML = '';
+
+  if (!results.length) {
+    resultsBox.style.display = 'none';
+    setStatus('Không tìm thấy ảnh carousel nào trong nội dung này.', 'err');
+    return;
+  }
+
+  title.textContent = `Ảnh tìm được (${results.length})`;
+  resultsBox.style.display = 'block';
+  setStatus(`Tìm thấy ${results.length} ảnh.`, 'ok');
+
+  results.forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const filename = `reuters_${r.index}_${(r.alt || '').replace(/[^\w]+/g,'_').slice(0,40) || 'image'}.jpg`;
+    card.innerHTML = `
+      <img src="${r.url}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.opacity=0.2">
+      <div class="card-body">
+        <div class="idx">#${r.index}</div>
+        <a class="dl" href="${r.url}" download="${filename}" target="_blank" rel="noopener">Tải ảnh ↓</a>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  document.getElementById('dlAllBtn').onclick = async () => {
+    for (const r of results) {
+      try {
+        const res = await fetch(r.url, { mode: 'cors' });
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const ext = (r.url.split('.').pop().split('?')[0] || 'jpg').slice(0,4);
+        const filename = `reuters_${r.index}_${(r.alt||'').replace(/[^\w]+/g,'_').slice(0,40)}.${ext}`;
+        const a = document.createElement('a');
+        a.href = blobUrl; a.download = filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(blobUrl);
+      } catch (e) {
+        console.warn('Không tự tải được ảnh #' + r.index + ', mở tay:', r.url);
+        window.open(r.url, '_blank');
+      }
+      await new Promise(res => setTimeout(res, 300));
+    }
+  };
+}
+
+document.getElementById('fetchBtn').addEventListener('click', async () => {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) { setStatus('Nhập URL trước đã.', 'err'); return; }
+  setStatus('Đang fetch trang...', 'info');
+  try {
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const html = await res.text();
+    const results = extractImagesFromHtml(html);
+    renderResults(results);
+  } catch (err) {
+    setStatus('Fetch thất bại (thường do CORS bị chặn): ' + err.message + '. Hãy dùng tab "Dán HTML source" thay thế.', 'err');
+  }
+});
+
+document.getElementById('parseBtn').addEventListener('click', () => {
+  const html = document.getElementById('htmlInput').value;
+  if (!html.trim()) { setStatus('Dán HTML source vào trước đã.', 'err'); return; }
+  const results = extractImagesFromHtml(html);
+  renderResults(results);
+});
+</script>
+</body>
+</html>

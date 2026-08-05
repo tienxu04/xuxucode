@@ -81,55 +81,45 @@
                 <i class="fa fa-microphone text-gray-400 ml-1 pr-2"></i>
             </div>
 
-            <p class="text-lg font-bold text-gray-800 leading-relaxed mb-8">
+            <p class="text-lg font-bold text-gray-800 leading-relaxed mb-6">
                 Major news for today in brief, listen anywhere.
             </p>
 
-            <!-- CUSTOM PODCAST PLAYER (Replaces Infographic) -->
-            <div class="bg-white border border-gray-200 shadow-md rounded-xl p-4 flex items-center my-8 max-w-2xl">
-                <!-- Cover Art -->
-                <div class="flex-shrink-0 mr-5 relative">
-                    <img id="podcast-cover" src="https://via.placeholder.com/120?text=Cover+Art" alt="Podcast Cover" class="w-28 h-28 object-cover rounded-lg shadow-sm border border-gray-100">
-                    <div class="absolute -bottom-2 -right-2 bg-red-600 text-white rounded-full p-1.5 shadow">
-                        <i class="fa fa-podcast text-sm"></i>
+            <!-- CUSTOM PODCAST PLAYER -->
+            <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6 mb-8 max-w-2xl">
+                <div class="flex items-center">
+                    <!-- Dynamic Cover Art Container -->
+                    <div class="flex-shrink-0 mr-5 relative">
+                        <img id="podcast-cover" 
+                             src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='1.5'><rect width='100%' height='100%' fill='%23f3f4f6'/><circle cx='12' cy='12' r='8' stroke='%23d1d5db'/><circle cx='12' cy='12' r='3'/></svg>" 
+                             alt="Podcast Cover" 
+                             class="w-24 h-24 object-cover rounded-lg shadow-sm border border-gray-100 bg-gray-100">
+                        <div class="absolute -bottom-2 -right-2 bg-red-600 text-white rounded-full p-1.5 shadow">
+                            <i class="fa fa-podcast text-xs"></i>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- Audio Controls -->
-                <div class="flex-1 w-full">
-                    <div class="mb-2 text-sm text-gray-500 font-semibold uppercase tracking-wider">Audio Article</div>
-                    <audio id="podcast-audio" src="podcast.mp3" controls class="w-full h-10 outline-none"></audio>
+                    
+                    <!-- Audio Player & Dynamic Info -->
+                    <div class="flex-1 w-full">
+                        <div id="podcast-artist" class="mb-1 text-xs text-red-600 font-bold uppercase tracking-wider">Tuoi Tre Audio Podcast</div>
+                        <h3 id="podcast-title" class="text-base font-bold text-gray-800 mb-1 leading-snug">Episode Brief: Vietnam Pet Ownership Regulations</h3>
+                        <div id="podcast-album-year" class="text-xs text-gray-400 mb-2 font-mono">Season 1 | 2026</div>
+                        <audio id="podcast-audio" src="podcast.mp3" controls class="w-full h-9 outline-none"></audio>
+                    </div>
                 </div>
             </div>
 
-            <!-- Episode Highlights / 5 Key Takeaways -->
-    <div class="border-t border-gray-100 pt-4 mt-2">
-        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center">
-            <i class="fa-solid fa-list-ul mr-2 text-red-600"></i> In this episode (5 key takeaways):
-        </h4>
-        <ul class="space-y-2 text-sm text-gray-700">
-            <li class="flex items-start">
-                <span class="bg-gray-100 text-red-600 font-semibold text-xs px-2 py-0.5 rounded mr-2.5 mt-0.5 font-mono">00:45</span>
-                <span><strong>New Penalty Overview:</strong> Fines up to VND 2 million for irresponsible pet owners in public spaces.</span>
-            </li>
-            <li class="flex items-start">
-                <span class="bg-gray-100 text-red-600 font-semibold text-xs px-2 py-0.5 rounded mr-2.5 mt-0.5 font-mono">02:15</span>
-                <span><strong>Muzzle & Leash Mandates:</strong> Mandatory safety standards when walking dogs in urban areas.</span>
-            </li>
-            <li class="flex items-start">
-                <span class="bg-gray-100 text-red-600 font-semibold text-xs px-2 py-0.5 rounded mr-2.5 mt-0.5 font-mono">04:30</span>
-                <span><strong>Enforcement Authorities:</strong> Local agencies and designated forces authorized to issue fines.</span>
-            </li>
-            <li class="flex items-start">
-                <span class="bg-gray-100 text-red-600 font-semibold text-xs px-2 py-0.5 rounded mr-2.5 mt-0.5 font-mono">06:10</span>
-                <span><strong>Implementation Challenges:</strong> Key hurdles in monitoring and enforcing regulations consistently.</span>
-            </li>
-            <li class="flex items-start">
-                <span class="bg-gray-100 text-red-600 font-semibold text-xs px-2 py-0.5 rounded mr-2.5 mt-0.5 font-mono">08:05</span>
-                <span><strong>Community Recommendations:</strong> Building responsible pet culture and long-term civic solutions.</span>
-            </li>
-        </ul>
-    </div>
+            <!-- Normal Article Body: In this episode -->
+            <div class="text-[17px] text-gray-800 leading-relaxed mb-8">
+                <p class="font-bold mb-3">In this episode (5 key takeaways):</p>
+                <ul class="list-disc pl-8 space-y-3">
+                    <li><strong>New Penalty Overview:</strong> Fines up to VND 2 million for irresponsible pet owners in public spaces.</li>
+                    <li><strong>Muzzle & Leash Mandates:</strong> Mandatory safety standards when walking dogs in urban areas.</li>
+                    <li><strong>Enforcement Authorities:</strong> Local agencies and designated forces authorized to issue fines.</li>
+                    <li><strong>Implementation Challenges:</strong> Key hurdles in monitoring and enforcing regulations consistently.</li>
+                    <li><strong>Community Recommendations:</strong> Building responsible pet culture and long-term civic solutions.</li>
+                </ul>
+            </div>
             
         </div>
 
@@ -167,26 +157,49 @@
 
     </main>
 
+    <!-- Script cập nhật Metadata -->
     <script>
-        // Tự động đọc cover art từ file podcast.mp3 nếu có, không hiển thị text metadata
-        const coverImg = document.getElementById('podcast-cover');
-        const audioUrl = "podcast.mp3";
-        
-        window.jsmediatags.read(audioUrl, {
-            onSuccess: function(tag) {
-                if (tag.tags && tag.tags.picture) {
-                    const { data, format } = tag.tags.picture;
-                    let base64String = "";
-                    for (let i = 0; i < data.length; i++) {
-                        base64String += String.fromCharCode(data[i]);
+        function loadPodcastMetadata(audioSrc) {
+            const coverImg = document.getElementById('podcast-cover');
+            const titleEl = document.getElementById('podcast-title');
+            const artistEl = document.getElementById('podcast-artist');
+            const albumYearEl = document.getElementById('podcast-album-year');
+            
+            if (!window.jsmediatags) return;
+
+            window.jsmediatags.read(audioSrc, {
+                onSuccess: function(tag) {
+                    const tags = tag.tags;
+
+                    // 1. Cập nhật Text Metadata
+                    if (tags.title) titleEl.textContent = tags.title;
+                    if (tags.artist) artistEl.textContent = tags.artist;
+                    
+                    const albumText = tags.album || 'Unknown Album';
+                    const yearText = tags.year || 'N/A';
+                    if (tags.album || tags.year) {
+                        albumYearEl.textContent = `${albumText} | ${yearText}`;
                     }
-                    coverImg.src = `data:${format};base64,${window.btoa(base64String)}`;
+
+                    // 2. Cập nhật Ảnh bìa (Cover Art)
+                    if (tags.picture) {
+                        const { data, format } = tags.picture;
+                        let base64String = "";
+                        for (let i = 0; i < data.length; i++) {
+                            base64String += String.fromCharCode(data[i]);
+                        }
+                        coverImg.src = `data:${format};base64,${window.btoa(base64String)}`;
+                    }
+                },
+                onError: function(error) {
+                    console.warn('Không thể đọc ID3 tag (hoặc lỗi CORS):', error.type, error.info);
                 }
-            },
-            onError: function(error) {
-                console.log('Không thể đọc ID3 tag từ file cục bộ (hoặc lỗi CORS):', error.type);
-                // Giữ nguyên placeholder cover
-            }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const audioPlayer = document.getElementById('podcast-audio');
+            loadPodcastMetadata(audioPlayer.getAttribute('src'));
         });
     </script>
 </body>

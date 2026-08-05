@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tuoi Tre News - Podcast Player Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .nav-link { color: #333; font-weight: bold; font-size: 0.85rem; text-transform: uppercase; }
+        .nav-link:hover { color: #cc0000; }
+        .active-nav { color: #cc0000; }
+    </style>
+</head>
+<body class="bg-white text-gray-800">
+
+    <!-- Top Header -->
+    <header class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <div>
+            <img src="logo-header.svg" alt="Tuoi Tre News" class="h-10 object-contain" onerror="this.src='https://via.placeholder.com/150x40/cc0000/ffffff?text=TUOI+TRE+NEWS'">
+        </div>
+        <div class="flex items-center space-x-6 text-sm text-gray-600">
+            <span>Wednesday, August 5, 2026</span>
+            <div class="relative">
+                <input type="text" placeholder="Search" class="bg-gray-100 border border-gray-300 rounded px-3 py-1.5 focus:outline-none w-48">
+                <i class="fa fa-search absolute right-3 top-2.5 text-gray-500 text-xs"></i>
+            </div>
+            <a href="#" class="flex items-center text-blue-600 font-semibold hover:underline">
+                <i class="fa-regular fa-user-circle text-lg mr-1 text-gray-400"></i> Sign in
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <div class="max-w-6xl mx-auto px-4 border-b-2 border-red-600">
+        <ul class="flex space-x-6 py-3 items-center">
+            <li><a href="#" class="text-red-600"><i class="fa fa-home text-lg"></i></a></li>
+            <li><a href="#" class="nav-link active-nav">Vietnam News</a></li>
+            <li><a href="#" class="nav-link">Ho Chi Minh City</a></li>
+            <li><a href="#" class="nav-link">Travel</a></li>
+            <li><a href="#" class="nav-link">Economy</a></li>
+            <li><a href="#" class="nav-link">Education</a></li>
+            <li><a href="#" class="nav-link">Expat Life</a></li>
+            <li><a href="#" class="nav-link">World</a></li>
+            <li><a href="#" class="nav-link">Video</a></li>
+            <li><a href="#" class="nav-link">Photo</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="max-w-6xl mx-auto px-4 mt-8 flex grid grid-cols-12 gap-8">
+        
+        <!-- Left: Social Icons -->
+        <div class="col-span-1 flex flex-col items-center space-y-3 pt-12">
+            <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100"><i class="fa fa-link"></i></button>
+            <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100"><i class="fa-brands fa-facebook-f"></i></button>
+            <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100"><svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></button>
+            <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100"><i class="fa-regular fa-bookmark"></i></button>
+            <button class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100"><i class="fa fa-print"></i></button>
+        </div>
+
+        <!-- Center: Article Content -->
+        <div class="col-span-8 pr-4">
+            <div class="text-sm text-gray-500 mb-2">
+                <a href="#" class="text-blue-600 hover:underline">Vietnam News</a> <span class="mx-2">|</span> Wednesday, August 5, 2026, 22:12 GMT+7
+            </div>
+            
+            <h1 class="text-4xl font-bold leading-tight mb-4 text-[#222]">
+                Podcast: Food safety scandal, EV infrastructure, medical milestone
+            </h1>
+
+            <!-- Mock TTS Player -->
+            <div class="flex items-center bg-gray-50 border border-gray-200 rounded p-1 mb-6 inline-flex text-xs">
+                <button class="px-3 border-r border-gray-300 flex items-center text-gray-700 hover:bg-gray-200"><i class="fa fa-play mr-2"></i> Listen</button>
+                <span class="px-3 border-r border-gray-300 text-gray-500">0:32</span>
+                <select class="bg-transparent px-2 border-r border-gray-300 outline-none text-gray-700"><option>1.0</option></select>
+                <select class="bg-transparent px-2 outline-none text-gray-700"><option>female</option></select>
+                <i class="fa fa-microphone text-gray-400 ml-1 pr-2"></i>
+            </div>
+
+            <!-- Intro text (Bold) -->
+            <p class="text-lg font-bold text-gray-800 leading-relaxed mb-4">
+                Hello and welcome to the Tuoi Tre News podcast. Your daily highlights of the socio-economic stories happening in Vietnam.
+            </p>
+
+            <!-- VIDEO EMBED CONTAINER (Đã tối ưu 16:9 với thumb.jpg poster) -->
+            <div class="VCSortableInPreviewMode noCaption mb-8 max-w-2xl" type="VideoStream">
+                <div class="bg-white border border-gray-200 shadow-sm rounded-xl overflow-hidden p-2">
+                    <video controls preload="metadata" class="w-full h-auto rounded-lg bg-black">
+                        <source src="https://cdn2.tuoitre.vn/471584752817336320/2026/8/5/podcast169-1785924117062696316864.mp4" type="video/mp4">
+                        Trình duyệt của bạn không hỗ trợ thẻ video.
+                    </video>
+                </div>
+            </div>
+
+            <!-- Normal Article Body: In this episode -->
+            <div class="text-[17px] text-gray-800 leading-relaxed mb-8">
+                <p class="font-bold mb-3">In this episode:</p>
+                <ul class="list-disc pl-8 space-y-3">
+                    <li><strong>New Penalty Overview:</strong> Fines up to VND 2 million for irresponsible pet owners in public spaces.</li>
+                    <li><strong>Muzzle & Leash Mandates:</strong> Mandatory safety standards when walking dogs in urban areas.</li>
+                    <li><strong>Enforcement Authorities:</strong> Local agencies and designated forces authorized to issue fines.</li>
+                    <li><strong>Implementation Challenges:</strong> Key hurdles in monitoring and enforcing regulations consistently.</li>
+                    <li><strong>Community Recommendations:</strong> Building responsible pet culture and long-term civic solutions.</li>
+                </ul>
+            </div>
+            
+        </div>
+
+        <!-- Right: Sidebar -->
+        <div class="col-span-3">
+            <div class="border border-gray-200 p-4">
+                <h3 class="text-gray-400 text-sm font-bold mb-4 tracking-widest">HIGHLIGHTS</h3>
+                
+                <div class="flex items-start justify-between border-b border-gray-100 pb-4 mb-4">
+                    <a href="#" class="text-sm font-semibold text-gray-800 hover:text-red-600 leading-tight pr-3">Southeast Asian fans...</a>
+                    <img src="https://via.placeholder.com/90x60/cccccc/666666" alt="Thumb" class="w-20 h-[52px] object-cover rounded">
+                </div>
+                
+                <div class="flex items-start justify-between border-b border-gray-100 pb-4 mb-4">
+                    <a href="#" class="text-sm font-semibold text-gray-800 hover:text-red-600 leading-tight pr-3">East Vietnam Sea winds...</a>
+                    <img src="https://via.placeholder.com/90x60/cccccc/666666" alt="Thumb" class="w-20 h-[52px] object-cover rounded">
+                </div>
+                
+                <div class="flex items-start justify-between border-b border-gray-100 pb-4 mb-4">
+                    <a href="#" class="text-sm font-semibold text-gray-800 hover:text-red-600 leading-tight pr-3">Vietnamese woman...</a>
+                    <img src="https://via.placeholder.com/90x60/cccccc/666666" alt="Thumb" class="w-20 h-[52px] object-cover rounded">
+                </div>
+                
+                <div class="flex items-start justify-between border-b border-gray-100 pb-4 mb-4">
+                    <a href="#" class="text-sm font-semibold text-gray-800 hover:text-red-600 leading-tight pr-3">Ho Chi Minh City nature...</a>
+                    <img src="https://via.placeholder.com/90x60/cccccc/666666" alt="Thumb" class="w-20 h-[52px] object-cover rounded">
+                </div>
+                
+                <div class="flex items-start justify-between">
+                    <a href="#" class="text-sm font-semibold text-gray-800 hover:text-red-600 leading-tight pr-3">Tropical depression...</a>
+                    <img src="https://via.placeholder.com/90x60/cccccc/666666" alt="Thumb" class="w-20 h-[52px] object-cover rounded">
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+</body>
+</html>

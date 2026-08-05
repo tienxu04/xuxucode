@@ -158,7 +158,7 @@
     </main>
 
     <!-- Script cập nhật Metadata -->
-    <script>
+  <script>
         function loadPodcastMetadata(audioSrc) {
             const coverImg = document.getElementById('podcast-cover');
             const titleEl = document.getElementById('podcast-title');
@@ -167,34 +167,41 @@
             
             if (!window.jsmediatags) return;
 
-            window.jsmediatags.read(audioSrc, {
-                onSuccess: function(tag) {
-                    const tags = tag.tags;
+            // Sử dụng fetch để tải file mp3 về dạng ArrayBuffer qua mạng, tránh lỗi XHR của jsmediatags trên GitHub Pages
+            fetch(audioSrc)
+                .then(response => {
+                    if (!response.ok) throw new Error("Network response was not ok");
+                    return response.blob();
+                })
+                .then(blob => {
+                    window.jsmediatags.read(blob, {
+                        onSuccess: function(tag) {
+                            const tags = tag.tags;
 
-                    // 1. Cập nhật Text Metadata
-                    if (tags.title) titleEl.textContent = tags.title;
-                    if (tags.artist) artistEl.textContent = tags.artist;
-                    
-                    const albumText = tags.album || 'Unknown Album';
-                    const yearText = tags.year || 'N/A';
-                    if (tags.album || tags.year) {
-                        albumYearEl.textContent = `${albumText} | ${yearText}`;
-                    }
+                            if (tags.title) titleEl.textContent = tags.title;
+                            if (tags.artist) artistEl.textContent = tags.artist;
+                            
+                            const albumText = tags.album || 'Tuoi Tre Audio';
+                            const yearText = tags.year || '2026';
+                            albumYearEl.textContent = `${albumText} | ${yearText}`;
 
-                    // 2. Cập nhật Ảnh bìa (Cover Art)
-                    if (tags.picture) {
-                        const { data, format } = tags.picture;
-                        let base64String = "";
-                        for (let i = 0; i < data.length; i++) {
-                            base64String += String.fromCharCode(data[i]);
+                            if (tags.picture) {
+                                const { data, format } = tags.picture;
+                                let base64String = "";
+                                for (let i = 0; i < data.length; i++) {
+                                    base64String += String.fromCharCode(data[i]);
+                                }
+                                coverImg.src = `data:${format};base64,${window.btoa(base64String)}`;
+                            }
+                        },
+                        onError: function(error) {
+                            console.warn('Không thể bóc tách ID3 tag:', error);
                         }
-                        coverImg.src = `data:${format};base64,${window.btoa(base64String)}`;
-                    }
-                },
-                onError: function(error) {
-                    console.warn('Không thể đọc ID3 tag (hoặc lỗi CORS):', error.type, error.info);
-                }
-            });
+                    });
+                })
+                .catch(err => {
+                    console.warn('Lỗi tải file MP3 để đọc metadata:', err);
+                });
         }
 
         document.addEventListener("DOMContentLoaded", function() {

@@ -1,0 +1,181 @@
+<style>
+    /* Nhúng CSS trực tiếp vào header để đảm bảo menu không bị bung khi chưa hover */
+    .main-nav ul {
+        list-style: none;
+        display: flex;
+        justify-content: center;
+        gap: 60px;
+        margin: 0;
+        padding: 0;
+    }
+    .main-nav li.has-dropdown {
+        position: relative;
+        padding-bottom: 15px;
+        margin-bottom: -15px;
+    }
+    .dropdown-menu {
+        display: none !important; /* Bắt buộc ẩn mặc định */
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #ffffff;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        border-top: 2px solid #cc0000;
+        min-width: 260px;
+        z-index: 1000;
+        padding: 6px 0 !important;
+        border-radius: 0 0 6px 6px;
+        flex-direction: column;
+        gap: 0;
+    }
+    .main-nav li.has-dropdown:hover .dropdown-menu {
+        display: flex !important; /* Chỉ hiện khi hover */
+    }
+    .dropdown-menu a {
+        font-size: 14px !important;
+        text-transform: none !important;
+        font-weight: 500 !important;
+        padding: 8px 18px !important;
+        line-height: 1.3 !important;
+        display: block;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    .dropdown-menu a:hover {
+        background-color: #f9f9f9;
+        color: #cc0000 !important;
+
+
+    }
+
+    
+</style>
+
+<div class="overlay" id="globalOverlay"></div>
+
+<div class="sidebar" id="sidebarMenu">
+    <div class="sidebar-header">
+        <h2>Chủ đề</h2>
+        <button class="close-sidebar" id="closeSidebarBtn">&times;</button>
+    </div>
+    <div class="sidebar-content">
+        <ul class="sidebar-menu-list">
+            <li><a href="category.html">Thời sự quốc tế</a></li>
+            <li><a href="category.html">Tiêu điểm</a></li>
+            <li><a href="category.html">Chuyên đề</a></li>
+            <li><a href="category.html">Kinh tế</a></li>
+            <li><a href="category.html">Công nghệ</a></li>
+            <li><a href="category.html">Hồ sơ</a></li>
+            <li><a href="category.html">Câu chuyện cuộc sống</a></li>
+            <li><a href="category.html">Cửa sổ khoa học</a></li>
+            <li><a href="category.html">Môi trường</a></li>
+            <li><a href="category.html">Thế giới không phẳng</a></li>
+            <li><a href="category.html">Giáo dục</a></li>
+            <li><a href="category.html">Gặp gỡ và đối thoại</a></li>
+            <li><a href="category.html">Sức khỏe</a></li>
+            <li><a href="category.html">Văn hóa giải trí</a></li>
+            <li><a href="category.html">Truyện ngắn</a></li>
+            <li><a href="category.html">Văn hóa</a></li>
+            <li><a href="category.html">Điện ảnh</a></li>
+            <li><a href="category.html">Tạp bút</a></li>
+            <li><a href="category.html">Mỹ thuật</a></li>
+            <li><a href="category.html">Thể thao</a></li>
+            <li><a href="category.html">Âm nhạc</a></li>
+            <li><a href="category.html">Con mắt</a></li>
+            <li><a href="category.html">Thật - giả</a></li>
+            <li><a href="category.html">Đọc sách cùng bạn</a></li>
+            <li><a href="category.html">Lịch sử</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="search-modal" id="searchModal">
+    <h3>Tìm kiếm bài viết</h3>
+    <form class="search-form" action="#" method="GET">
+        <input type="text" class="search-input" placeholder="Nhập từ khóa tìm kiếm..." required>
+        <button type="submit" class="search-submit">Tìm kiếm</button>
+    </form>
+</div>
+
+<header class="logo-bar">
+    <div class="container nav-container">
+        <div class="top-left-actions">
+            <button class="icon-btn" id="openSidebarBtn" aria-label="Mở menu">
+                <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            </button>
+            <button class="icon-btn" id="openSearchBtn" aria-label="Tìm kiếm">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </button>
+        </div>
+
+        <a href="index.html" class="logo-link" style="display: flex; align-items: flex-end; gap: 15px; text-decoration: none;">
+            <img src="logo.svg" alt="Tuổi Trẻ Online" style="height: 48px; width: auto; display: block;">
+            <span style="font-family: 'Playfair Display', Georgia, serif; font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: 1px; line-height: 0.9; padding-bottom: 2px;">Magazine</span>
+        </a>
+    </div>
+</header>
+
+<nav class="main-nav">
+    <div class="container">
+        <ul>
+            <li class="has-dropdown">
+                <a href="category.html">Góc Nhìn Trí Thức</a>
+                <ul class="dropdown-menu">
+                    <li><a href="category.html">Bình luận & Phân tích</a></li>
+                    <li><a href="category.html">Đối thoại Cuối tuần</a></li>
+                </ul>
+            </li>
+            <li class="has-dropdown">
+                <a href="category.html">Tiêu điểm</a>
+                <ul class="dropdown-menu">
+                    <li><a href="category.html">Hồ sơ / Chuyên đề</a></li>
+                    <li><a href="category.html">Phóng sự điều tra / Phóng sự tự sự</a></li>
+                    <li><a href="category.html">Lối Sống & Trải Nghiệm</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="category.html">Biên tập viên khuyên đọc</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<script>
+    (function initHeaderScripts() {
+        const overlay = document.getElementById('globalOverlay');
+        const sidebar = document.getElementById('sidebarMenu');
+        const searchModal = document.getElementById('searchModal');
+        const openSidebarBtn = document.getElementById('openSidebarBtn');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+        const openSearchBtn = document.getElementById('openSearchBtn');
+
+        function closeAll() {
+            if(sidebar) sidebar.classList.remove('open');
+            if(searchModal) searchModal.classList.remove('show');
+            if(overlay) overlay.classList.remove('show');
+        }
+
+        if(openSidebarBtn) {
+            openSidebarBtn.addEventListener('click', () => {
+                sidebar.classList.add('open');
+                overlay.classList.add('show');
+            });
+        }
+        if(closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeAll);
+        
+        if(openSearchBtn) {
+            openSearchBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                searchModal.classList.add('show');
+                overlay.classList.add('show');
+                setTimeout(() => searchModal.querySelector('.search-input').focus(), 100);
+            });
+        }
+        if(overlay) overlay.addEventListener('click', closeAll);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeAll();
+        });
+    })();
+</script>

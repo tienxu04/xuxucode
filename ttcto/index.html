@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tuổi Trẻ - Giao diện Tối giản</title>
     <style>
-        /* CSS Variables cho tone màu Đỏ - Trắng */
         :root {
             --primary-red: #cc0000;
             --pure-white: #ffffff;
@@ -16,611 +15,138 @@
             --overlay-bg: rgba(0, 0, 0, 0.5);
         }
 
-        /* Reset & Typography */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text-main); background-color: var(--pure-white); line-height: 1.6; }
+        a { text-decoration: none; color: inherit; }
+        img { max-width: 100%; display: block; object-fit: cover; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: var(--text-main);
-            background-color: var(--pure-white);
-            line-height: 1.6;
-        }
+        .logo-bar { background-color: var(--primary-red); padding: 15px 0; position: relative; }
+        .logo-bar .nav-container { display: flex; align-items: center; justify-content: center; position: relative; }
+        .top-left-actions { position: absolute; left: 20px; display: flex; align-items: center; gap: 20px; }
+        .icon-btn { background: none; border: none; color: var(--pure-white); cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
+        .icon-btn:hover { opacity: 0.8; }
+        .icon-btn svg { width: 24px; height: 24px; fill: currentColor; }
+        .logo-bar .logo-link img { height: 50px; }
 
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
+        .main-nav { border-bottom: 1px solid var(--border-color); padding: 15px 0; margin-bottom: 40px; }
+        .main-nav a { font-size: 16px; font-weight: 600; color: var(--text-main); text-transform: uppercase; transition: color 0.2s ease; }
+        .main-nav a:hover { color: var(--primary-red); }
 
-        img {
-            max-width: 100%;
-            display: block;
-            object-fit: cover;
-        }
+        .sidebar { position: fixed; top: 0; left: -320px; width: 320px; height: 100%; background-color: var(--pure-white); box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 1000; transition: left 0.3s ease; display: flex; flex-direction: column; }
+        .sidebar.open { left: 0; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header h2 { font-size: 18px; color: var(--primary-red); font-weight: 700; text-transform: uppercase; }
+        .close-sidebar { background: none; border: none; font-size: 28px; cursor: pointer; color: var(--text-muted); line-height: 1; }
+        .sidebar-content { overflow-y: auto; padding: 20px; }
+        .sidebar-menu-list { list-style: none; }
+        .sidebar-menu-list li { border-bottom: 1px solid #fcfcfc; }
+        .sidebar-menu-list a { display: block; padding: 12px 0; font-size: 15px; font-weight: 500; color: var(--text-main); transition: all 0.2s; }
+        .sidebar-menu-list a:hover { color: var(--primary-red); padding-left: 5px; }
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--overlay-bg); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .overlay.show { opacity: 1; pointer-events: auto; }
 
-        /* 1. Logo Bar với các Icon bên trái */
-        .logo-bar {
-            background-color: var(--primary-red);
-            padding: 15px 0;
-            position: relative;
-        }
+        .search-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -60%) scale(0.9); width: 90%; max-width: 600px; background-color: var(--pure-white); padding: 30px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1001; opacity: 0; pointer-events: none; transition: transform 0.3s ease, opacity 0.3s ease; }
+        .search-modal.show { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+        .search-form { display: flex; gap: 10px; margin-top: 15px; }
+        .search-input { flex: 1; padding: 12px 15px; font-size: 16px; border: 1px solid #cccccc; border-radius: 4px; outline: none; }
+        .search-input:focus { border-color: var(--primary-red); }
+        .search-submit { background-color: var(--primary-red); color: var(--pure-white); border: none; padding: 0 25px; font-size: 15px; font-weight: 600; border-radius: 4px; cursor: pointer; }
+        .search-submit:hover { background-color: #b30000; }
 
-        .logo-bar .nav-container {
-            display: flex;
-            align-items: center;
-            justify-content: center; /* Giữ logo ở giữa */
-            position: relative;
-        }
+        .vedette-section { margin-bottom: 50px; }
+        .vedette-main { margin-bottom: 30px; }
+        .vedette-main h2 { font-size: 32px; line-height: 1.3; margin-bottom: 15px; font-weight: 700; }
+        .vedette-main h2 a:hover { color: var(--primary-red); }
+        .vedette-main p { font-size: 18px; color: var(--text-muted); }
 
-        /* Cụm điều hướng góc trái (Top Left) */
-        .top-left-actions {
-            position: absolute;
-            left: 20px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+        .vedette-sub { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .vedette-sub .sub-item .thumb-img { width: 100%; height: 200px; margin-bottom: 15px; border-radius: 4px; background-color: #f0f0f0; }
+        .vedette-sub .sub-item h3 { font-size: 18px; line-height: 1.4; font-weight: 600; }
+        .vedette-sub .sub-item h3 a:hover { color: var(--primary-red); }
 
-        .icon-btn {
-            background: none;
-            border: none;
-            color: var(--pure-white);
-            cursor: pointer;
-            padding: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.2s;
-        }
+        .article-section { border-top: 2px solid var(--border-color); padding-top: 40px; margin-bottom: 60px; }
+        .article-list { display: flex; flex-direction: column; gap: 30px; }
+        .article-item { display: grid; grid-template-columns: 120px 1fr 250px; gap: 30px; padding-bottom: 30px; border-bottom: 1px solid var(--border-color); align-items: start; }
+        .article-item:last-child { border-bottom: none; }
+        .article-date { font-size: 13px; color: var(--text-muted); padding-top: 5px; line-height: 1.8; }
+        .article-date .author-name { font-weight: 600; color: var(--text-main); text-transform: uppercase; }
+        .article-info h3 { font-size: 22px; margin-bottom: 10px; line-height: 1.3; font-weight: 600; }
+        .article-info h3 a:hover { color: var(--primary-red); }
+        .article-info p { font-size: 15px; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .article-thumb .thumb-img-list { width: 100%; height: 160px; border-radius: 4px; background-color: #f0f0f0; }
 
-        .icon-btn:hover {
-            opacity: 0.8;
-        }
+        .section-heading { font-family: 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: 700; margin-bottom: 25px; padding-bottom: 12px; border-bottom: 2px solid #222; text-transform: uppercase; }
 
-        .icon-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
+        .games-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 70px; }
+        .game-card { background-color: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 30px 20px; text-align: center; transition: all 0.25s ease; }
+        .game-card:hover { border-color: var(--primary-red); transform: translateY(-4px); box-shadow: 0 8px 20px rgba(204, 0, 0, 0.08); }
+        .game-card h3 { font-size: 18px; font-weight: 700; color: var(--text-main); }
 
-        .logo-bar .logo-link img {
-            height: 50px;
-        }
-
-        /* 2. Thanh Menu tối giản (3 mục chính) */
-        .main-nav {
-            border-bottom: 1px solid var(--border-color);
-            padding: 15px 0;
-            margin-bottom: 40px;
-        }
-
-        .main-nav ul {
-            list-style: none;
-            display: flex;
-            justify-content: center;
-            gap: 50px;
-        }
-
-        .main-nav a {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--text-main);
-            text-transform: uppercase;
-            transition: color 0.2s ease;
-        }
-
-        .main-nav a:hover {
-            color: var(--primary-red);
-        }
-
-        /* 3. SIDEBAR MENU (Trượt từ trái sang) */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -320px; /* Ẩn đi mặc định */
-            width: 320px;
-            height: 100%;
-            background-color: var(--pure-white);
-            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
-            z-index: 1000;
-            transition: left 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar.open {
-            left: 0;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .sidebar-header h2 {
-            font-size: 18px;
-            color: var(--primary-red);
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .close-sidebar {
-            background: none;
-            border: none;
-            font-size: 28px;
-            cursor: pointer;
-            color: var(--text-muted);
-            line-height: 1;
-        }
-
-        .sidebar-content {
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        .sidebar-menu-list {
-            list-style: none;
-        }
-
-        .sidebar-menu-list li {
-            border-bottom: 1px solid #fcfcfc;
-        }
-
-        .sidebar-menu-list a {
-            display: block;
-            padding: 12px 0;
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--text-main);
-            transition: all 0.2s;
-        }
-
-        .sidebar-menu-list a:hover {
-            color: var(--primary-red);
-            padding-left: 5px;
-        }
-
-        /* Vùng mờ nền khi mở Sidebar hoặc Modal */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--overlay-bg);
-            z-index: 999;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .overlay.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* 4. SEARCH MODAL */
-        .search-modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -60%) scale(0.9);
-            width: 90%;
-            max-width: 600px;
-            background-color: var(--pure-white);
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            z-index: 1001;
-            opacity: 0;
-            pointer-events: none;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-
-        .search-modal.show {
-            opacity: 1;
-            pointer-events: auto;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        .search-form {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 12px 15px;
-            font-size: 16px;
-            border: 1px solid #cccccc;
-            border-radius: 4px;
-            outline: none;
-        }
-
-        .search-input:focus {
-            border-color: var(--primary-red);
-        }
-
-        .search-submit {
-            background-color: var(--primary-red);
-            color: var(--pure-white);
-            border: none;
-            padding: 0 25px;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .search-submit:hover {
-            background-color: #b30000;
-        }
-
-        /* 5. Cụm Vedette Nổi Bật */
-        .vedette-section {
-            margin-bottom: 50px;
-        }
-
-        .vedette-main {
-            margin-bottom: 30px;
-        }
-
-        .vedette-main .vedette-img {
-            width: 100%;
-            height: auto;
-            max-height: 500px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            background-color: #f0f0f0;
-        }
-
-        .vedette-main h2 {
-            font-size: 32px;
-            line-height: 1.3;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-
-        .vedette-main h2 a:hover {
-            color: var(--primary-red);
-        }
-
-        .vedette-main p {
-            font-size: 18px;
-            color: var(--text-muted);
-        }
-
-        /* 3 Bài nhỏ bên dưới */
-        .vedette-sub {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-        }
-
-        .vedette-sub .sub-item .thumb-img {
-            width: 100%;
-            height: 200px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            background-color: #f0f0f0; 
-        }
-
-        .vedette-sub .sub-item h3 {
-            font-size: 18px;
-            line-height: 1.4;
-            font-weight: 600;
-        }
-
-        .vedette-sub .sub-item h3 a:hover {
-            color: var(--primary-red);
-        }
-
-        /* 6. Cụm Article (Danh sách tin bài) */
-        .article-section {
-            border-top: 2px solid var(--border-color);
-            padding-top: 40px;
-            margin-bottom: 60px;
-        }
-
-        .article-list {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .article-item {
-            display: grid;
-            grid-template-columns: 120px 1fr 250px;
-            gap: 30px;
-            padding-bottom: 30px;
-            border-bottom: 1px solid var(--border-color);
-            align-items: start;
-        }
-
-        .article-item:last-child {
-            border-bottom: none;
-        }
-
-        .article-date {
-            font-size: 13px;
-            color: var(--text-muted);
-            padding-top: 5px;
-            line-height: 1.8;
-        }
-
-        .article-date .author-name {
-            font-weight: 600;
-            color: var(--text-main);
-            text-transform: uppercase;
-        }
-
-        .article-info h3 {
-            font-size: 22px;
-            margin-bottom: 10px;
-            line-height: 1.3;
-            font-weight: 600;
-        }
-
-        .article-info h3 a:hover {
-            color: var(--primary-red);
-        }
-
-        .article-info p {
-            font-size: 15px;
-            color: var(--text-muted);
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .article-thumb .thumb-img-list {
-            width: 100%;
-            height: 160px;
-            border-radius: 4px;
-            background-color: #f0f0f0;
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
-            .vedette-sub {
-                grid-template-columns: 1fr;
-            }
-            .article-item {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-            .article-thumb {
-                grid-row: 1; 
-            }
-            .main-nav ul {
-                gap: 20px;
-            }
-            .article-date {
-                display: flex;
-                gap: 15px;
-            }
+            .vedette-sub { grid-template-columns: 1fr; }
+            .article-item { grid-template-columns: 1fr; gap: 15px; }
+            .article-thumb { grid-row: 1; }
+            .main-nav ul { gap: 20px; flex-direction: column; text-align: center; }
+            .article-date { display: flex; gap: 15px; }
+            .games-grid { grid-template-columns: 1fr; gap: 15px; }
+            .vedette-main { grid-template-columns: 1fr !important; gap: 25px !important; }
+            .vedette-main h2 { font-size: 32px !important; }
+            .vedette-collage { min-height: 320px !important; grid-template-rows: repeat(12, 22px) !important; padding: 15px !important; }
         }
-		
-		/* 7. HỆ THỐNG FOOTER SANG TRỌNG */
-.main-footer {
-    border-top: 1px solid var(--border-color);
-    background-color: #fafafa;
-    padding: 50px 0;
-    text-align: center;
-    margin-top: 50px;
-}
+        
+        .main-footer { border-top: 1px solid var(--border-color); background-color: #fafafa; padding: 50px 0; text-align: center; margin-top: 50px; }
+        .footer-menu { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 30px; font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .footer-menu span { color: #ccc; font-weight: 300; }
+        .footer-menu a:hover { color: var(--primary-red); }
+        .footer-logo { margin-bottom: 30px; display: flex; justify-content: center; }
+        .footer-logo img { height: 75px; width: auto; display: block; }
+        .footer-copyright { font-size: 13px; color: var(--text-light); line-height: 1.8; max-width: 600px; margin: 0 auto; }
 
-.footer-menu {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 30px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.footer-menu span {
-    color: #ccc;
-    font-weight: 300;
-}
-
-.footer-menu a:hover {
-    color: var(--primary-red);
-}
-
-.footer-logo {
-    margin-bottom: 30px;
-    display: flex;
-    justify-content: center;
-}
-
-.footer-logo img {
-    height: 75px; /* Phóng to logo cân xứng */
-    width: auto;
-    display: block;
-}
-
-.footer-copyright {
-    font-size: 13px;
-    color: var(--text-light);
-    line-height: 1.8;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-/* 8. NÚT BACK TO TOP LUÔN HIỂN THỊ */
-.back-to-top {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background-color: var(--primary-red);
-    color: var(--pure-white);
-    border: none;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-    z-index: 998;
-    transition: all 0.2s ease;
-}
-
-.back-to-top svg {
-    width: 22px;
-    height: 22px;
-    fill: currentColor;
-}
-
-.back-to-top:hover {
-    background-color: #222222;
-    transform: translateY(-3px);
-}
-
-@media (max-width: 768px) {
-    .back-to-top { bottom: 20px; right: 20px; width: 40px; height: 40px; }
-}
-
-@media (max-width: 768px) {
-        .vedette-main { grid-template-columns: 1fr !important; gap: 25px !important; }
-        .vedette-main h2 { font-size: 32px !important; }
-        .vedette-collage { min-height: 320px !important; grid-template-rows: repeat(12, 22px) !important; padding: 15px !important; }
-    }
+        .back-to-top { position: fixed; bottom: 30px; right: 30px; background-color: var(--primary-red); color: var(--pure-white); border: none; width: 46px; height: 46px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.12); z-index: 998; transition: all 0.2s ease; }
+        .back-to-top svg { width: 22px; height: 22px; fill: currentColor; }
+        .back-to-top:hover { background-color: #222222; transform: translateY(-3px); }
+        @media (max-width: 768px) { .back-to-top { bottom: 20px; right: 20px; width: 40px; height: 40px; } }
     </style>
 </head>
 <body>
 
-    <div class="overlay" id="globalOverlay"></div>
-
-    <div class="sidebar" id="sidebarMenu">
-        <div class="sidebar-header">
-            <h2>Chuyên mục</h2>
-            <button class="close-sidebar" id="closeSidebarBtn">&times;</button>
-        </div>
-        <div class="sidebar-content">
-            <ul class="sidebar-menu-list">
-                <li><a href="topic.html">Thời sự quốc tế</a></li>
-                <li><a href="topic.html">Tiêu điểm</a></li>
-                <li><a href="topic.html">Chuyên đề</a></li>
-                <li><a href="topic.html">Kinh tế</a></li>
-                <li><a href="topic.html">Công nghệ</a></li>
-                <li><a href="topic.html">Hồ sơ</a></li>
-                <li><a href="topic.html">Câu chuyện cuộc sống</a></li>
-                <li><a href="topic.html">Cửa sổ khoa học</a></li>
-                <li><a href="topic.html">Môi trường</a></li>
-                <li><a href="topic.html">Thế giới không phẳng</a></li>
-                <li><a href="topic.html">Giáo dục</a></li>
-                <li><a href="topic.html">Gặp gỡ và đối thoại</a></li>
-                <li><a href="topic.html">Sức khỏe</a></li>
-                <li><a href="topic.html">Văn hóa giải trí</a></li>
-                <li><a href="topic.html">Truyện ngắn</a></li>
-                <li><a href="topic.html">Văn hóa</a></li>
-                <li><a href="topic.html">Điện ảnh</a></li>
-                <li><a href="topic.html">Tạp bút</a></li>
-                <li><a href="topic.html">Mỹ thuật</a></li>
-                <li><a href="topic.html">Thể thao</a></li>
-                <li><a href="topic.html">Âm nhạc</a></li>
-                <li><a href="topic.html">Con mắt</a></li>
-                <li><a href="topic.html">Thật - giả</a></li>
-                <li><a href="topic.html">Đọc sách cùng bạn</a></li>
-                <li><a href="topic.html">Lịch sử</a></li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="search-modal" id="searchModal">
-        <h3>Tìm kiếm bài viết</h3>
-        <form class="search-form" action="#" method="GET">
-            <input type="text" class="search-input" placeholder="Nhập từ khóa tìm kiếm..." required>
-            <button type="submit" class="search-submit">Tìm kiếm</button>
-        </form>
-    </div>
-
-    <header class="logo-bar">
-        <div class="container nav-container">
-            <div class="top-left-actions">
-                <button class="icon-btn" id="openSidebarBtn" aria-label="Mở menu">
-                    <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-                </button>
-                <button class="icon-btn" id="openSearchBtn" aria-label="Tìm kiếm">
-                    <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                </button>
-            </div>
-
-        <a href="index.html" class="logo-link" style="display: flex; align-items: flex-end; gap: 15px; text-decoration: none;">
-    <img src="logo.svg" alt="Tuổi Trẻ Online" style="height: 48px; width: auto; display: block;">
-    <span style="font-family: 'Playfair Display', Georgia, serif; font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: 1px; line-height: 0.9; padding-bottom: 2px;">Magazine</span>
-</a>
-        </div>
-    </header>
-
-    <nav class="main-nav">
-        <div class="container">
-            <ul>
-                <li><a href="category.html">Tiêu điểm & Phóng sự</a></li>
-                <li><a href="category.html">Góc nhìn kinh Tế</a></li>
-                <li><a href="category.html">Câu chuyện quốc tế</a></li>
-            </ul>
-        </div>
-    </nav>
+    <!-- Điểm nạp Header -->
+    <div id="header-placeholder"></div>
 
     <main class="container">
         
         <section class="vedette-section">
             <article class="vedette-main" style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: center; margin-bottom: 50px;">
-    
-    <div class="vedette-content" style="padding-right: 10px;">
-        <span style="display: block; font-size: 11px; font-weight: 700; color: var(--primary-red); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">Phân tích sâu</span>
-        <h2 style="font-family: 'Playfair Display', Georgia, serif; font-size: 44px; line-height: 1.15; font-weight: 700; color: #111111; margin-bottom: 20px; letter-spacing: -1px;">
-            <a href="detail.html" style="transition: color 0.2s;">Làm sao để quản lý một nút thắt địa chính trị</a>
-        </h2>
-        <p style="font-size: 16px; color: var(--text-muted); line-height: 1.7; font-weight: 400; margin-bottom: 20px;">
-            TTCT - Thực tế địa chính trị vẫn đòi hỏi một cường quốc với sức mạnh áp đảo để duy trì nguyên trạng một cách đáng tin cậy ở những điểm nghẽn yết hầu của thế giới.
-        </p>
-        <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
-            HẢI MINH • 22/06/2026
-        </div>
-    </div>
+                <div class="vedette-content" style="padding-right: 10px;">
+                    <span style="display: block; font-size: 11px; font-weight: 700; color: var(--primary-red); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">Phân tích sâu</span>
+                    <h2 style="font-family: 'Playfair Display', Georgia, serif; font-size: 44px; line-height: 1.15; font-weight: 700; color: #111111; margin-bottom: 20px; letter-spacing: -1px;">
+                        <a href="detail.html" style="transition: color 0.2s;">Làm sao để quản lý một nút thắt địa chính trị</a>
+                    </h2>
+                    <p style="font-size: 16px; color: var(--text-muted); line-height: 1.7; font-weight: 400; margin-bottom: 20px;">
+                        TTCT - Thực tế địa chính trị vẫn đòi hỏi một cường quốc với sức mạnh áp đảo để duy trì nguyên trạng một cách đáng tin cậy ở những điểm nghẽn yết hầu của thế giới.
+                    </p>
+                    <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
+                        HẢI MINH • 22/06/2026
+                    </div>
+                </div>
 
-    <div class="vedette-collage" style="background-color: #0b0b0b; padding: 30px; border-radius: 6px; display: grid; grid-template-columns: repeat(12, 1fr); grid-template-rows: repeat(12, 30px); position: relative; overflow: hidden; min-height: 420px;">
-        
-        <div style="grid-column: 5 / 13; grid-row: 2 / 12; z-index: 2; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 3px solid #fff;">
-            <img src="vedette.webp" alt="Yết hầu địa chính trị" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-
-        <div style="grid-column: 1 / 6; grid-row: 1 / 6; z-index: 3; box-shadow: 0 8px 20px rgba(0,0,0,0.4); border: 3px solid #fff;">
-            <img src="thumb4.webp" alt="Chi tiết điều tra 1" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-
-        <div style="grid-column: 2 / 6; grid-row: 7 / 12; z-index: 3; box-shadow: 0 8px 20px rgba(0,0,0,0.4); border: 2px solid #fff; transform: rotate(-3deg);">
-            <img src="thumb5.webp" alt="Chi tiết điều tra 2" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-
-        <div style="position: absolute; top: 15px; right: 15px; background: var(--primary-red); color: #fff; font-size: 9px; font-weight: 700; padding: 3px 6px; text-transform: uppercase; letter-spacing: 1px; z-index: 4;">
-            Long Form 
-        </div>
-    </div>
-</article>
+                <div class="vedette-collage" style="background-color: #0b0b0b; padding: 30px; border-radius: 6px; display: grid; grid-template-columns: repeat(12, 1fr); grid-template-rows: repeat(12, 30px); position: relative; overflow: hidden; min-height: 420px;">
+                    <div style="grid-column: 5 / 13; grid-row: 2 / 12; z-index: 2; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 3px solid #fff;">
+                        <img src="vedette.webp" alt="Yết hầu địa chính trị" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div style="grid-column: 1 / 6; grid-row: 1 / 6; z-index: 3; box-shadow: 0 8px 20px rgba(0,0,0,0.4); border: 3px solid #fff;">
+                        <img src="thumb4.webp" alt="Chi tiết điều tra 1" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div style="grid-column: 2 / 6; grid-row: 7 / 12; z-index: 3; box-shadow: 0 8px 20px rgba(0,0,0,0.4); border: 2px solid #fff; transform: rotate(-3deg);">
+                        <img src="thumb5.webp" alt="Chi tiết điều tra 2" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div style="position: absolute; top: 15px; right: 15px; background: var(--primary-red); color: #fff; font-size: 9px; font-weight: 700; padding: 3px 6px; text-transform: uppercase; letter-spacing: 1px; z-index: 4;">
+                        Long Form 
+                    </div>
+                </div>
+            </article>
 
             <div class="vedette-sub">
                 <article class="sub-item">
@@ -644,209 +170,195 @@
             </div>
         </section>
 
+        <!-- Khôi phục lại 7 bài viết -->
         <section class="article-section">
             <div class="article-list">
                 
                 <article class="article-item">
-                    <div class="article-date">
-                        <span>02/06/2026</span><br>
-                        <span class="author-name">TƯỜNG ANH</span><br>
-                        <span>1893 từ</span>
-                    </div>
+                    <div class="article-date"><span>02/06/2026</span><br><span class="author-name">TƯỜNG ANH</span><br><span>1893 từ</span></div>
                     <div class="article-info">
                         <h3><a href="detail.html">Mỹ và NATO: Trục trặc</a></h3>
                         <p>TTCT - Căng thẳng giữa Mỹ và các đối tác trong liên minh NATO đang gia tăng. Hoa Kỳ dần xem xét lại vai trò toàn cầu và tìm cách giảm bớt gánh nặng đảm...</p>
                     </div>
-                    <div class="article-thumb">
-                        <a href="#">
-                            <img src="thumb4.webp" alt="Mỹ và NATO: Trục trặc" class="thumb-img-list">
-                        </a>
-                    </div>
+                    <div class="article-thumb"><a href="#"><img src="thumb4.webp" alt="Mỹ và NATO: Trục trặc" class="thumb-img-list"></a></div>
                 </article>
 
                 <article class="article-item">
-                    <div class="article-date">
-                        <span>02/06/2026</span><br>
-                        <span class="author-name">C. VĂN</span><br>
-                        <span>1634 từ</span>
-                    </div>
+                    <div class="article-date"><span>02/06/2026</span><br><span class="author-name">C. VĂN</span><br><span>1634 từ</span></div>
                     <div class="article-info">
                         <h3><a href="detail.html">Nhà ở xã hội: Trong góc nhìn thúc đẩy tăng trưởng</a></h3>
                         <p>TTCT - Tình hình thiếu hụt nhà ở với chi phí phải chăng, nhất là ở các siêu đô thị châu Á, đã khiến tờ The Economist đầu tháng 4 đưa ra cảnh báo đáng chú ý:...</p>
                     </div>
-                    <div class="article-thumb">
-                        <a href="detail.html">
-                            <img src="thumb5.webp" alt="Nhà ở xã hội: Trong góc nhìn thúc đẩy tăng trưởng" class="thumb-img-list">
-                        </a>
-                    </div>
+                    <div class="article-thumb"><a href="detail.html"><img src="thumb5.webp" alt="Nhà ở xã hội: Trong góc nhìn thúc đẩy tăng trưởng" class="thumb-img-list"></a></div>
                 </article>
 
                 <article class="article-item">
-                    <div class="article-date">
-                        <span>02/06/2026</span><br>
-                        <span class="author-name">DANH ĐỨC</span><br>
-                        <span>1796 từ</span>
-                    </div>
+                    <div class="article-date"><span>02/06/2026</span><br><span class="author-name">DANH ĐỨC</span><br><span>1796 từ</span></div>
                     <div class="article-info">
                         <h3><a href="detail.html">Lệnh cấm đánh cá đơn phương của Trung Quốc trên Biển Đông: Bất an</a></h3>
                         <p>TTCT - Lệnh cấm đánh bắt đơn phương và không có giá trị pháp lý của Trung Quốc ở Biển Đông có lớp vỏ bọc bảo vệ nguồn lợi thủy sản và môi trường, nhưng...</p>
                     </div>
-                    <div class="article-thumb">
-                        <a href="detail.html">
-                            <img src="thumb6.webp" alt="Lệnh cấm đánh cá đơn phương của Trung Quốc trên Biển Đông: Bất an" class="thumb-img-list">
-                        </a>
-                    </div>
+                    <div class="article-thumb"><a href="detail.html"><img src="thumb6.webp" alt="Lệnh cấm đánh cá đơn phương của Trung Quốc trên Biển Đông: Bất an" class="thumb-img-list"></a></div>
                 </article>
-				
-				<article class="article-item">
-    <div class="article-date">
-        <span>13/05/2026</span><br>
-        <span class="author-name">PHẠM CÔNG LUẬN</span><br>
-        <span>3847 từ</span>
-    </div>
-    <div class="article-info">
-        <h3><a href="detail.html">Quán cà phê Việt đầu tiên ở Sài Gòn và cuộc tranh thương đầu thế kỷ 20</a></h3>
-        <p>TTCT - Đây là sự kiện có ý nghĩa của ngành dịch vụ ăn uống do chính người Việt thiết lập ở Nam kỳ đầu thế kỷ 20 - trận địa mà họ đã buông bỏ và bị Hoa kiều...</p>
-    </div>
-    <div class="article-thumb">
-        <a href="detail.html">
-            <img src="thumb7.webp" alt="Quán cà phê Việt đầu tiên ở Sài Gòn" class="thumb-img-list">
-        </a>
-    </div>
-</article>
+                
+                <article class="article-item">
+                    <div class="article-date"><span>13/05/2026</span><br><span class="author-name">PHẠM CÔNG LUẬN</span><br><span>3847 từ</span></div>
+                    <div class="article-info">
+                        <h3><a href="detail.html">Quán cà phê Việt đầu tiên ở Sài Gòn và cuộc tranh thương đầu thế kỷ 20</a></h3>
+                        <p>TTCT - Đây là sự kiện có ý nghĩa của ngành dịch vụ ăn uống do chính người Việt thiết lập ở Nam kỳ đầu thế kỷ 20 - trận địa mà họ đã buông bỏ và bị Hoa kiều...</p>
+                    </div>
+                    <div class="article-thumb"><a href="detail.html"><img src="thumb7.webp" alt="Quán cà phê Việt đầu tiên ở Sài Gòn" class="thumb-img-list"></a></div>
+                </article>
 
-<article class="article-item">
-    <div class="article-date">
-        <span>13/05/2026</span><br>
-        <span class="author-name">PHẠM CÔNG LUẬN</span><br>
-        <span>1816 từ</span>
-    </div>
-    <div class="article-info">
-        <h3><a href="detail.html">Sài Gòn hồi mới vào trong di cảo Bùi Giáng</a></h3>
-        <p>TTCT - Nhiều trang di cảo quý viết tay của nhà thơ nổi tiếng Bùi Giáng vốn chưa được công bố, chất chứa tâm tình chân thật và thú vị về Sài Gòn một thuở, cùng...</p>
-    </div>
-    <div class="article-thumb">
-        <a href="detail.html">
-            <img src="thumb8.webp" alt="Sài Gòn hồi mới vào trong di cảo Bùi Giáng" class="thumb-img-list">
-        </a>
-    </div>
-</article>
+                <article class="article-item">
+                    <div class="article-date"><span>13/05/2026</span><br><span class="author-name">PHẠM CÔNG LUẬN</span><br><span>1816 từ</span></div>
+                    <div class="article-info">
+                        <h3><a href="detail.html">Sài Gòn hồi mới vào trong di cảo Bùi Giáng</a></h3>
+                        <p>TTCT - Nhiều trang di cảo quý viết tay của nhà thơ nổi tiếng Bùi Giáng vốn chưa được công bố, chất chứa tâm tình chân thật và thú vị về Sài Gòn một thuở, cùng...</p>
+                    </div>
+                    <div class="article-thumb"><a href="detail.html"><img src="thumb8.webp" alt="Sài Gòn hồi mới vào trong di cảo Bùi Giáng" class="thumb-img-list"></a></div>
+                </article>
 
-<article class="article-item">
-    <div class="article-date">
-        <span>09/05/2026</span><br>
-        <span class="author-name">PHAN BẢO</span><br>
-        <span>2978 từ</span>
-    </div>
-    <div class="article-info">
-        <h3><a href="detail.html">Ẩm thực thượng lưu và căn bếp độc hại</a></h3>
-        <p>TTCT - Đằng sau sự hào nhoáng của những phần ăn được bày biện như tác phẩm nghệ thuật, những lời tán dương trên các bảng xếp hạng danh giá và ánh đèn...</p>
-    </div>
-    <div class="article-thumb">
-        <a href="#">
-            <img src="thumb9.webp" alt="Ẩm thực thượng lưu và căn bếp độc hại" class="thumb-img-list">
-        </a>
-    </div>
-</article>
+                <article class="article-item">
+                    <div class="article-date"><span>09/05/2026</span><br><span class="author-name">PHAN BẢO</span><br><span>2978 từ</span></div>
+                    <div class="article-info">
+                        <h3><a href="detail.html">Ẩm thực thượng lưu và căn bếp độc hại</a></h3>
+                        <p>TTCT - Đằng sau sự hào nhoáng của những phần ăn được bày biện như tác phẩm nghệ thuật, những lời tán dương trên các bảng xếp hạng danh giá và ánh đèn...</p>
+                    </div>
+                    <div class="article-thumb"><a href="#"><img src="thumb9.webp" alt="Ẩm thực thượng lưu và căn bếp độc hại" class="thumb-img-list"></a></div>
+                </article>
 
-<article class="article-item">
-    <div class="article-date">
-        <span>08/05/2026</span><br>
-        <span class="author-name">HOA KIM</span><br>
-        <span>2317 từ</span>
-    </div>
-    <div class="article-info">
-        <h3><a href="detail.html">Internet - Mảnh đất ít người nhiều AI</a></h3>
-        <p>TTCT - Bản chất không gian mạng đang thay đổi nhanh chóng khi lượng nội dung do trí tuệ nhân tạo (AI) tạo ra bắt đầu áp đảo các tương tác thực tế từ con người...</p>
-    </div>
-    <div class="article-thumb">
-        <a href="detail.html">
-            <img src="thumb10.webp" alt="Internet - Mảnh đất ít người nhiều AI" class="thumb-img-list">
-        </a>
-    </div>
-</article>
+                <article class="article-item">
+                    <div class="article-date"><span>08/05/2026</span><br><span class="author-name">HOA KIM</span><br><span>2317 từ</span></div>
+                    <div class="article-info">
+                        <h3><a href="detail.html">Internet - Mảnh đất ít người nhiều AI</a></h3>
+                        <p>TTCT - Bản chất không gian mạng đang thay đổi nhanh chóng khi lượng nội dung do trí tuệ nhân tạo (AI) tạo ra bắt đầu áp đảo các tương tác thực tế từ con người...</p>
+                    </div>
+                    <div class="article-thumb"><a href="detail.html"><img src="thumb10.webp" alt="Internet - Mảnh đất ít người nhiều AI" class="thumb-img-list"></a></div>
+                </article>
 
             </div>
         </section>
 
+        <!-- LONG FORM (Mới Thêm) -->
+        <section class="selected-section" style="margin-bottom: 60px;">
+            <h2 class="section-heading">Long Form</h2>
+            <div class="vedette-sub">
+                <article class="sub-item">
+                    <a href="detail.html">
+                        <img src="thumb4.webp" alt="Mỹ và NATO" class="thumb-img">
+                        <h3>Mỹ và NATO: Thách thức định hình lại liên minh</h3>
+                    </a>
+                </article>
+                <article class="sub-item">
+                    <a href="detail.html">
+                        <img src="thumb6.webp" alt="Lệnh cấm đánh cá" class="thumb-img">
+                        <h3>Lệnh cấm đánh cá đơn phương: Góc nhìn đa chiều từ Biển Đông</h3>
+                    </a>
+                </article>
+                <article class="sub-item">
+                    <a href="detail.html">
+                        <img src="thumb10.webp" alt="Internet và AI" class="thumb-img">
+                        <h3>Internet - Mảnh đất ít người nhiều AI</h3>
+                    </a>
+                </article>
+            </div>
+        </section>
+
+        <!-- BIÊN TẬP VIÊN KHUYÊN ĐỌC -->
+        <section class="selected-section" style="margin-bottom: 60px;">
+            <h2 class="section-heading">Biên tập viên khuyên đọc</h2>
+            <div class="vedette-sub">
+                <article class="sub-item">
+                    <a href="detail.html">
+                        <img src="thumb7.webp" alt="Quán cà phê Việt đầu tiên" class="thumb-img">
+                        <h3>Quán cà phê Việt đầu tiên ở Sài Gòn và cuộc tranh thương đầu thế kỷ 20</h3>
+                    </a>
+                </article>
+                <article class="sub-item">
+                    <a href="detail.html">
+                        <img src="thumb8.webp" alt="Sài Gòn hồi mới vào trong di cảo" class="thumb-img">
+                        <h3>Sài Gòn hồi mới vào trong di cảo Bùi Giáng</h3>
+                    </a>
+                </article>
+                <article class="sub-item">
+                    <a href="detail.html">
+                        <img src="thumb9.webp" alt="Ẩm thực thượng lưu" class="thumb-img">
+                        <h3>Ẩm thực thượng lưu và căn bếp độc hại</h3>
+                    </a>
+                </article>
+            </div>
+        </section>
+
+        <!-- TRÒ CHƠI TRÍ TUỆ -->
+        <section class="games-section">
+            <h2 class="section-heading">Trò chơi trí tuệ</h2>
+            <div class="games-grid">
+                <a href="#" class="game-card">
+                    <h3 style="font-size: 32px; margin-bottom: 10px;">🧩</h3>
+                    <h3>Sudoku</h3>
+                </a>
+                <a href="#" class="game-card">
+                    <h3 style="font-size: 32px; margin-bottom: 10px;">📝</h3>
+                    <h3>Ô chữ</h3>
+                </a>
+                <a href="#" class="game-card">
+                    <h3 style="font-size: 32px; margin-bottom: 10px;">💡</h3>
+                    <h3>Đố vui thời sự</h3>
+                </a>
+            </div>
+        </section>
+
     </main>
-<footer class="main-footer">
-    <div class="container">
-        <div class="footer-menu">
-            <a href="#">Tuổi Trẻ Online</a>
-            <span>|</span>
-            <a href="#">Liên hệ</a>
-        </div>
-        
-        <div class="footer-logo">
-            <img src="logo.png" alt="Tuổi Trẻ Online Magazine">
-        </div>
-        
-        <p class="footer-copyright">
-            &copy; Copyright 2026 TuoiTre Online. All rights reserved <br>
-            &reg; Tuổi Trẻ Online giữ bản quyền nội dung trên website này
-        </p>
-    </div>
-</footer>
 
-<button id="backToTopBtn" class="back-to-top" title="Lên đầu trang">
-    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: currentColor;">
-        <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
-    </svg>
-</button>
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-menu">
+                <a href="#">Tuổi Trẻ Online</a>
+                <span>|</span>
+                <a href="#">Liên hệ</a>
+            </div>
+            <div class="footer-logo">
+                <img src="logo.png" alt="Tuổi Trẻ Online Magazine">
+            </div>
+            <p class="footer-copyright">
+                &copy; Copyright 2026 TuoiTre Online. All rights reserved <br>
+                &reg; Tuổi Trẻ Online giữ bản quyền nội dung trên website này
+            </p>
+        </div>
+    </footer>
+
+    <button id="backToTopBtn" class="back-to-top" title="Lên đầu trang">
+        <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: currentColor;">
+            <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+        </svg>
+    </button>
+
     <script>
-        const overlay = document.getElementById('globalOverlay');
-        const sidebar = document.getElementById('sidebarMenu');
-        const searchModal = document.getElementById('searchModal');
+        // Fetch Header logic
+        fetch('header.html')
+            .then(response => {
+                if (!response.ok) throw new Error('Không thể tải header');
+                return response.text();
+            })
+            .then(data => {
+                document.getElementById('header-placeholder').innerHTML = data;
+                const scripts = document.getElementById('header-placeholder').querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    newScript.text = script.innerText;
+                    document.body.appendChild(newScript);
+                });
+            })
+            .catch(error => {
+                console.error('Lỗi tải header. Vui lòng chạy qua localhost/live server:', error);
+            });
 
-        const openSidebarBtn = document.getElementById('openSidebarBtn');
-        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
-        const openSearchBtn = document.getElementById('openSearchBtn');
-
-        // Hàm đóng tất cả các cửa sổ đang mở
-        function closeAll() {
-            sidebar.classList.remove('open');
-            searchModal.classList.remove('show');
-            overlay.classList.remove('show');
-        }
-
-        // Xử lý Sidebar Menu
-        openSidebarBtn.addEventListener('click', () => {
-            sidebar.classList.add('open');
-            overlay.classList.add('show');
+        // Script nút Back to Top cuộn mượt
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
-
-        closeSidebarBtn.addEventListener('click', closeAll);
-
-        // Xử lý Search Modal
-        openSearchBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Tránh kích hoạt ngay sự kiện click ra ngoài
-            searchModal.classList.add('show');
-            overlay.classList.add('show');
-            // Tự động focus vào ô input khi mở ra
-            setTimeout(() => searchModal.querySelector('.search-input').focus(), 100);
-        });
-
-        // Bấm ra ngoài (Vùng Overlay) thì biến mất hoàn toàn
-        overlay.addEventListener('click', closeAll);
-
-        // Hỗ trợ bấm nút ESC để thoát nhanh
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeAll();
-            }
-        });
-		
-	// Khai báo nút nhận diện
-const backToTopBtn = document.getElementById('backToTopBtn');
-
-// Xử lý nút Back to Top cuộn mượt khi click
-backToTopBtn.addEventListener('click', () => {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-});
     </script>
 </body>
 </html>

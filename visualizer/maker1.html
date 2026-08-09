@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Newsroom Chart Kit</title>
+<style>
+:root{--ink:#111;--muted:#666;--line:#ddd;--panel:#fff;--bg:#f5f5f3;--accent:#d71920;--blue:#1f5eff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer}
+.app{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
+.sidebar{background:#111;color:#fff;padding:22px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{font-weight:800;font-size:22px;letter-spacing:-.04em;margin-bottom:5px}.tag{color:#aaa;font-size:12px;margin-bottom:28px}
+.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#999;margin:22px 0 9px}
+.templates{display:grid;gap:7px}.template{width:100%;border:1px solid #333;background:#181818;color:#eee;text-align:left;border-radius:7px;padding:10px 11px}
+.template:hover,.template.active{background:#fff;color:#111;border-color:#fff}.template b{display:block;font-size:13px}.template span{display:block;color:#999;font-size:11px;margin-top:3px}.template.active span{color:#666}
+.main{padding:22px;min-width:0}.topbar{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:18px}
+h1{font-size:20px;margin:0;letter-spacing:-.03em}.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid #ccc;background:#fff;border-radius:6px;padding:9px 12px}.btn.primary{background:#111;color:#fff;border-color:#111}.btn:hover{transform:translateY(-1px)}
+.workspace{display:grid;grid-template-columns:minmax(310px,420px) minmax(0,1fr);gap:18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}.panel h2{font-size:13px;margin:0 0 13px}
+.field{margin-bottom:13px}.field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}.field input,.field textarea,.field select{width:100%;border:1px solid #ccc;border-radius:6px;padding:9px;background:#fff}.field textarea{min-height:145px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.checks{display:grid;grid-template-columns:1fr 1fr;gap:7px;font-size:12px}.checks label{display:flex;align-items:center;gap:6px}
+.preview-wrap{background:#ddd;border-radius:10px;padding:18px;min-width:0}.preview-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;color:#555;font-size:11px}.canvas-shell{background:#fff;box-shadow:0 4px 25px #0002;overflow:hidden;max-width:1200px;margin:auto}.canvas-shell svg{display:block;width:100%;height:auto}
+.help{font-size:11px;color:#777;line-height:1.45;margin-top:8px}
+.color-row{display:flex;gap:8px}.color-row input[type=color]{width:44px;padding:2px;height:38px}.color-row input[type=text]{flex:1}
+.status{font-size:11px;color:#777}
+@media(max-width:1050px){.app{grid-template-columns:230px 1fr}.workspace{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.canvas-shell{max-width:900px}}
+@media(max-width:700px){.app{display:block}.sidebar{height:auto}.main{padding:12px}.row{grid-template-columns:1fr}.actions{width:100%}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">Newsroom Chart Kit</div>
+  <div class="tag">Opinionated data graphics for online journalism.</div>
+  <div class="section-title">Choose a graphic</div>
+  <div class="templates" id="templates"></div>
+  <div class="section-title">Workflow</div>
+  <div class="help" style="color:#aaa">1. Pick a graphic<br>2. Paste your data<br>3. Edit the editorial text<br>4. Export PNG or SVG</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <h1 id="templateTitle">Bar chart</h1>
+      <div class="status" id="status">Ready</div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="resetBtn">Reset</button>
+      <button class="btn" id="svgBtn">Download SVG</button>
+      <button class="btn primary" id="pngBtn">Download PNG</button>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section class="panel">
+      <h2>Editorial</h2>
+      <div class="field"><label>Headline</label><input id="headline"></div>
+      <div class="field"><label>Subtitle / dek</label><input id="subtitle"></div>
+      <div class="row">
+    <div class="field"><label>Source</label><input id="source"></div>
+    <div class="field"><label>Unit</label><input id="unit"></div>
+      </div>
+
+      <h2>Data</h2>
+      <div class="field"><label>Paste CSV / TSV</label><textarea id="data"></textarea>
+        <div class="help">Use the first row as column names. Example: <b>Year,Value</b> followed by rows. Long labels wrap automatically.</div>
+      </div>
+
+      <h2>Style</h2>
+      <div class="row">
+        <div class="field"><label>Width</label><select id="width"><option>1200</option><option>1600</option><option>1000</option><option>900</option></select></div>
+        <div class="field"><label>Height</label><select id="height"><option>675</option><option>900</option><option>800</option><option>1200</option></select></div>
+      </div>
+      <div class="field"><label>Accent</label><div class="color-row"><input type="color" id="accent"><input type="text" id="accentText"></div></div>
+      <div class="checks">
+        <label><input type="checkbox" id="values" checked> Show values</label>
+        <label><input type="checkbox" id="grid" checked> Show grid</label>
+        <label><input type="checkbox" id="highlight" checked> Highlight latest</label>
+        <label><input type="checkbox" id="dark" > Dark canvas</label>
+      </div>
+    </section>
+
+    <section class="preview-wrap">
+      <div class="preview-head"><span>LIVE PREVIEW</span><span id="dimensions">1200 × 675</span></div>
+      <div class="canvas-shell" id="preview"></div>
+    </section>
+  </div>
+</main>
+</div>
+
+<script>
+const templates={
+bar:{name:"Bar chart",desc:"Compare categories or values",headers:["Label","Value"],data:[["2022","120"],["2023","150"],["2024","210"],["2025","260"]],headline:"Vietnam's exports hit a record in 2025",subtitle:"Export value rose sharply over the past four years",unit:"US$ billion",source:"Source: Example source",width:"1200",height:"675"},
+line:{name:"Line chart",desc:"Show change over time",headers:["Year","Value"],data:[["2022","120"],["2023","150"],["2024","210"],["2025","260"]],headline:"Export revenue has climbed steadily",subtitle:"Annual export value, 2022–2025",unit:"US$ billion",source:"Source: Example source",width:"1200",height:"675"},
+ranking:{name:"Ranking",desc:"Show a ranked top list",headers:["Country","Value"],data:[["Vietnam","53"],["Thailand","41"],["Indonesia","32"],["Malaysia","25"],["Philippines","19"]],headline:"Vietnam leads the regional ranking",subtitle:"Five markets with the highest reported values",unit:"million",source:"Source: Example source",width:"1200",height:"675"},
+number:{name:"Big number",desc:"Make one statistic dominant",headers:["Metric","Value"],data:[["Passengers","8.5"]],headline:"8.5 million",subtitle:"bus passenger trips recorded in July",unit:"",source:"Source: Example source",width:"1200",height:"675"},
+timelineH:{name:"Timeline (H)",desc:"Horizontal milestones across a story",headers:["Date","Event"],data:[["Phase 1","Project kicks off"],["Phase 2","Initial planning completed"],["Phase 3","Main work underway"],["Phase 4","First results reviewed"],["Phase 5","Project wraps up"]],headline:"Project timeline at a glance",subtitle:"Key milestones from start to finish",unit:"",source:"Source: Example source",width:"1200",height:"675"},
+timelineV:{name:"Timeline (V)",desc:"Vertical timeline for longer stories",headers:["Date","Event","Description"],data:[["Phase 1","Project kicks off","The team is assembled and goals are defined."],["Phase 2","Initial planning completed","A roadmap and timeline are agreed upon."],["Phase 3","Main work underway","Core tasks are carried out according to plan."],["Phase 4","First results reviewed","Early outcomes are assessed and adjusted."],["Phase 5","Project wraps up","Final results are delivered and shared."]],headline:"Project timeline at a glance",subtitle:"Key milestones from start to finish",unit:"",source:"Source: Example source",width:"900",height:"1200"},
+comparison:{name:"Before / After",desc:"Make a two-state comparison",headers:["Period","Value"],data:[["Before","120"],["After","210"]],headline:"The change at a glance",subtitle:"A simple before-and-after comparison",unit:"units",source:"Source: Example source",width:"1200",height:"675"}
+};
+
+let type="bar", state={};
+const $=id=>document.getElementById(id);
+function escape(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+function parseData(txt){
+  const lines=txt.trim().split(/\r?\n/).filter(Boolean);
+  if(!lines.length)return [];
+  const delim=lines[0].includes("\t")?"\t":",";
+  const rows=lines.map(x=>x.split(delim).map(v=>v.trim()));
+  return rows.slice(1).map(r=>({label:r[0]||"",value:r[1]||"",extra:r.slice(2)}));
+}
+function escAttr(s){return escape(s).replace(/\n/g," ")}
+function text(x,y,t,size=22,weight=400,fill=null,anchor="start"){return `<text x="${x}" y="${y}" font-family="Arial,Helvetica,sans-serif" font-size="${size}" font-weight="${weight}" fill="${fill||state.fg}" text-anchor="${anchor}">${escape(t)}</text>`}
+function line(x1,y1,x2,y2,stroke=state.line,w=1){return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="${w}"/>`}
+function rect(x,y,w,h,fill,rx=0){return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" rx="${rx}"/>`}
+function wrappedText(x, centerY, str, opts={}){
+  const size=opts.size||16;
+  const weight=opts.weight||700;
+  const fill=opts.fill||null;
+  const anchor=opts.anchor||"start";
+  const maxChars=opts.maxChars||28;
+  const maxLines=opts.maxLines||2;
+  const lineH=opts.lineH||20;
+
+  const words=String(str||"").split(/\s+/);
+  const lines=[];
+  let current="";
+
+  for(const word of words){
+    const test=(current+" "+word).trim();
+
+    if(current && test.length>maxChars){
+      lines.push(current);
+      current=word;
+    }else{
+      current=test;
+    }
+  }
+
+  if(current) lines.push(current);
+
+  if(lines.length>maxLines){
+    lines.length=maxLines;
+    let last=lines[maxLines-1];
+    while(last.length>maxChars-1) last=last.slice(0,-1);
+    lines[maxLines-1]=last+"…";
+  }
+
+  const startY=centerY-((lines.length-1)*lineH)/2;
+
+  return `<text x="${x}" y="${startY}"
+    font-family="Arial,Helvetica,sans-serif"
+    font-size="${size}"
+    font-weight="${weight}"
+    fill="${fill||state.fg}"
+    text-anchor="${anchor}">
+    ${lines.map((s,i)=>`<tspan x="${x}" dy="${i===0?0:lineH}">${escape(s)}</tspan>`).join("")}
+  </text>`;
+}
+function wrapText(str, maxChars=28){
+  const words=String(str||"").split(/\s+/).filter(Boolean);
+  const lines=[];
+  let current="";
+  for(const word of words){
+    const test=(current+" "+word).trim();
+    if(current && test.length>maxChars){
+      lines.push(current);
+      current=word;
+    }else{
+      current=test;
+    }
+  }
+  if(current) lines.push(current);
+  return lines;
+}
+function wrapTitle(t,x,y,maxChars=48,size=36){let words=String(t).split(/\s+/), lines=[], cur="";for(const w of words){if((cur+" "+w).trim().length>maxChars){lines.push(cur);cur=w}else cur=(cur+" "+w).trim()}if(cur)lines.push(cur);return lines.map((s,i)=>text(x,y+i*(size+5),s,size,800)).join("")}
+function base(content){
+  const W=+state.width,H=+state.height, bg=state.dark?"#111":"#fff", fg=state.dark?"#fff":"#111", muted=state.dark?"#aaa":"#666", ln=state.dark?"#333":"#ddd";
+  state.fg=fg;state.muted=muted;state.line=ln;
+  let header=wrapTitle(state.headline,70,68,55,36);
+  const titleLines=(String(state.headline).match(/\s/g)||[]).length?Math.ceil(String(state.headline).length/55):1;
+  const subY=72+titleLines*40;
+  header+=text(70,subY,state.subtitle,18,400,muted);
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  ${rect(0,0,W,H,bg)}
+  ${header}
+  ${content}
+  ${text(70,H-34,state.source,14,400,muted)}
+  </svg>`;
+}
+function chartArea(){return {x:100,y:210,w:+state.width-160,h:+state.height-285}}
+function renderBar(rows){
+ const a=chartArea();
+
+ const vals=rows.map(r=>
+   +String(r.value).replace(/[^0-9.-]/g,"")||0
+ );
+
+ const max=Math.max(...vals,1);
+ const n=rows.length;
+
+ // Reserve a dedicated column for labels
+ const labelW=260;
+ const chartX=a.x+labelW;
+ const chartW=a.w-labelW;
+
+ const gap=18;
+ const bh=Math.min(60,(a.h-gap*(n-1))/n);
+
+ let c="";
+
+ vals.forEach((v,i)=>{
+
+   const y=a.y+i*(bh+gap);
+
+   const fill=
+     state.highlight && i===n-1
+       ? state.accent
+       : state.dark ? "#777" : "#222";
+
+   // LONG LABEL → WRAP
+   c+=wrappedText(
+     chartX-18,
+     y+bh/2,
+     rows[i].label,
+     {
+       size:16,
+       weight:700,
+       maxChars:28,
+       maxLines:2,
+       anchor:"end",
+       lineH:19
+     }
+   );
+
+   // Background
+   c+=rect(
+     chartX,
+     y,
+     chartW,
+     bh,
+     state.dark?"#222":"#eee",
+     4
+   );
+
+   // Actual bar
+   c+=rect(
+     chartX,
+     y,
+     chartW*v/max,
+     bh,
+     fill,
+     4
+   );
+
+   // Value
+   if(state.values){
+     c+=text(
+       chartX+chartW*v/max+10,
+       y+bh/2+6,
+       rows[i].value+(state.unit?" "+state.unit:""),
+       15,
+       700,
+       state.dark?"#fff":"#111"
+     );
+   }
+
+ });
+
+ return base(c);
+}
+function renderLine(rows){
+ const a=chartArea(), vals=rows.map(r=>+String(r.value).replace(/[^0-9.-]/g,"")||0), max=Math.max(...vals,1), min=Math.min(...vals,0), range=max-min||1;
+ let pts=vals.map((v,i)=>[a.x+i*(a.w/Math.max(vals.length-1,1)),a.y+a.h-(v-min)/range*a.h]);
+ let c=""; if(state.grid){for(let i=0;i<5;i++){let y=a.y+i*a.h/4;c+=line(a.x,y,a.x+a.w,y);}}
+ c+=`<polyline points="${pts.map(p=>p.join(",")).join(" ")}" fill="none" stroke="${state.accent}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`;
+ pts.forEach((p,i)=>{c+=`<circle cx="${p[0]}" cy="${p[1]}" r="7" fill="${state.accent}"/>`;c+=text(p[0],a.y+a.h+32,rows[i].label,14,700,null,"middle");if(state.values)c+=text(p[0],p[1]-16,rows[i].value,15,700,null,"middle")});
+ return base(c);
+}
+function renderRanking(rows){
+
+ const sorted=[...rows].sort(
+   (a,b)=>(+b.value)-(+a.value)
+ );
+
+ const a=chartArea();
+ const n=sorted.length;
+ const gap=16;
+
+ const labelW=300;
+ const chartX=a.x+labelW;
+ const chartW=a.w-labelW;
+
+ const bh=Math.min(
+   58,
+   (a.h-gap*(n-1))/n
+ );
+
+ const max=Math.max(
+   ...sorted.map(r=>+r.value||0),
+   1
+ );
+
+ let c="";
+
+ sorted.forEach((r,i)=>{
+
+   const y=a.y+i*(bh+gap);
+   const v=+r.value||0;
+
+   // Ranking number
+   c+=text(
+     a.x,
+     y+bh/2+6,
+     String(i+1).padStart(2,"0"),
+     15,
+     800,
+     state.muted
+   );
+
+   // Wrapped label
+   c+=wrappedText(
+     chartX-18,
+     y+bh/2,
+     r.label,
+     {
+       size:16,
+       weight:700,
+       maxChars:26,
+       maxLines:2,
+       anchor:"end",
+       lineH:19
+     }
+   );
+
+   // Background
+   c+=rect(
+     chartX,
+     y,
+     chartW,
+     bh,
+     state.dark?"#222":"#eee",
+     4
+   );
+
+   // Bar
+   c+=rect(
+     chartX,
+     y,
+     chartW*v/max,
+     bh,
+     i===0
+       ? state.accent
+       : state.dark?"#666":"#555",
+     4
+   );
+
+   // Value
+   c+=text(
+     chartX+chartW*v/max+10,
+     y+bh/2+6,
+     r.value+(state.unit?" "+state.unit:""),
+     15,
+     700
+   );
+
+ });
+
+ return base(c);
+}
+function renderNumber(rows){
+ const r=rows[0]||{value:"0"}, W=+state.width,H=+state.height;
+ let c=text(70,270,state.unit?"":state.headline,18,700,state.muted);
+ c+=text(W/2,430,String(r.value),150,800,state.accent,"middle");
+ c+=text(W/2,495,state.subtitle||r.label,28,700,null,"middle");
+ return base(c);
+}
+function renderTimeline(rows, orientation="horizontal"){
+  const a = chartArea();
+  const items = rows.filter(r => r.label !== "" || r.value !== "");
+  if(!items.length) return base("");
+
+  let s = "";
+
+  /* ==================== VERTICAL ==================== */
+  if(orientation === "vertical"){
+
+    const lineX = a.x + 72;
+    const textX = lineX + 42;
+    const top = a.y + 12;
+    const titleLineH = 23;
+    const descLineH = 19;
+
+    const blocks = items.map(r=>({
+      r,
+      titleLines: wrapText(String(r.value || ""), 44),
+      descLines: r.extra && r.extra.length
+        ? wrapText(r.extra.join(" · "), 66)
+        : []
+    }));
+
+    // Give each item enough room for a two-line title and a two-line description.
+    const itemH = Math.max(
+      92,
+      Math.min(132, (a.h - 24) / Math.max(items.length,1))
+    );
+
+    const positions = blocks.map((b,i)=>top + i*itemH);
+    const lineEnd = positions[positions.length-1] + 12;
+
+    s += line(
+      lineX,
+      top + 12,
+      lineX,
+      lineEnd,
+      state.dark ? "#666" : "#222",
+      4
+    );
+
+    blocks.forEach((b,i)=>{
+      const y = positions[i];
+
+      s += `<circle cx="${lineX}" cy="${y+12}" r="10" fill="${state.accent}"/>`;
+
+      s += text(
+        lineX - 20,
+        y + 17,
+        b.r.label,
+        15,
+        800,
+        state.muted,
+        "end"
+      );
+
+      s += wrappedText(
+        textX,
+        y + 18,
+        b.r.value || "",
+        {
+          size:18,
+          weight:700,
+          maxChars:44,
+          maxLines:2,
+          anchor:"start",
+          lineH:titleLineH
+        }
+      );
+
+      if(b.descLines.length){
+        const desc = b.descLines.join(" ");
+        s += wrappedText(
+          textX,
+          y + 58,
+          desc,
+          {
+            size:14,
+            weight:400,
+            fill:state.muted,
+            maxChars:66,
+            maxLines:2,
+            anchor:"start",
+            lineH:descLineH
+          }
+        );
+      }
+    });
+
+    return base(s);
+  }
+
+  /* ==================== HORIZONTAL ==================== */
+
+  const n = items.length;
+  const lineY = a.y + a.h * .48;
+
+  // Keep the first and last marker safely inside the canvas.
+  const left = a.x + 55;
+  const right = a.x + a.w - 55;
+  const step = (right-left) / Math.max(n-1,1);
+
+  s += line(
+    left,
+    lineY,
+    right,
+    lineY,
+    state.dark ? "#666" : "#222",
+    4
+  );
+
+  items.forEach((r,i)=>{
+    const x = left + i*step;
+    const isFirst = i===0;
+    const isLast = i===n-1;
+
+    // Edge-aware alignment keeps the first/last labels inside the canvas.
+    const anchor = isFirst ? "start" : isLast ? "end" : "middle";
+    const labelX = isFirst ? x+10 : isLast ? x-10 : x;
+
+    s += `<circle cx="${x}" cy="${lineY}" r="11" fill="${state.accent}"/>`;
+
+    s += text(
+      labelX,
+      lineY-28,
+      r.label,
+      16,
+      800,
+      null,
+      anchor
+    );
+
+    // Event text wraps according to the space available between milestones.
+    const maxChars = Math.max(
+      16,
+      Math.min(28, Math.floor(step/8.2))
+    );
+
+    const words = String(r.value || "")
+      .split(/\s+/)
+      .filter(Boolean);
+
+    const lines = [];
+    let current = "";
+
+    words.forEach(word=>{
+      const test = (current+" "+word).trim();
+      if(current && test.length>maxChars){
+        lines.push(current);
+        current=word;
+      }else{
+        current=test;
+      }
+    });
+
+    if(current) lines.push(current);
+
+    if(lines.length>3){
+      lines.length=3;
+      let last=lines[2];
+      if(last.length>maxChars-1){
+        last=last.slice(0,Math.max(8,maxChars-1));
+      }
+      lines[2]=last.replace(/[.,;:!?-]?$/,'')+"…";
+    }
+
+    const lineH=19;
+    const startY=lineY+52;
+
+    lines.forEach((lineText,j)=>{
+      s += text(
+        labelX,
+        startY+j*lineH,
+        lineText,
+        15,
+        400,
+        null,
+        anchor
+      );
+    });
+  });
+
+  return base(s);
+}
+function renderComparison(rows){
+ const a=chartArea(), vals=rows.map(r=>+String(r.value).replace(/[^0-9.-]/g,"")||0), max=Math.max(...vals,1), barW=Math.min(220,a.w/3), gap=100, total=barW*2+gap, sx=(+state.width-total)/2;let c="";
+ rows.slice(0,2).forEach((r,i)=>{let v=vals[i]||0,h=(a.h-50)*v/max,x=sx+i*(barW+gap),y=a.y+a.h-h;c+=rect(x,y,barW,h,i===1?state.accent:state.dark?"#777":"#333",8);c+=text(x+barW/2,y-18,r.value+" "+state.unit,25,800,null,"middle");c+=text(x+barW/2,a.y+a.h+35,r.label,17,700,null,"middle")});
+ return base(c);
+}
+function render(){
+ state={headline:$("headline").value,subtitle:$("subtitle").value,source:$("source").value,unit:$("unit").value,width:$("width").value,height:$("height").value,accent:$("accent").value,values:$("values").checked,grid:$("grid").checked,highlight:$("highlight").checked,dark:$("dark").checked};
+ const rows=parseData($("data").value); let svg="";
+ if(type==="bar")svg=renderBar(rows);
+ else if(type==="line")svg=renderLine(rows);
+ else if(type==="ranking")svg=renderRanking(rows);
+ else if(type==="number")svg=renderNumber(rows);
+ else if(type==="timelineH")svg=renderTimeline(rows,"horizontal");
+ else if(type==="timelineV")svg=renderTimeline(rows,"vertical");
+ else svg=renderComparison(rows);
+ $("preview").innerHTML=svg;
+ $("dimensions").textContent=state.width+" × "+state.height;
+ $("accentText").value=state.accent;
+}
+function loadTemplate(t){
+ type=t;
+ const d=templates[t];
+ $("templateTitle").textContent=d.name;
+ $("headline").value=d.headline;
+ $("subtitle").value=d.subtitle;
+ $("source").value=d.source;
+ $("unit").value=d.unit;
+ $("width").value=d.width||"1200";
+ $("height").value=d.height||"675";
+ $("data").value=[d.headers.join(","),...d.data.map(x=>x.join(","))].join("\n");
+ document.querySelectorAll(".template").forEach(b=>b.classList.toggle("active",b.dataset.type===t));
+ render();
+}
+function download(name,blob){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+$("templates").innerHTML=Object.entries(templates).map(([k,v])=>`<button class="template" data-type="${k}"><b>${v.name}</b><span>${v.desc}</span></button>`).join("");
+document.querySelectorAll(".template").forEach(b=>b.onclick=()=>loadTemplate(b.dataset.type));
+["headline","subtitle","source","unit","data","width","height","accent","values","grid","highlight","dark"].forEach(id=>$(id).addEventListener("input",render));
+$("accentText").addEventListener("input",e=>{if(/^#[0-9a-f]{6}$/i.test(e.target.value)){$("accent").value=e.target.value;render()}});
+
+$("resetBtn").onclick=()=>loadTemplate(type);
+$("svgBtn").onclick=()=>{const svg=$("preview").querySelector("svg");download("chart.svg",new Blob([svg.outerHTML],{type:"image/svg+xml"}))};
+$("pngBtn").onclick=()=>{const svg=$("preview").querySelector("svg"), xml=new XMLSerializer().serializeToString(svg), blob=new Blob([xml],{type:"image/svg+xml;charset=utf-8"}),url=URL.createObjectURL(blob),img=new Image();img.onload=()=>{const c=document.createElement("canvas");c.width=+state.width;c.height=+state.height;c.getContext("2d").drawImage(img,0,0);c.toBlob(b=>download("chart.png",b),"image/png");URL.revokeObjectURL(url)};img.src=url};
+$("accent").value="#d71920";loadTemplate("bar");
+</script>
+</body>
+</html>

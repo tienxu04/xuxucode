@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bàn Dữ Liệu — Bộ công cụ Infographic</title>
+<style>
+  :root{
+    --ink:#152238;
+    --ink-2:#1e304f;
+    --paper:#EDEFF2;
+    --paper-2:#ffffff;
+    --amber:#D9862D;
+    --amber-dark:#B36A1E;
+    --line:#2b3d5c;
+    --text-soft:#9aa7c0;
+    --text-dim:#c7cede;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+    --sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+    --disp: "Georgia", "Times New Roman", serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--sans);background:var(--paper);color:var(--ink);}
+  .app{display:flex;min-height:100vh;}
+
+  /* ===== Sidebar ===== */
+  .sidebar{
+    width:300px;flex:0 0 300px;background:var(--ink);color:#fff;
+    padding:28px 22px 22px;position:sticky;top:0;height:100vh;overflow-y:auto;
+  }
+  .brandmark{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;}
+  .brandmark .tag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--amber);border:1px solid var(--amber);padding:2px 6px;border-radius:2px;}
+  .sidebar h1{font-family:var(--disp);font-size:22px;font-weight:700;margin:10px 0 2px;line-height:1.25;}
+  .sidebar .sub{font-size:12.5px;color:var(--text-soft);margin:0 0 26px;line-height:1.5;}
+  .step-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--text-soft);margin:22px 0 10px;text-transform:uppercase;}
+  .tpl-list{display:flex;flex-direction:column;gap:8px;}
+  .tpl-card{
+    text-align:left;width:100%;background:var(--ink-2);border:1px solid var(--line);
+    border-radius:6px;padding:11px 12px;cursor:pointer;color:#fff;transition:border-color .15s, background .15s;
+  }
+  .tpl-card:hover{border-color:var(--amber);}
+  .tpl-card.active{background:var(--amber);border-color:var(--amber);}
+  .tpl-card.active .tpl-code{color:var(--ink);opacity:.75;}
+  .tpl-card.active .tpl-name{color:var(--ink);}
+  .tpl-card.active .tpl-desc{color:var(--ink-2);}
+  .tpl-code{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--amber);display:block;margin-bottom:3px;}
+  .tpl-name{font-size:13.5px;font-weight:600;display:block;margin-bottom:3px;}
+  .tpl-desc{font-size:11.5px;color:var(--text-dim);line-height:1.4;}
+  .sidebar-foot{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:11px;color:var(--text-soft);line-height:1.6;}
+
+  /* ===== Workspace ===== */
+  .workspace{flex:1;padding:28px 34px;display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start;}
+  @media (max-width:1000px){.workspace{grid-template-columns:1fr;}}
+
+  .card{background:var(--paper-2);border:1px solid #DCDFE5;border-radius:8px;padding:20px 20px 22px;}
+  .card + .card{margin-top:20px;}
+  .card h2{font-size:13px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#586176;margin:0 0 14px;display:flex;align-items:center;gap:8px;}
+  .card h2 .n{background:var(--ink);color:#fff;width:18px;height:18px;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;}
+
+  label{display:block;font-size:12px;color:#586176;margin:12px 0 5px;font-weight:600;}
+  label:first-of-type{margin-top:0;}
+  input[type=text], textarea, select{
+    width:100%;border:1px solid #D3D7DF;border-radius:5px;padding:8px 10px;font-family:var(--sans);
+    font-size:13.5px;background:#fff;color:var(--ink);
+  }
+  input[type=text]:focus, textarea:focus{outline:2px solid var(--amber);outline-offset:0;border-color:var(--amber);}
+
+  .datatable{width:100%;border-collapse:collapse;margin-top:6px;font-size:12.5px;}
+  .datatable th{text-align:left;font-size:10.5px;color:#7a8195;text-transform:uppercase;letter-spacing:.05em;padding:0 6px 6px 2px;font-weight:600;}
+  .datatable td{padding:3px 4px;}
+  .datatable input{padding:6px 7px;font-size:12.5px;}
+  .datatable td.rm{width:26px;text-align:center;}
+  .rm-btn{background:none;border:none;color:#b5495a;cursor:pointer;font-size:15px;line-height:1;padding:4px;}
+  .rm-btn:hover{color:#7a1f2c;}
+  .row-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .btn{
+    border:1px solid #D3D7DF;background:#fff;color:var(--ink);border-radius:5px;padding:7px 12px;
+    font-size:12.5px;font-weight:600;cursor:pointer;font-family:var(--sans);
+  }
+  .btn:hover{border-color:var(--ink);}
+  .btn-amber{background:var(--amber);border-color:var(--amber);color:#fff;}
+  .btn-amber:hover{background:var(--amber-dark);border-color:var(--amber-dark);}
+  .btn-block{width:100%;padding:11px;font-size:13px;}
+  .btn-ghost{background:transparent;border:1px dashed #B9BFCB;color:#586176;}
+
+  .palette-row{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;}
+  .swatch{
+    border:2px solid transparent;border-radius:6px;padding:6px 10px;cursor:pointer;display:flex;align-items:center;gap:6px;
+    background:#fff;border:1px solid #D3D7DF;font-size:12px;
+  }
+  .swatch.active{border-color:var(--ink);background:#f4f4f6;}
+  .swatch .dots{display:flex;gap:2px;}
+  .swatch .dots span{width:9px;height:9px;border-radius:2px;display:inline-block;}
+
+  .toggle-row{display:flex;gap:8px;margin-top:6px;}
+  .toggle-row button{flex:1;}
+  .toggle-row button.active{background:var(--ink);border-color:var(--ink);color:#fff;}
+
+  .hint{font-size:11px;color:#8a90a0;margin-top:8px;line-height:1.5;}
+
+  .preview-wrap{position:sticky;top:28px;}
+  .preview-frame{background:#fff;border:1px solid #DCDFE5;border-radius:8px;padding:14px;}
+  .preview-frame svg{width:100%;height:auto;display:block;border:1px solid #EEE;}
+  .preview-actions{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px;}
+  .preview-meta{font-family:var(--mono);font-size:11px;color:#8a90a0;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brandmark"><span class="tag">KIT</span></div>
+    <h1>Bàn Dữ Liệu</h1>
+    <p class="sub">Bộ mẫu infographic chuẩn cho báo chí dữ liệu &amp; bài longform. Chọn mẫu, nhập số liệu, tải ảnh — không cần biết thiết kế.</p>
+
+    <div class="step-label">Bước 1 — Chọn mẫu đồ họa</div>
+    <div class="tpl-list" id="tplList"></div>
+
+    <div class="sidebar-foot">
+      File này chạy độc lập, không cần mạng.<br>
+      Ảnh xuất ra: PNG, nền trắng, độ phân giải 2x cho web &amp; in.
+    </div>
+  </aside>
+
+  <main class="workspace">
+    <div class="col-left">
+
+      <div class="card">
+        <h2><span class="n">2</span> Nhập dữ liệu</h2>
+        <div id="tableHost"></div>
+        <div class="row-actions">
+          <button class="btn" id="addRowBtn">+ Thêm dòng</button>
+          <button class="btn" id="addColBtn" style="display:none;">+ Thêm nhóm/chuỗi</button>
+          <button class="btn btn-ghost" id="sampleBtn">Dùng dữ liệu mẫu</button>
+          <button class="btn btn-ghost" id="csvToggleBtn">⇄ Dán / sao chép CSV</button>
+        </div>
+        <p class="hint" id="tplHint"></p>
+
+        <div id="csvPanel" style="display:none;margin-top:14px;padding-top:14px;border-top:1px dashed #D3D7DF;">
+          <label>Dữ liệu dạng CSV (copy từ Excel/Google Sheets rồi dán vào đây)</label>
+          <textarea id="csvBox" rows="6" placeholder="Dòng đầu là tên cột, phân cách bằng dấu phẩy.&#10;Hạng mục,Giá trị&#10;Hà Nội,142"></textarea>
+          <div class="row-actions">
+            <button class="btn btn-amber" id="csvLoadBtn">Nạp vào bảng</button>
+            <button class="btn" id="csvCopyBtn">Sao chép CSV từ bảng hiện tại</button>
+          </div>
+          <p class="hint">Chỉ hỗ trợ CSV đơn giản (phân cách bằng dấu phẩy, không có dấu phẩy bên trong ô). Nạp CSV sẽ thay toàn bộ dữ liệu đang có trong bảng.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span class="n">3</span> Tuỳ chỉnh hiển thị</h2>
+        <label>Tiêu đề</label>
+        <input type="text" id="optTitle" placeholder="Tiêu đề biểu đồ">
+        <label>Phụ đề (mô tả ngắn)</label>
+        <input type="text" id="optSubtitle" placeholder="Giải thích ngắn gọn cho biểu đồ, có thể để trống">
+        <label>Nguồn số liệu</label>
+        <input type="text" id="optSource" placeholder="Nguồn: ...">
+        <label>Tên đơn vị (góc dưới bên phải)</label>
+        <input type="text" id="optBrand" placeholder="Tên báo / chuyên mục">
+
+        <label>Bảng màu</label>
+        <div class="palette-row" id="paletteRow"></div>
+
+        <label>Ngôn ngữ hiển thị</label>
+        <div class="toggle-row" id="langToggle">
+          <button class="btn active" data-lang="vi">Tiếng Việt</button>
+          <button class="btn" data-lang="en">English</button>
+        </div>
+        <p class="hint">Chỉ đổi các nhãn cố định do công cụ tự sinh ra ("Nguồn:", "Tổng", định dạng số). Tiêu đề, phụ đề, nguồn và dữ liệu trong bảng vẫn giữ nguyên như bạn gõ — muốn ảnh ra tiếng Anh hoàn toàn thì tự nhập các ô đó bằng tiếng Anh.</p>
+
+        <div id="stackModeWrap" style="display:none;">
+          <label>Kiểu cột</label>
+          <div class="toggle-row">
+            <button class="btn" data-mode="stacked">Cột chồng</button>
+            <button class="btn" data-mode="grouped">Cột nhóm</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="preview-wrap">
+      <div class="card" style="padding-bottom:16px;">
+        <h2><span class="n">4</span> Xem trước &amp; tải ảnh</h2>
+        <div class="preview-frame"><div id="svgHost"></div></div>
+        <div class="preview-actions">
+          <span class="preview-meta" id="dimMeta">1200 × 750 · xuất @2x</span>
+          <button class="btn btn-amber" id="exportBtn">⬇ Tải ảnh PNG</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+(function(){
+
+/* ============ PALETTES ============ */
+const PALETTES = {
+  editorial: {name:'Xanh Editorial', colors:['#1B4B8F','#3E8EDE','#8FC1F2','#B9D6EE','#123055','#5AA6E0'], accent:'#1B4B8F'},
+  amber:     {name:'Cam – Than',     colors:['#D9782D','#B85A1E','#F0A15C','#F6C695','#7A4A22','#E88C3F'], accent:'#D9782D'},
+  crimson:   {name:'Đỏ – Xám',       colors:['#B23A2E','#7A2C24','#D9695C','#E8998F','#4A4A4A','#C24B3D'], accent:'#B23A2E'},
+  mono:      {name:'Mono Lục',       colors:['#1F5C4A','#2E8B6F','#5CAE8F','#8FCBB0','#0F3B2E','#3E9B7C'], accent:'#1F5C4A'}
+};
+const INK='#1B2230', MUTED='#7A7F8A', GRID='#E7E5DE', PAPER='#FFFFFF';
+const FONT="'Helvetica Neue',Arial,sans-serif";
+const WIDTH=1200;
+const STRINGS = {
+  vi:{ source:'Nguồn: ', total:'Tổng' },
+  en:{ source:'Source: ', total:'Total' }
+};
+
+/* ============ TEMPLATES ============ */
+const TEMPLATES = [
+{
+  id:'bar', code:'BAR-01', name:'Cột ngang — So sánh / Xếp hạng',
+  desc:'So sánh giá trị giữa các hạng mục, tự xếp theo thứ tự.',
+  cols:['Hạng mục','Giá trị'], fixedCols:true,
+  sample:[['Hà Nội','142'],['TP.HCM','198'],['Đà Nẵng','67'],['Hải Phòng','54'],['Cần Thơ','39']],
+  hint:'Cột 1: tên hạng mục. Cột 2: giá trị số. Biểu đồ tự sắp xếp từ cao đến thấp.',
+  render:renderBar
+},
+{
+  id:'stack', code:'STACK-02', name:'Cột chồng / nhóm — So sánh nhiều nhóm',
+  desc:'So sánh nhiều nhóm dữ liệu theo từng hạng mục (VD: theo năm, theo khu vực).',
+  cols:['Hạng mục','Nhóm A','Nhóm B'], fixedCols:false,
+  sample:[['2022','120','80'],['2023','145','95'],['2024','160','110'],['2025','178','130']],
+  hint:'Cột 1: hạng mục (trục ngang). Các cột sau: từng nhóm số liệu. Có thể thêm/bớt nhóm.',
+  render:renderStack
+},
+{
+  id:'line', code:'LINE-03', name:'Biểu đồ đường — Xu hướng theo thời gian',
+  desc:'Thể hiện diễn biến một hoặc nhiều chỉ số theo thời gian.',
+  cols:['Thời điểm','Doanh thu','Chi phí'], fixedCols:false,
+  sample:[['T1','52','40'],['T2','58','41'],['T3','61','45'],['T4','70','47'],['T5','75','50'],['T6','88','53']],
+  hint:'Cột 1: mốc thời gian. Các cột sau: từng chỉ số theo dõi. Có thể thêm/bớt chỉ số.',
+  render:renderLine
+},
+{
+  id:'donut', code:'DONUT-04', name:'Donut — Tỷ trọng cơ cấu',
+  desc:'Thể hiện tỷ lệ phần trăm giữa các thành phần trong một tổng thể.',
+  cols:['Thành phần','Giá trị'], fixedCols:true,
+  sample:[['Nông nghiệp','18'],['Công nghiệp','37'],['Dịch vụ','40'],['Khác','5']],
+  hint:'Cột 1: tên thành phần. Cột 2: giá trị (tỷ lệ % sẽ tự tính từ tổng).',
+  render:renderDonut
+},
+{
+  id:'stat', code:'STAT-05', name:'Số liệu nổi bật — Thẻ số liệu (đỡ chữ)',
+  desc:'Vài con số đáng chú ý nhất trình bày dạng thẻ lớn, dùng chen trong bài longform.',
+  cols:['Số liệu','Nhãn','Ghi chú'], fixedCols:true,
+  sample:[['+42%','Tăng trưởng doanh thu','so với cùng kỳ 2024'],['1.2 triệu','Người dùng hoạt động','tính đến quý 2/2026'],['87%','Mức độ hài lòng','khảo sát nội bộ']],
+  hint:'Cột 1: con số nổi bật. Cột 2: nhãn ngắn giải thích. Cột 3: ghi chú phụ (có thể để trống). Nên dùng 3–4 thẻ.',
+  render:renderStat
+},
+{
+  id:'timeline', code:'TIME-06', name:'Dòng thời gian — Mốc sự kiện / Quy trình',
+  desc:'Trình bày chuỗi sự kiện hoặc các bước theo thứ tự thời gian.',
+  cols:['Thời điểm','Sự kiện','Mô tả'], fixedCols:true,
+  sample:[['2021','Thành lập','Ra mắt phiên bản đầu tiên'],['2023','Mở rộng','Có mặt tại 5 thành phố lớn'],['2025','Chuyển đổi số','Ứng dụng AI vào vận hành'],['2026','Niêm yết','Chào bán cổ phần lần đầu']],
+  hint:'Cột 1: thời điểm. Cột 2: tên sự kiện (ngắn). Cột 3: mô tả (có thể để trống).',
+  render:renderTimeline
+}
+];
+
+/* ============ STATE ============ */
+let state = {
+  tplId:'bar',
+  cols:[],
+  rows:[],
+  palette:'editorial',
+  stackMode:'stacked',
+  lang:'vi',
+  title:'', subtitle:'', source:'', brand:''
+};
+
+function currentTpl(){ return TEMPLATES.find(t=>t.id===state.tplId); }
+
+function loadSample(tpl){
+  state.cols = tpl.cols.slice();
+  state.rows = tpl.sample.map(r=>r.slice());
+}
+
+/* ============ SIDEBAR: TEMPLATE LIST ============ */
+const tplList = document.getElementById('tplList');
+TEMPLATES.forEach(t=>{
+  const b = document.createElement('button');
+  b.className='tpl-card'+(t.id===state.tplId?' active':'');
+  b.innerHTML = '<span class="tpl-code">'+t.code+'</span><span class="tpl-name">'+t.name+'</span><span class="tpl-desc">'+t.desc+'</span>';
+  b.onclick = ()=>{
+    state.tplId = t.id;
+    loadSample(t);
+    document.querySelectorAll('.tpl-card').forEach(el=>el.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('addColBtn').style.display = t.fixedCols ? 'none':'inline-block';
+    document.getElementById('stackModeWrap').style.display = t.id==='stack' ? 'block':'none';
+    document.getElementById('tplHint').textContent = t.hint;
+    renderTable();
+    renderChart();
+  };
+  tplList.appendChild(b);
+});
+
+/* ============ PALETTE UI ============ */
+const paletteRow = document.getElementById('paletteRow');
+Object.keys(PALETTES).forEach(key=>{
+  const p = PALETTES[key];
+  const el = document.createElement('button');
+  el.type='button';
+  el.className='swatch'+(key===state.palette?' active':'');
+  el.innerHTML = '<span class="dots">'+p.colors.slice(0,4).map(c=>'<span style="background:'+c+'"></span>').join('')+'</span>'+p.name;
+  el.onclick = ()=>{
+    state.palette = key;
+    document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+    el.classList.add('active');
+    renderChart();
+  };
+  paletteRow.appendChild(el);
+});
+
+/* ============ LANGUAGE TOGGLE ============ */
+document.querySelectorAll('#langToggle button').forEach(btn=>{
+  btn.onclick = ()=>{
+    state.lang = btn.dataset.lang;
+    document.querySelectorAll('#langToggle button').forEach(b=>b.classList.toggle('active', b===btn));
+    renderChart();
+  };
+});
+
+/* ============ STACK MODE TOGGLE ============ */
+document.querySelectorAll('#stackModeWrap button').forEach(btn=>{
+  btn.classList.toggle('active', btn.dataset.mode===state.stackMode);
+  btn.onclick = ()=>{
+    state.stackMode = btn.dataset.mode;
+    document.querySelectorAll('#stackModeWrap button').forEach(b=>b.classList.toggle('active', b===btn));
+    renderChart();
+  };
+});
+
+/* ============ DATA TABLE UI ============ */
+const tableHost = document.getElementById('tableHost');
+function renderTable(){
+  tableHost.innerHTML='';
+  const table = document.createElement('table');
+  table.className='datatable';
+  const thead = document.createElement('thead');
+  const trh = document.createElement('tr');
+  state.cols.forEach((c,ci)=>{
+    const th = document.createElement('th');
+    if(ci===0 || currentTpl().fixedCols){
+      th.textContent = c;
+    } else {
+      const inp = document.createElement('input');
+      inp.type='text'; inp.value=c; inp.style.fontWeight='600'; inp.style.fontSize='11px'; inp.style.padding='4px 6px';
+      inp.oninput = ()=>{ state.cols[ci]=inp.value; renderChart(); };
+      th.appendChild(inp);
+      if(state.cols.length>2){
+        const rm=document.createElement('button');
+        rm.className='rm-btn'; rm.textContent='×'; rm.title='Xoá nhóm này';
+        rm.onclick=()=>{ state.cols.splice(ci,1); state.rows.forEach(r=>r.splice(ci,1)); renderTable(); renderChart(); };
+        th.appendChild(rm);
+      }
+    }
+    trh.appendChild(th);
+  });
+  trh.appendChild(document.createElement('th'));
+  thead.appendChild(trh);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  state.rows.forEach((row,ri)=>{
+    const tr = document.createElement('tr');
+    row.forEach((val,ci)=>{
+      const td = document.createElement('td');
+      const inp = document.createElement('input');
+      inp.type='text'; inp.value=val;
+      inp.oninput = ()=>{ state.rows[ri][ci]=inp.value; renderChart(); };
+      td.appendChild(inp);
+      tr.appendChild(td);
+    });
+    const tdrm = document.createElement('td');
+    tdrm.className='rm';
+    const rm = document.createElement('button');
+    rm.className='rm-btn'; rm.textContent='×'; rm.title='Xoá dòng';
+    rm.onclick=()=>{ state.rows.splice(ri,1); renderTable(); renderChart(); };
+    tdrm.appendChild(rm);
+    tr.appendChild(tdrm);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  tableHost.appendChild(table);
+}
+
+document.getElementById('addRowBtn').onclick = ()=>{
+  state.rows.push(state.cols.map(()=>''));
+  renderTable();
+};
+document.getElementById('addColBtn').onclick = ()=>{
+  const n = state.cols.length;
+  state.cols.push('Nhóm '+String.fromCharCode(64+n));
+  state.rows.forEach(r=>r.push(''));
+  renderTable(); renderChart();
+};
+document.getElementById('sampleBtn').onclick = ()=>{
+  loadSample(currentTpl());
+  renderTable(); renderChart();
+};
+
+/* ============ CSV IN/OUT ============ */
+const csvPanel = document.getElementById('csvPanel');
+const csvBox = document.getElementById('csvBox');
+document.getElementById('csvToggleBtn').onclick = ()=>{
+  const showing = csvPanel.style.display!=='none';
+  csvPanel.style.display = showing ? 'none':'block';
+  if(!showing) csvBox.value = tableToCSV();
+};
+function tableToCSV(){
+  const lines = [state.cols.join(','), ...state.rows.map(r=>r.join(','))];
+  return lines.join('\n');
+}
+function parseCSVLine(line){
+  return line.split(',').map(c=>c.trim().replace(/^"(.*)"$/,'$1'));
+}
+document.getElementById('csvLoadBtn').onclick = ()=>{
+  const raw = csvBox.value;
+  const lines = raw.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length>0);
+  if(lines.length<1){ alert('Chưa có dữ liệu CSV để nạp.'); return; }
+  const tpl = currentTpl();
+  const parsedRows = lines.map(parseCSVLine);
+  let header = parsedRows[0];
+  let dataRows = parsedRows.slice(1);
+  if(dataRows.length===0){ alert('Cần ít nhất 1 dòng tiêu đề cột và 1 dòng dữ liệu.'); return; }
+
+  if(tpl.fixedCols){
+    const fixedLen = tpl.cols.length;
+    state.cols = tpl.cols.slice();
+    state.rows = dataRows.map(r=>{
+      const nr = r.slice(0, fixedLen);
+      while(nr.length<fixedLen) nr.push('');
+      return nr;
+    });
+  } else {
+    let cols = header.length>=2 ? header : tpl.cols.slice();
+    const len = cols.length;
+    state.cols = cols;
+    state.rows = dataRows.map(r=>{
+      const nr = r.slice(0, len);
+      while(nr.length<len) nr.push('');
+      return nr;
+    });
+  }
+  renderTable();
+  renderChart();
+};
+document.getElementById('csvCopyBtn').onclick = ()=>{
+  const text = tableToCSV();
+  csvBox.value = text;
+  csvBox.focus(); csvBox.select();
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>{
+      const btn = document.getElementById('csvCopyBtn');
+      const old = btn.textContent;
+      btn.textContent = 'Đã sao chép ✓';
+      setTimeout(()=>{ btn.textContent = old; }, 1500);
+    }).catch(()=>{ /* clipboard blocked, textarea already selected for manual copy */ });
+  }
+};
+
+/* ============ OPTIONS UI ============ */
+['optTitle','optSubtitle','optSource','optBrand'].forEach(id=>{
+  document.getElementById(id).oninput = (e)=>{
+    const map={optTitle:'title',optSubtitle:'subtitle',optSource:'source',optBrand:'brand'};
+    state[map[id]] = e.target.value;
+    renderChart();
+  };
+});
+
+/* ============ HELPERS ============ */
+function num(v){
+  if(v==null) return 0;
+  const n = parseFloat(String(v).replace(/[^\d\.\-]/g,''));
+  return isNaN(n) ? 0 : n;
+}
+function esc(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function wrapText(text, maxChars){
+  const words = String(text).split(/\s+/).filter(Boolean);
+  const lines=[]; let cur='';
+  words.forEach(w=>{
+    const test = cur ? cur+' '+w : w;
+    if(test.length>maxChars && cur){ lines.push(cur); cur=w; }
+    else cur=test;
+  });
+  if(cur) lines.push(cur);
+  return lines.length?lines:[''];
+}
+function tspans(lines,x,startY,lh){
+  return lines.map((l,i)=>'<tspan x="'+x+'" y="'+(startY+i*lh)+'">'+esc(l)+'</tspan>').join('');
+}
+function niceMax(v){
+  if(v<=0) return 10;
+  const mag = Math.pow(10, Math.floor(Math.log10(v)));
+  const n = v/mag;
+  let f;
+  if(n<=1) f=1; else if(n<=2) f=2; else if(n<=5) f=5; else f=10;
+  return f*mag;
+}
+function fmt(n){
+  const locale = state.lang==='en' ? 'en-US' : 'vi-VN';
+  if(Math.abs(n-Math.round(n))<0.001) return Math.round(n).toLocaleString(locale);
+  return n.toLocaleString(locale,{maximumFractionDigits:1});
+}
+
+/* ============ CHROME (title/subtitle/source/brand) ============ */
+function chrome(height, opts){
+  const title = opts.title || (state.lang==='en' ? 'Chart title' : 'Tiêu đề biểu đồ');
+  const subtitle = opts.subtitle || '';
+  const source = opts.source ? STRINGS[state.lang].source+opts.source : '';
+  const brand = opts.brand || '';
+  let s='';
+  s += '<text x="60" y="52" font-family="'+FONT+'" font-size="30" font-weight="700" fill="'+INK+'">'+esc(title)+'</text>';
+  if(subtitle) s += '<text x="60" y="80" font-family="'+FONT+'" font-size="15" fill="'+MUTED+'">'+esc(subtitle)+'</text>';
+  s += '<line x1="60" y1="'+(subtitle?96:70)+'" x2="'+(WIDTH-60)+'" y2="'+(subtitle?96:70)+'" stroke="'+GRID+'" stroke-width="2"/>';
+  s += '<line x1="60" y1="'+(height-46)+'" x2="'+(WIDTH-60)+'" y2="'+(height-46)+'" stroke="'+GRID+'" stroke-width="1"/>';
+  if(source) s += '<text x="60" y="'+(height-22)+'" font-family="'+FONT+'" font-size="12" fill="'+MUTED+'">'+esc(source)+'</text>';
+  if(brand) s += '<text x="'+(WIDTH-60)+'" y="'+(height-22)+'" text-anchor="end" font-family="'+FONT+'" font-size="12" font-weight="700" fill="'+INK+'" letter-spacing="0.5">'+esc(brand)+'</text>';
+  return s;
+}
+function topOffset(opts){ return opts.subtitle ? 96 : 70; }
+
+/* ============ RENDER: BAR ============ */
+function renderBar(cols, rows, palette, opts){
+  const leftPad=320, rightPad=90;
+  const barAreaW = WIDTH-leftPad-rightPad;
+  const data = rows.map(r=>({label:r[0]||'', value:num(r[1])})).filter(d=>d.label!=='' || d.value!==0);
+  data.sort((a,b)=>b.value-a.value);
+  const maxV = niceMax(Math.max(...data.map(d=>d.value),1));
+  const maxChars = Math.max(12, Math.floor((leftPad-40)/7.3));
+  const lineH=18, barH=36, rowPad=20, rowGap=16;
+  const blocks = data.map(d=>{
+    const lines = wrapText(d.label, maxChars);
+    const blockH = Math.max(barH+rowPad, lines.length*lineH+rowPad);
+    return {d, lines, blockH};
+  });
+  const top = topOffset(opts)+40;
+  let y = top, s='';
+  blocks.forEach((b,i)=>{
+    const cy = y + b.blockH/2;
+    const w = Math.max(2,(b.d.value/maxV)*barAreaW);
+    const color = palette.colors[i % palette.colors.length];
+    const startY = cy - ((b.lines.length-1)/2)*lineH + 5;
+    s += '<text text-anchor="end" font-family="'+FONT+'" font-size="14" font-weight="600" fill="'+INK+'">'+tspans(b.lines, leftPad-14, startY, lineH)+'</text>';
+    s += '<rect x="'+leftPad+'" y="'+(cy-barH/2)+'" width="'+w+'" height="'+barH+'" rx="3" fill="'+color+'"/>';
+    s += '<text x="'+(leftPad+w+10)+'" y="'+(cy+5)+'" font-family="'+FONT+'" font-size="14" font-weight="700" fill="'+INK+'">'+fmt(b.d.value)+'</text>';
+    y += b.blockH + rowGap;
+  });
+  const bottom = y - rowGap;
+  const height = bottom + 90;
+  s += '<line x1="'+leftPad+'" y1="'+top+'" x2="'+leftPad+'" y2="'+bottom+'" stroke="'+GRID+'" stroke-width="1.5"/>';
+  return {height, inner:s};
+}
+
+/* ============ RENDER: STACKED / GROUPED BAR ============ */
+function renderStack(cols, rows, palette, opts, mode){
+  const series = cols.slice(1);
+  const data = rows.filter(r=>r[0]!=='').map(r=>({label:r[0], values:series.map((_,i)=>num(r[i+1]))}));
+  const n=data.length;
+  const leftPad=70, rightPad=60;
+  const chartW = WIDTH-leftPad-rightPad;
+  const groupW = n ? chartW/n : chartW;
+  const maxCharsCat = Math.max(8, Math.floor(groupW/7.3));
+  const catLines = data.map(d=>wrapText(d.label, maxCharsCat));
+  const maxCatLines = Math.max(1, ...catLines.map(l=>l.length));
+  const plotH=460;
+  const top = topOffset(opts)+60, bottom=top+plotH;
+  const height = bottom + 40 + maxCatLines*17 + 50;
+  let maxV;
+  if(mode==='stacked'){
+    maxV = niceMax(Math.max(...data.map(d=>d.values.reduce((a,b)=>a+b,0)),1));
+  } else {
+    maxV = niceMax(Math.max(...data.map(d=>Math.max(...d.values)),1));
+  }
+  const yScale = v=> (bottom-top)*(v/maxV);
+  let s='';
+  // grid + y labels
+  const gridN=4;
+  for(let g=0; g<=gridN; g++){
+    const val = maxV*g/gridN;
+    const y = bottom - yScale(val);
+    s += '<line x1="'+leftPad+'" y1="'+y+'" x2="'+(WIDTH-rightPad)+'" y2="'+y+'" stroke="'+GRID+'" stroke-width="1"/>';
+    s += '<text x="'+(leftPad-10)+'" y="'+(y+4)+'" text-anchor="end" font-family="'+FONT+'" font-size="11.5" fill="'+MUTED+'">'+fmt(val)+'</text>';
+  }
+  // legend
+  let lx = leftPad;
+  series.forEach((sName,i)=>{
+    const color = palette.colors[i % palette.colors.length];
+    s += '<rect x="'+lx+'" y="'+(top-34)+'" width="12" height="12" rx="2" fill="'+color+'"/>';
+    s += '<text x="'+(lx+18)+'" y="'+(top-24)+'" font-family="'+FONT+'" font-size="12.5" font-weight="600" fill="'+INK+'">'+esc(sName)+'</text>';
+    lx += 18 + esc(sName).length*7.2 + 26;
+  });
+  // bars
+  data.forEach((d,i)=>{
+    const gx = leftPad + groupW*i;
+    if(mode==='stacked'){
+      const barW = groupW*0.55;
+      const bx = gx + (groupW-barW)/2;
+      let acc=0;
+      d.values.forEach((v,si)=>{
+        const h = yScale(v);
+        const y = bottom - yScale(acc) - h;
+        s += '<rect x="'+bx+'" y="'+y+'" width="'+barW+'" height="'+Math.max(0,h)+'" fill="'+palette.colors[si%palette.colors.length]+'"/>';
+        acc += v;
+      });
+    } else {
+      const barW = (groupW*0.7)/d.values.length;
+      const groupStart = gx + groupW*0.15;
+      d.values.forEach((v,si)=>{
+        const h = yScale(v);
+        const bx = groupStart + si*barW;
+        s += '<rect x="'+bx+'" y="'+(bottom-h)+'" width="'+(barW-4)+'" height="'+Math.max(0,h)+'" rx="2" fill="'+palette.colors[si%palette.colors.length]+'"/>';
+      });
+    }
+    s += '<text text-anchor="middle" font-family="'+FONT+'" font-size="12.5" font-weight="600" fill="'+INK+'">'+tspans(catLines[i], gx+groupW/2, bottom+22, 17)+'</text>';
+  });
+  s += '<line x1="'+leftPad+'" y1="'+bottom+'" x2="'+(WIDTH-rightPad)+'" y2="'+bottom+'" stroke="'+INK+'" stroke-width="1.5"/>';
+  return {height, inner:s};
+}
+
+/* ============ RENDER: LINE ============ */
+function renderLine(cols, rows, palette, opts){
+  const series = cols.slice(1);
+  const data = rows.filter(r=>r[0]!=='').map(r=>({label:r[0], values:series.map((_,i)=>num(r[i+1]))}));
+  const n=data.length;
+  const leftPad=70, rightPad=60;
+  const chartW = WIDTH-leftPad-rightPad;
+  const xStep = n>1 ? chartW/(n-1) : 0;
+  const maxCharsX = Math.max(6, Math.floor((xStep||chartW)/7.5));
+  const xLines = data.map(d=>wrapText(d.label, maxCharsX));
+  const maxXLines = Math.max(1, ...xLines.map(l=>l.length));
+  const plotH=460;
+  const top = topOffset(opts)+60, bottom=top+plotH;
+  const height = bottom + 40 + maxXLines*17 + 50;
+  const maxV = niceMax(Math.max(...data.flatMap(d=>d.values),1));
+  const yScale = v=> (bottom-top)*(v/maxV);
+  let s='';
+  const gridN=4;
+  for(let g=0; g<=gridN; g++){
+    const val = maxV*g/gridN;
+    const y = bottom - yScale(val);
+    s += '<line x1="'+leftPad+'" y1="'+y+'" x2="'+(WIDTH-rightPad)+'" y2="'+y+'" stroke="'+GRID+'" stroke-width="1"/>';
+    s += '<text x="'+(leftPad-10)+'" y="'+(y+4)+'" text-anchor="end" font-family="'+FONT+'" font-size="11.5" fill="'+MUTED+'">'+fmt(val)+'</text>';
+  }
+  let lx = leftPad;
+  series.forEach((sName,i)=>{
+    const color = palette.colors[i % palette.colors.length];
+    s += '<line x1="'+lx+'" y1="'+(top-28)+'" x2="'+(lx+16)+'" y2="'+(top-28)+'" stroke="'+color+'" stroke-width="3"/>';
+    s += '<text x="'+(lx+22)+'" y="'+(top-24)+'" font-family="'+FONT+'" font-size="12.5" font-weight="600" fill="'+INK+'">'+esc(sName)+'</text>';
+    lx += 22 + esc(sName).length*7.2 + 26;
+  });
+  series.forEach((sName,si)=>{
+    const color = palette.colors[si % palette.colors.length];
+    const pts = data.map((d,i)=> (leftPad+xStep*i)+','+(bottom-yScale(d.values[si])) );
+    s += '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
+    data.forEach((d,i)=>{
+      const cx = leftPad+xStep*i, cy = bottom-yScale(d.values[si]);
+      s += '<circle cx="'+cx+'" cy="'+cy+'" r="4.5" fill="'+PAPER+'" stroke="'+color+'" stroke-width="2.5"/>';
+    });
+  });
+  data.forEach((d,i)=>{
+    s += '<text text-anchor="middle" font-family="'+FONT+'" font-size="12.5" font-weight="600" fill="'+INK+'">'+tspans(xLines[i], leftPad+xStep*i, bottom+22, 17)+'</text>';
+  });
+  s += '<line x1="'+leftPad+'" y1="'+bottom+'" x2="'+(WIDTH-rightPad)+'" y2="'+bottom+'" stroke="'+INK+'" stroke-width="1.5"/>';
+  return {height, inner:s};
+}
+
+/* ============ RENDER: DONUT ============ */
+function renderDonut(cols, rows, palette, opts){
+  const top = topOffset(opts);
+  const data = rows.filter(r=>r[0]!=='').map(r=>({label:r[0], value:num(r[1])}));
+  const total = data.reduce((a,b)=>a+b.value,0) || 1;
+  const lx = 660;
+  const maxCharsLeg = Math.max(14, Math.floor((WIDTH-90-30-lx-22)/8.5));
+  const legLineH=20;
+  const legendBlocks = data.map(d=>{
+    const lines = wrapText(d.label, maxCharsLeg);
+    return {d, lines, h: Math.max(34, lines.length*legLineH+14)};
+  });
+  const legendTotalH = legendBlocks.reduce((a,b)=>a+b.h,0);
+  const height = Math.max(560, top+80+legendTotalH+60);
+  const cx = 380, cy = top + (height-top-70)/2 + 20, R=180, r=100;
+  let ang = -90;
+  let s='';
+  data.forEach((d,i)=>{
+    const frac = d.value/total;
+    const a0 = ang, a1 = ang + frac*360;
+    ang = a1;
+    const large = (a1-a0)>180 ? 1:0;
+    const x0 = cx + R*Math.cos(a0*Math.PI/180), y0 = cy + R*Math.sin(a0*Math.PI/180);
+    const x1 = cx + R*Math.cos(a1*Math.PI/180), y1 = cy + R*Math.sin(a1*Math.PI/180);
+    const xi0 = cx + r*Math.cos(a1*Math.PI/180), yi0 = cy + r*Math.sin(a1*Math.PI/180);
+    const xi1 = cx + r*Math.cos(a0*Math.PI/180), yi1 = cy + r*Math.sin(a0*Math.PI/180);
+    const color = palette.colors[i % palette.colors.length];
+    const d1 = 'M'+x0+','+y0+' A'+R+','+R+' 0 '+large+' 1 '+x1+','+y1+' L'+xi0+','+yi0+' A'+r+','+r+' 0 '+large+' 0 '+xi1+','+yi1+' Z';
+    s += '<path d="'+d1+'" fill="'+color+'"/>';
+  });
+  s += '<text x="'+cx+'" y="'+(cy-6)+'" text-anchor="middle" font-family="'+FONT+'" font-size="30" font-weight="700" fill="'+INK+'">'+fmt(total)+'</text>';
+  s += '<text x="'+cx+'" y="'+(cy+20)+'" text-anchor="middle" font-family="'+FONT+'" font-size="13" fill="'+MUTED+'">'+STRINGS[state.lang].total+'</text>';
+  // legend
+  let lyTop = top+40;
+  legendBlocks.forEach((b,i)=>{
+    const color = palette.colors[i % palette.colors.length];
+    const pct = (b.d.value/total*100).toFixed(1)+'%';
+    const blockCenter = lyTop + b.h/2;
+    const textStartY = lyTop + legLineH*0.72;
+    s += '<rect x="'+lx+'" y="'+(lyTop+4)+'" width="14" height="14" rx="3" fill="'+color+'"/>';
+    s += '<text font-family="'+FONT+'" font-size="15" font-weight="600" fill="'+INK+'">'+tspans(b.lines, lx+22, textStartY, legLineH)+'</text>';
+    s += '<text x="'+(WIDTH-90)+'" y="'+(blockCenter+5)+'" text-anchor="end" font-family="'+FONT+'" font-size="15" font-weight="700" fill="'+MUTED+'">'+pct+'</text>';
+    lyTop += b.h;
+  });
+  return {height, inner:s};
+}
+
+/* ============ RENDER: STAT CARDS ============ */
+function renderStat(cols, rows, palette, opts){
+  const items = rows.filter(r=>r[0]!=='');
+  const n = Math.max(items.length,1);
+  const perRow = n<=2 ? n : (n===4?2: (n<=3?n:3));
+  const rowsCount = Math.ceil(n/perRow);
+  const top = topOffset(opts)+40;
+  const cardGap=24;
+  const cardW = (WIDTH-120-cardGap*(perRow-1))/perRow;
+  const cardH=190;
+  const height = top + rowsCount*(cardH+cardGap) - cardGap + 90;
+  let s='';
+  items.forEach((it,i)=>{
+    const col = i%perRow, row=Math.floor(i/perRow);
+    const x = 60 + col*(cardW+cardGap);
+    const y = top + row*(cardH+cardGap);
+    const color = palette.colors[i % palette.colors.length];
+    s += '<rect x="'+x+'" y="'+y+'" width="'+cardW+'" height="'+cardH+'" rx="8" fill="'+PAPER+'" stroke="'+GRID+'" stroke-width="1.5"/>';
+    s += '<rect x="'+x+'" y="'+y+'" width="6" height="'+cardH+'" fill="'+color+'"/>';
+    s += '<text x="'+(x+28)+'" y="'+(y+72)+'" font-family="'+FONT+'" font-size="44" font-weight="800" fill="'+color+'">'+esc(it[0]||'')+'</text>';
+    const labelLines = wrapText(it[1]||'', Math.floor(cardW/9));
+    s += '<text font-family="'+FONT+'" font-size="16.5" font-weight="700" fill="'+INK+'">'+tspans(labelLines, x+28, y+104, 21)+'</text>';
+    const noteY = y+104+labelLines.length*21+18;
+    if(it[2]){
+      const noteLines = wrapText(it[2], Math.floor(cardW/8.5));
+      s += '<text font-family="'+FONT+'" font-size="12.5" fill="'+MUTED+'">'+tspans(noteLines, x+28, noteY, 17)+'</text>';
+    }
+  });
+  return {height, inner:s};
+}
+
+/* ============ RENDER: TIMELINE ============ */
+function renderTimeline(cols, rows, palette, opts){
+  const items = rows.filter(r=>r[0]!=='');
+  const top = topOffset(opts)+50;
+  const lineX = 140;
+  const titleLineH=24, descLineH=19;
+  const blocks = items.map(it=>{
+    const titleLines = wrapText(it[1]||'', 60);
+    const descLines = it[2] ? wrapText(it[2], 92) : [];
+    const h = 18 + titleLines.length*titleLineH + (descLines.length ? (4+descLines.length*descLineH) : 0) + 26;
+    return {it, titleLines, descLines, h:Math.max(h,70)};
+  });
+  const positions=[]; let cursor = top+10;
+  blocks.forEach(b=>{ positions.push(cursor); cursor += b.h; });
+  const height = cursor + 40;
+  const lineEndY = positions.length ? positions[positions.length-1]+12 : top+10;
+  let s='';
+  s += '<line x1="'+lineX+'" y1="'+(top+10)+'" x2="'+lineX+'" y2="'+lineEndY+'" stroke="'+GRID+'" stroke-width="3"/>';
+  blocks.forEach((b,i)=>{
+    const yPos = positions[i];
+    const circleY = yPos+12;
+    const color = palette.colors[i % palette.colors.length];
+    s += '<circle cx="'+lineX+'" cy="'+circleY+'" r="9" fill="'+PAPER+'" stroke="'+color+'" stroke-width="4"/>';
+    s += '<text x="'+(lineX-24)+'" y="'+(circleY+5)+'" text-anchor="end" font-family="'+FONT+'" font-size="15" font-weight="800" fill="'+color+'">'+esc(b.it[0]||'')+'</text>';
+    s += '<text font-family="'+FONT+'" font-size="18" font-weight="700" fill="'+INK+'">'+tspans(b.titleLines, lineX+34, yPos+18, titleLineH)+'</text>';
+    if(b.descLines.length){
+      const descStartY = yPos+18+(b.titleLines.length-1)*titleLineH + titleLineH*0.85 + 4;
+      s += '<text font-family="'+FONT+'" font-size="13.5" fill="'+MUTED+'">'+tspans(b.descLines, lineX+34, descStartY, descLineH)+'</text>';
+    }
+  });
+  return {height, inner:s};
+}
+
+/* ============ MASTER RENDER ============ */
+function buildChart(){
+  const tpl = currentTpl();
+  const palette = PALETTES[state.palette];
+  const opts = {title:state.title, subtitle:state.subtitle, source:state.source, brand:state.brand};
+  let result;
+  if(tpl.id==='stack') result = tpl.render(state.cols, state.rows, palette, opts, state.stackMode);
+  else result = tpl.render(state.cols, state.rows, palette, opts);
+  const {height, inner} = result;
+  const svg = '<svg id="previewSvg" viewBox="0 0 '+WIDTH+' '+height+'" xmlns="http://www.w3.org/2000/svg" font-family="'+FONT+'">'
+    + '<rect x="0" y="0" width="'+WIDTH+'" height="'+height+'" fill="'+PAPER+'"/>'
+    + inner
+    + chrome(height, opts)
+    + '</svg>';
+  return {svg, height};
+}
+
+function renderChart(){
+  const {svg, height} = buildChart();
+  document.getElementById('svgHost').innerHTML = svg;
+  document.getElementById('dimMeta').textContent = WIDTH+' × '+height+' · xuất @2x';
+}
+
+/* ============ EXPORT PNG ============ */
+document.getElementById('exportBtn').onclick = ()=>{
+  const svgEl = document.getElementById('previewSvg');
+  const vb = svgEl.viewBox.baseVal;
+  const serializer = new XMLSerializer();
+  let source = serializer.serializeToString(svgEl);
+  if(!/xmlns="http:\/\/www\.w3\.org\/2000\/svg"/.test(source)){
+    source = source.replace('<svg','<svg xmlns="http://www.w3.org/2000/svg"');
+  }
+  const blob = new Blob([source], {type:'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = function(){
+    const scale=2;
+    const canvas = document.createElement('canvas');
+    canvas.width = vb.width*scale;
+    canvas.height = vb.height*scale;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.scale(scale,scale);
+    ctx.drawImage(img,0,0);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(function(pngBlob){
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(pngBlob);
+      const nameBase = (state.title||currentTpl().id).trim().replace(/\s+/g,'-').toLowerCase();
+      a.download = nameBase + '.png';
+      document.body.appendChild(a); a.click(); a.remove();
+    }, 'image/png');
+  };
+  img.onerror = function(){ alert('Không tạo được ảnh. Thử tải lại trang và thử lại.'); };
+  img.src = url;
+};
+
+/* ============ INIT ============ */
+loadSample(currentTpl());
+document.getElementById('tplHint').textContent = currentTpl().hint;
+renderTable();
+renderChart();
+
+})();
+</script>
+</body>
+</html>

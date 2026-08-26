@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quy định & Generator Share Bài Social FB TTN v3</title>
+    <title>Quy định & Generator Share Bài Social FB TTN v3.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -420,6 +420,9 @@
         <!-- Input Panel Live Generator -->
         <div class="input-panel">
             <h2>✍️ Nhập dữ liệu bài viết (Auto Generate Live)</h2>
+            <button type="button" class="copy-btn" onclick="clearAllInputs()" style="background: #fff0f0; border-color: #d93025; color: #d93025;">
+            🗑️ Clear All
+        </button>
             <div class="form-grid">
                 <div class="form-group">
                     <label for="input-headline">Headline (Tiêu đề bài viết):</label>
@@ -622,6 +625,13 @@ Read more in comments`;
                 toast.classList.remove('show');
             }, 2000);
         }
+
+        function clearAllInputs() {
+    document.getElementById('input-headline').value = '';
+    document.getElementById('input-lede').value = '';
+    document.getElementById('input-link').value = '';
+    updateTemplates(); // Trả các khung preview về trạng thái placeholder ban đầu
+}
 
         // Initialize default view
         window.onload = updateTemplates;

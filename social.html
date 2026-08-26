@@ -1,9 +1,8 @@
-<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quy định & Generator Share Bài Social FB TTN v3.1</title>
+    <title>Quy định & Generator Share Bài Social FB TTN v4</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -16,6 +15,8 @@
             --border: #e4e6eb;
             --accent-light: #e7f3ff;
             --success: #31a24c;
+            --danger: #d93025;
+            --danger-bg: #fff0f0;
         }
 
         * {
@@ -180,14 +181,21 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
 
-        .input-panel h2 {
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .panel-header h2 {
             font-size: 16px;
             font-weight: 700;
-            margin-bottom: 14px;
             color: var(--primary);
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-bottom: 0;
         }
 
         .form-grid {
@@ -349,6 +357,17 @@
             color: #ffffff;
         }
 
+        .copy-btn.btn-clear {
+            background-color: var(--danger-bg);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .copy-btn.btn-clear:hover {
+            background-color: var(--danger);
+            color: #ffffff;
+        }
+
         .copy-btn.copied {
             background-color: var(--success);
             border-color: var(--success);
@@ -385,7 +404,7 @@
     <div class="container">
         <header>
             <h1>Hệ Thống Quy Định & Generator Share Bài</h1>
-            <p>Facebook Tuổi Trẻ News (TTN) • Version 3.0 (Double Line-Break Formatting)</p>
+            <p>Facebook Tuổi Trẻ News (TTN) • Version 4.0 (Added Podcast & Clear All Features)</p>
         </header>
 
         <!-- Tiện ích block -->
@@ -413,16 +432,18 @@
             <ul class="rules-list">
                 <li>Khung giờ cố định <span class="highlight-badge">Breakfast: 8h00 sáng</span> hàng ngày.</li>
                 <li>Đảm bảo gắn đúng mẫu Comment tương ứng cho từng định dạng bài để giữ tính thống nhất.</li>
-                <li>Tất cả mẫu bài viết đều sử dụng dòng trống (line-break/double enter) giữa đoạn LEDE/mở đầu và đường dẫn.</li>
+                <li>Tất cả mẫu bài viết có LEDE đều sử dụng dòng trống (line-break/double enter) giữa đoạn mở đầu và đường dẫn.</li>
             </ul>
         </div>
 
         <!-- Input Panel Live Generator -->
         <div class="input-panel">
-            <h2>✍️ Nhập dữ liệu bài viết (Auto Generate Live)</h2>
-            <button type="button" class="copy-btn" onclick="clearAllInputs()" style="background: #fff0f0; border-color: #d93025; color: #d93025;">
-            🗑️ Clear All
-        </button>
+            <div class="panel-header">
+                <h2>✍️ Nhập dữ liệu bài viết (Auto Generate Live)</h2>
+                <button type="button" class="copy-btn btn-clear" onclick="clearAllInputs()">
+                    🗑️ Clear All
+                </button>
+            </div>
             <div class="form-grid">
                 <div class="form-group">
                     <label for="input-headline">Headline (Tiêu đề bài viết):</label>
@@ -440,7 +461,7 @@
         </div>
 
         <!-- Mẫu share bài block -->
-        <div class="section-title">📋 Mẫu Share Bài (Có dòng ngắt line-break chuẩn)</div>
+        <div class="section-title">📋 Mẫu Share Bài</div>
         <div class="templates-grid">
 
             <!-- Template 1: Breakfast -->
@@ -464,11 +485,11 @@
                 </div>
             </div>
 
-            <!-- Template 2: Headline only -->
+            <!-- Template 2: Podcast -->
             <div class="template-card">
                 <div class="template-header">
-                    <h3>2. Headline only</h3>
-                    <span class="tag">Tiêu đề</span>
+                    <h3>2. Podcast</h3>
+                    <span class="tag">Âm thanh / Audio</span>
                 </div>
                 <div class="template-body">
                     <div class="content-block">
@@ -484,11 +505,11 @@
                 </div>
             </div>
 
-            <!-- Template 3: One photo -->
+            <!-- Template 3: Headline only -->
             <div class="template-card">
                 <div class="template-header">
-                    <h3>3. One photo</h3>
-                    <span class="tag">1 Ảnh</span>
+                    <h3>3. Headline only</h3>
+                    <span class="tag">Tiêu đề</span>
                 </div>
                 <div class="template-body">
                     <div class="content-block">
@@ -498,16 +519,17 @@
                     </div>
                     <div class="content-block">
                         <span class="content-label">Mẫu Comment</span>
-                        <div class="code-box na">N/A (Không cần comment)</div>
+                        <div class="code-box" id="cmt-3"></div>
+                        <button class="copy-btn" onclick="copyText('cmt-3', this)">📋 Copy Comment</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Template 4: Multiple photos -->
+            <!-- Template 4: One photo -->
             <div class="template-card">
                 <div class="template-header">
-                    <h3>4. Multiple photos</h3>
-                    <span class="tag">Nhiều Ảnh</span>
+                    <h3>4. One photo</h3>
+                    <span class="tag">1 Ảnh</span>
                 </div>
                 <div class="template-body">
                     <div class="content-block">
@@ -522,11 +544,11 @@
                 </div>
             </div>
 
-            <!-- Template 5: Newscard -->
+            <!-- Template 5: Multiple photos -->
             <div class="template-card">
                 <div class="template-header">
-                    <h3>5. Newscard</h3>
-                    <span class="tag">Ảnh Đồ Họa / Card</span>
+                    <h3>5. Multiple photos</h3>
+                    <span class="tag">Nhiều Ảnh</span>
                 </div>
                 <div class="template-body">
                     <div class="content-block">
@@ -536,8 +558,27 @@
                     </div>
                     <div class="content-block">
                         <span class="content-label">Mẫu Comment</span>
-                        <div class="code-box" id="cmt-5"></div>
-                        <button class="copy-btn" onclick="copyText('cmt-5', this)">📋 Copy Comment</button>
+                        <div class="code-box na">N/A (Không cần comment)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Template 6: Newscard -->
+            <div class="template-card">
+                <div class="template-header">
+                    <h3>6. Newscard</h3>
+                    <span class="tag">Ảnh Đồ Họa / Card</span>
+                </div>
+                <div class="template-body">
+                    <div class="content-block">
+                        <span class="content-label">Mẫu Post</span>
+                        <div class="code-box" id="post-6"></div>
+                        <button class="copy-btn" onclick="copyText('post-6', this)">📋 Copy Post</button>
+                    </div>
+                    <div class="content-block">
+                        <span class="content-label">Mẫu Comment</span>
+                        <div class="code-box" id="cmt-6"></div>
+                        <button class="copy-btn" onclick="copyText('cmt-6', this)">📋 Copy Comment</button>
                     </div>
                 </div>
             </div>
@@ -563,39 +604,49 @@
             cmt1Box.innerText = `➡️➡️➡️ Read more: ${linkVal}`;
             cmt1Box.classList.toggle('placeholder', !link);
 
-            // 2. Headline only
+            // 2. Podcast (Post: Headline | Comment: ➡️➡️➡️ Listen: [link])
             const post2Box = document.getElementById('post-2');
             post2Box.innerText = headlineVal;
             post2Box.classList.toggle('placeholder', !headline);
 
             const cmt2Box = document.getElementById('cmt-2');
-            cmt2Box.innerText = `👉👉👉 Read more: ${linkVal}`;
+            cmt2Box.innerText = `➡️➡️➡️ Listen: ${linkVal}`;
             cmt2Box.classList.toggle('placeholder', !link);
 
-            // 3. One photo (LEDE + Enter + Enter + Full report:)
+            // 3. Headline only
             const post3Box = document.getElementById('post-3');
-            post3Box.innerText = `${ledeVal}
+            post3Box.innerText = headlineVal;
+            post3Box.classList.toggle('placeholder', !headline);
 
-Full report: ${linkVal}`;
-            post3Box.classList.toggle('placeholder', !lede && !link);
+            const cmt3Box = document.getElementById('cmt-3');
+            cmt3Box.innerText = `👉👉👉 Read more: ${linkVal}`;
+            cmt3Box.classList.toggle('placeholder', !link);
 
-            // 4. Multiple photos (LEDE + Enter + Enter + Read more:)
+            // 4. One photo (LEDE + Enter + Enter + Full report:)
             const post4Box = document.getElementById('post-4');
-            post4Box.innerText = `${ledeVal}
-
-Read more: ${linkVal}`;
+            post4Box.innerText = `${ledeVal}\n\nFull report: ${linkVal}`;
             post4Box.classList.toggle('placeholder', !lede && !link);
 
-            // 5. Newscard (LEDE + Enter + Enter + Read more in comments)
+            // 5. Multiple photos (LEDE + Enter + Enter + Read more:)
             const post5Box = document.getElementById('post-5');
-            post5Box.innerText = `${ledeVal}
+            post5Box.innerText = `${ledeVal}\n\nRead more: ${linkVal}`;
+            post5Box.classList.toggle('placeholder', !lede && !link);
 
-Read more in comments`;
-            post5Box.classList.toggle('placeholder', !lede);
+            // 6. Newscard (LEDE + Enter + Enter + Read more in comments)
+            const post6Box = document.getElementById('post-6');
+            post6Box.innerText = `${ledeVal}\n\nRead more in comments`;
+            post6Box.classList.toggle('placeholder', !lede);
 
-            const cmt5Box = document.getElementById('cmt-5');
-            cmt5Box.innerText = `▶️▶️▶️ Details: ${linkVal}`;
-            cmt5Box.classList.toggle('placeholder', !link);
+            const cmt6Box = document.getElementById('cmt-6');
+            cmt6Box.innerText = `▶️▶️▶️ Details: ${linkVal}`;
+            cmt6Box.classList.toggle('placeholder', !link);
+        }
+
+        function clearAllInputs() {
+            document.getElementById('input-headline').value = '';
+            document.getElementById('input-lede').value = '';
+            document.getElementById('input-link').value = '';
+            updateTemplates();
         }
 
         function copyText(elementId, btnElement) {
@@ -625,13 +676,6 @@ Read more in comments`;
                 toast.classList.remove('show');
             }, 2000);
         }
-
-        function clearAllInputs() {
-    document.getElementById('input-headline').value = '';
-    document.getElementById('input-lede').value = '';
-    document.getElementById('input-link').value = '';
-    updateTemplates(); // Trả các khung preview về trạng thái placeholder ban đầu
-}
 
         // Initialize default view
         window.onload = updateTemplates;

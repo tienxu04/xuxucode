@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quy định & Mẫu Share Bài Social FB TTN</title>
+    <title>Quy định & Generator Share Bài Social FB TTN v3</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -33,7 +33,7 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 960px;
             margin: 0 auto;
         }
 
@@ -55,7 +55,7 @@
         }
 
         .section-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -78,13 +78,13 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 12px;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
 
         .tool-card {
             background: var(--card-bg);
             border-radius: 10px;
-            padding: 16px;
+            padding: 14px 16px;
             border: 1px solid var(--border);
             display: flex;
             align-items: center;
@@ -101,9 +101,9 @@
         }
 
         .tool-info h3 {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             color: var(--primary);
         }
 
@@ -120,17 +120,17 @@
         .rules-card {
             background: var(--card-bg);
             border-radius: 10px;
-            padding: 20px;
+            padding: 18px 20px;
             border: 1px solid var(--border);
-            margin-bottom: 28px;
+            margin-bottom: 24px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .rules-card h2 {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             color: var(--text);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -143,8 +143,8 @@
         .rules-list li {
             position: relative;
             padding-left: 20px;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 6px;
+            font-size: 13.5px;
             color: var(--text);
         }
 
@@ -167,13 +167,74 @@
             font-weight: 600;
             padding: 2px 8px;
             border-radius: 4px;
+            font-size: 12px;
+        }
+
+        /* Input Controls Panel */
+        .input-panel {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .input-panel h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
             font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            font-family: inherit;
+            font-size: 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background-color: #f8f9fa;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.15);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 72px;
         }
 
         /* Templates Grid */
         .templates-grid {
             display: grid;
-            gap: 16px;
+            gap: 20px;
         }
 
         .template-card {
@@ -251,7 +312,12 @@
             flex-grow: 1;
             margin-bottom: 8px;
             color: #1c1e21;
-            min-height: 48px;
+            min-height: 64px;
+        }
+
+        .code-box.placeholder {
+            color: #8a8d91;
+            font-style: italic;
         }
 
         .code-box.na {
@@ -318,8 +384,8 @@
 
     <div class="container">
         <header>
-            <h1>Hệ Thống Quy Định & Template Share Bài</h1>
-            <p>Facebook Tuổi Trẻ News (TTN) • Tra cứu quy định & Copy mẫu 1-Click</p>
+            <h1>Hệ Thống Quy Định & Generator Share Bài</h1>
+            <p>Facebook Tuổi Trẻ News (TTN) • Version 3.0 (Double Line-Break Formatting)</p>
         </header>
 
         <!-- Tiện ích block -->
@@ -347,12 +413,31 @@
             <ul class="rules-list">
                 <li>Khung giờ cố định <span class="highlight-badge">Breakfast: 8h00 sáng</span> hàng ngày.</li>
                 <li>Đảm bảo gắn đúng mẫu Comment tương ứng cho từng định dạng bài để giữ tính thống nhất.</li>
-                <li>Kiểm tra kỹ link đường dẫn trước khi xuất bản hoặc dán vào Comment.</li>
+                <li>Tất cả mẫu bài viết đều sử dụng dòng trống (line-break/double enter) giữa đoạn LEDE/mở đầu và đường dẫn.</li>
             </ul>
         </div>
 
+        <!-- Input Panel Live Generator -->
+        <div class="input-panel">
+            <h2>✍️ Nhập dữ liệu bài viết (Auto Generate Live)</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="input-headline">Headline (Tiêu đề bài viết):</label>
+                    <input type="text" id="input-headline" class="form-control" placeholder="Nhập Headline..." oninput="updateTemplates()">
+                </div>
+                <div class="form-group">
+                    <label for="input-lede">LEDE (Đoạn mở đầu / Tóm tắt):</label>
+                    <textarea id="input-lede" class="form-control" placeholder="Nhập LEDE..." oninput="updateTemplates()"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="input-link">Link bài viết (Đường dẫn):</label>
+                    <input type="url" id="input-link" class="form-control" placeholder="https://tuoitrenews.vn/..." oninput="updateTemplates()">
+                </div>
+            </div>
+        </div>
+
         <!-- Mẫu share bài block -->
-        <div class="section-title">📋 Mẫu Share Bài (Click to Copy)</div>
+        <div class="section-title">📋 Mẫu Share Bài (Có dòng ngắt line-break chuẩn)</div>
         <div class="templates-grid">
 
             <!-- Template 1: Breakfast -->
@@ -385,12 +470,12 @@
                 <div class="template-body">
                     <div class="content-block">
                         <span class="content-label">Mẫu Post</span>
-                        <div class="code-box" id="post-2">[Headline]</div>
+                        <div class="code-box" id="post-2"></div>
                         <button class="copy-btn" onclick="copyText('post-2', this)">📋 Copy Post</button>
                     </div>
                     <div class="content-block">
                         <span class="content-label">Mẫu Comment</span>
-                        <div class="code-box" id="cmt-2">👉👉👉 Read more:</div>
+                        <div class="code-box" id="cmt-2"></div>
                         <button class="copy-btn" onclick="copyText('cmt-2', this)">📋 Copy Comment</button>
                     </div>
                 </div>
@@ -405,8 +490,7 @@
                 <div class="template-body">
                     <div class="content-block">
                         <span class="content-label">Mẫu Post</span>
-                        <div class="code-box" id="post-3">[LEDE]
-Full report:</div>
+                        <div class="code-box" id="post-3"></div>
                         <button class="copy-btn" onclick="copyText('post-3', this)">📋 Copy Post</button>
                     </div>
                     <div class="content-block">
@@ -425,8 +509,7 @@ Full report:</div>
                 <div class="template-body">
                     <div class="content-block">
                         <span class="content-label">Mẫu Post</span>
-                        <div class="code-box" id="post-4">[LEDE]
-Read more: [link]</div>
+                        <div class="code-box" id="post-4"></div>
                         <button class="copy-btn" onclick="copyText('post-4', this)">📋 Copy Post</button>
                     </div>
                     <div class="content-block">
@@ -445,13 +528,12 @@ Read more: [link]</div>
                 <div class="template-body">
                     <div class="content-block">
                         <span class="content-label">Mẫu Post</span>
-                        <div class="code-box" id="post-5">[LEDE]
-Read more in comments</div>
+                        <div class="code-box" id="post-5"></div>
                         <button class="copy-btn" onclick="copyText('post-5', this)">📋 Copy Post</button>
                     </div>
                     <div class="content-block">
                         <span class="content-label">Mẫu Comment</span>
-                        <div class="code-box" id="cmt-5">▶️▶️▶️ Details:</div>
+                        <div class="code-box" id="cmt-5"></div>
                         <button class="copy-btn" onclick="copyText('cmt-5', this)">📋 Copy Comment</button>
                     </div>
                 </div>
@@ -464,12 +546,62 @@ Read more in comments</div>
     <div id="toast" class="toast">Đã copy vào bộ nhớ tạm!</div>
 
     <script>
+        function updateTemplates() {
+            const headline = document.getElementById('input-headline').value.trim();
+            const lede = document.getElementById('input-lede').value.trim();
+            const link = document.getElementById('input-link').value.trim();
+
+            const headlineVal = headline || '[Headline]';
+            const ledeVal = lede || '[LEDE]';
+            const linkVal = link || '[link]';
+
+            // 1. Breakfast
+            const cmt1Box = document.getElementById('cmt-1');
+            cmt1Box.innerText = `➡️➡️➡️ Read more: ${linkVal}`;
+            cmt1Box.classList.toggle('placeholder', !link);
+
+            // 2. Headline only
+            const post2Box = document.getElementById('post-2');
+            post2Box.innerText = headlineVal;
+            post2Box.classList.toggle('placeholder', !headline);
+
+            const cmt2Box = document.getElementById('cmt-2');
+            cmt2Box.innerText = `👉👉👉 Read more: ${linkVal}`;
+            cmt2Box.classList.toggle('placeholder', !link);
+
+            // 3. One photo (LEDE + Enter + Enter + Full report:)
+            const post3Box = document.getElementById('post-3');
+            post3Box.innerText = `${ledeVal}
+
+Full report: ${linkVal}`;
+            post3Box.classList.toggle('placeholder', !lede && !link);
+
+            // 4. Multiple photos (LEDE + Enter + Enter + Read more:)
+            const post4Box = document.getElementById('post-4');
+            post4Box.innerText = `${ledeVal}
+
+Read more: ${linkVal}`;
+            post4Box.classList.toggle('placeholder', !lede && !link);
+
+            // 5. Newscard (LEDE + Enter + Enter + Read more in comments)
+            const post5Box = document.getElementById('post-5');
+            post5Box.innerText = `${ledeVal}
+
+Read more in comments`;
+            post5Box.classList.toggle('placeholder', !lede);
+
+            const cmt5Box = document.getElementById('cmt-5');
+            cmt5Box.innerText = `▶️▶️▶️ Details: ${linkVal}`;
+            cmt5Box.classList.toggle('placeholder', !link);
+        }
+
         function copyText(elementId, btnElement) {
             const textToCopy = document.getElementById(elementId).innerText;
+            if (!textToCopy) return;
+
             navigator.clipboard.writeText(textToCopy).then(() => {
                 showToast();
                 
-                // Feedback visual on button
                 const originalText = btnElement.innerHTML;
                 btnElement.innerHTML = '✓ Đã Copy!';
                 btnElement.classList.add('copied');
@@ -490,6 +622,9 @@ Read more in comments</div>
                 toast.classList.remove('show');
             }, 2000);
         }
+
+        // Initialize default view
+        window.onload = updateTemplates;
     </script>
 </body>
 </html>

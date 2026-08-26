@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quy định & Mẫu Share Bài Social FB TTN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1877f2;
+            --primary-hover: #166fe5;
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text: #050505;
+            --text-secondary: #65676b;
+            --border: #e4e6eb;
+            --accent-light: #e7f3ff;
+            --success: #31a24c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: var(--border);
+        }
+
+        /* Tools Block */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .tool-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.2s ease;
+        }
+
+        .tool-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(24, 119, 242, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .tool-info h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--primary);
+        }
+
+        .tool-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .tool-icon {
+            font-size: 20px;
+        }
+
+        /* General Rules Block */
+        .rules-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            margin-bottom: 28px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .rules-card h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rules-list {
+            list-style: none;
+        }
+
+        .rules-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .rules-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .rules-list li::before {
+            content: '•';
+            position: absolute;
+            left: 4px;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .highlight-badge {
+            background-color: #fff0f0;
+            color: #d93025;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* Templates Grid */
+        .templates-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .template-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .template-header {
+            background-color: #f7f8fa;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .template-header h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: #e4e6eb;
+            color: var(--text-secondary);
+        }
+
+        .tag.fixed {
+            background: var(--accent-light);
+            color: var(--primary);
+        }
+
+        .template-body {
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 640px) {
+            .template-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .content-block {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .code-box {
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-family: inherit;
+            font-size: 13.5px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            flex-grow: 1;
+            margin-bottom: 8px;
+            color: #1c1e21;
+            min-height: 48px;
+        }
+
+        .code-box.na {
+            color: var(--text-secondary);
+            font-style: italic;
+            background: #f0f2f5;
+        }
+
+        .copy-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            align-self: flex-start;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .copy-btn.copied {
+            background-color: var(--success);
+            border-color: var(--success);
+            color: #ffffff;
+        }
+
+        /* Toast Alert */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background-color: #242526;
+            color: #ffffff;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Hệ Thống Quy Định & Template Share Bài</h1>
+            <p>Facebook Tuổi Trẻ News (TTN) • Tra cứu quy định & Copy mẫu 1-Click</p>
+        </header>
+
+        <!-- Tiện ích block -->
+        <div class="section-title">🛠️ Tiện ích hỗ trợ</div>
+        <div class="tools-grid">
+            <a href="https://tienxu04.github.io/xuxucode/convert.html" target="_blank" class="tool-card">
+                <div class="tool-info">
+                    <h3>Convert Code / Text</h3>
+                    <p>Công cụ chuyển đổi code và xử lý ký tự</p>
+                </div>
+                <div class="tool-icon">🔗</div>
+            </a>
+            <a href="https://tienxu04.github.io/xuxucode/fb_thumb_portrait.html" target="_blank" class="tool-card">
+                <div class="tool-info">
+                    <h3>FB Thumb Portrait</h3>
+                    <p>Công cụ tạo và tối ưu thumbnail dọc Facebook</p>
+                </div>
+                <div class="tool-icon">🖼️</div>
+            </a>
+        </div>
+
+        <!-- Quy định chung block -->
+        <div class="rules-card">
+            <h2>📌 Quy định chung</h2>
+            <ul class="rules-list">
+                <li>Khung giờ cố định <span class="highlight-badge">Breakfast: 8h00 sáng</span> hàng ngày.</li>
+                <li>Đảm bảo gắn đúng mẫu Comment tương ứng cho từng định dạng bài để giữ tính thống nhất.</li>
+                <li>Kiểm tra kỹ link đường dẫn trước khi xuất bản hoặc dán vào Comment.</li>
+            </ul>
+        </div>
+
+        <!-- Mẫu share bài block -->
+        <div class="section-title">📋 Mẫu Share Bài (Click to Copy)</div>
+        <div class="templates-grid">
+
+            <!-- Template 1: Breakfast -->
+            <div class="template-card">
+                <div class="template-header">
+                    <h3>1. Breakfast</h3>
+                    <span class="tag fixed">Cố định 8:00 AM</span>
+                </div>
+                <div class="template-body">
+                    <div class="content-block">
+                        <span class="content-label">Mẫu Post</span>
+                        <div class="code-box" id="post-1">Good morning from Vietnam! Here’s your news brief for today 
+⬇️⬇️⬇️</div>
+                        <button class="copy-btn" onclick="copyText('post-1', this)">📋 Copy Post</button>
+                    </div>
+                    <div class="content-block">
+                        <span class="content-label">Mẫu Comment</span>
+                        <div class="code-box" id="cmt-1">➡️➡️➡️ Read more:</div>
+                        <button class="copy-btn" onclick="copyText('cmt-1', this)">📋 Copy Comment</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Template 2: Headline only -->
+            <div class="template-card">
+                <div class="template-header">
+                    <h3>2. Headline only</h3>
+                    <span class="tag">Tiêu đề</span>
+                </div>
+                <div class="template-body">
+                    <div class="content-block">
+                        <span class="content-label">Mẫu Post</span>
+                        <div class="code-box" id="post-2">[Headline]</div>
+                        <button class="copy-btn" onclick="copyText('post-2', this)">📋 Copy Post</button>
+                    </div>
+                    <div class="content-block">
+                        <span class="content-label">Mẫu Comment</span>
+                        <div class="code-box" id="cmt-2">👉👉👉 Read more:</div>
+                        <button class="copy-btn" onclick="copyText('cmt-2', this)">📋 Copy Comment</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Template 3: One photo -->
+            <div class="template-card">
+                <div class="template-header">
+                    <h3>3. One photo</h3>
+                    <span class="tag">1 Ảnh</span>
+                </div>
+                <div class="template-body">
+                    <div class="content-block">
+                        <span class="content-label">Mẫu Post</span>
+                        <div class="code-box" id="post-3">[LEDE]
+Full report:</div>
+                        <button class="copy-btn" onclick="copyText('post-3', this)">📋 Copy Post</button>
+                    </div>
+                    <div class="content-block">
+                        <span class="content-label">Mẫu Comment</span>
+                        <div class="code-box na">N/A (Không cần comment)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Template 4: Multiple photos -->
+            <div class="template-card">
+                <div class="template-header">
+                    <h3>4. Multiple photos</h3>
+                    <span class="tag">Nhiều Ảnh</span>
+                </div>
+                <div class="template-body">
+                    <div class="content-block">
+                        <span class="content-label">Mẫu Post</span>
+                        <div class="code-box" id="post-4">[LEDE]
+Read more: [link]</div>
+                        <button class="copy-btn" onclick="copyText('post-4', this)">📋 Copy Post</button>
+                    </div>
+                    <div class="content-block">
+                        <span class="content-label">Mẫu Comment</span>
+                        <div class="code-box na">N/A (Không cần comment)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Template 5: Newscard -->
+            <div class="template-card">
+                <div class="template-header">
+                    <h3>5. Newscard</h3>
+                    <span class="tag">Ảnh Đồ Họa / Card</span>
+                </div>
+                <div class="template-body">
+                    <div class="content-block">
+                        <span class="content-label">Mẫu Post</span>
+                        <div class="code-box" id="post-5">[LEDE]
+Read more in comments</div>
+                        <button class="copy-btn" onclick="copyText('post-5', this)">📋 Copy Post</button>
+                    </div>
+                    <div class="content-block">
+                        <span class="content-label">Mẫu Comment</span>
+                        <div class="code-box" id="cmt-5">▶️▶️▶️ Details:</div>
+                        <button class="copy-btn" onclick="copyText('cmt-5', this)">📋 Copy Comment</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Đã copy vào bộ nhớ tạm!</div>
+
+    <script>
+        function copyText(elementId, btnElement) {
+            const textToCopy = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast();
+                
+                // Feedback visual on button
+                const originalText = btnElement.innerHTML;
+                btnElement.innerHTML = '✓ Đã Copy!';
+                btnElement.classList.add('copied');
+                
+                setTimeout(() => {
+                    btnElement.innerHTML = originalText;
+                    btnElement.classList.remove('copied');
+                }, 1500);
+            }).catch(err => {
+                console.error('Không thể copy: ', err);
+            });
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

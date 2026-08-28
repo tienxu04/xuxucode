@@ -1,8 +1,9 @@
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quy định & Generator Share Bài Social FB TTN v4</title>
+    <title>Social Share Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -17,6 +18,10 @@
             --success: #31a24c;
             --danger: #d93025;
             --danger-bg: #fff0f0;
+            --note-bg: #fffbe6;
+            --note-border: #ffe58f;
+            --tip-bg: #f0f7ff;
+            --tip-border: #0066cc;
         }
 
         * {
@@ -72,6 +77,56 @@
             flex: 1;
             height: 1px;
             background-color: var(--border);
+        }
+
+        /* Pro Tips Box */
+        .protips-card {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f0fa 100%);
+            border-left: 4px solid var(--tip-border);
+            border-top: 1px solid #d0e2f7;
+            border-right: 1px solid #d0e2f7;
+            border-bottom: 1px solid #d0e2f7;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 6px rgba(0, 102, 204, 0.06);
+        }
+
+        .protips-card h2 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #004085;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .protips-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 8px 16px;
+        }
+
+        .protips-list li {
+            position: relative;
+            padding-left: 20px;
+            font-size: 13.5px;
+            color: #1c3d5a;
+            line-height: 1.4;
+        }
+
+        .protips-list li::before {
+            content: '👉';
+            position: absolute;
+            left: 0;
+            font-size: 12px;
+            top: 2px;
+        }
+
+        .protips-list li strong {
+            color: #002752;
         }
 
         /* Tools Block */
@@ -260,6 +315,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .template-title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .template-header h3 {
@@ -280,6 +343,15 @@
         .tag.fixed {
             background: var(--accent-light);
             color: var(--primary);
+        }
+
+        .field-note {
+            font-size: 11.5px;
+            color: #8c6b00;
+            background-color: var(--note-bg);
+            border: 1px solid var(--note-border);
+            padding: 2px 8px;
+            border-radius: 4px;
         }
 
         .template-body {
@@ -397,23 +469,43 @@
             opacity: 1;
             transform: translateY(0);
         }
+        footer {
+    text-align: center;
+    padding: 20px 0 10px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border);
+    margin-top: 32px;
+}
     </style>
 </head>
 <body>
 
     <div class="container">
         <header>
-            <h1>Hệ Thống Quy Định & Generator Share Bài</h1>
-            <p>Facebook Tuổi Trẻ News (TTN) • Version 4.0 (Added Podcast & Clear All Features)</p>
+            <h1>Social Share Generator</h1>
+            <p>Facebook Tuổi Trẻ News (TTN) • Tự động tạo mẫu share bài theo chuẩn</p>
         </header>
+
+        <!-- Pro Tips Box -->
+        <div class="protips-card">
+            <h2>💡 Pro Tips (Quy tắc định dạng nhanh)</h2>
+            <ul class="protips-list">
+                <li><strong>Breakfast:</strong> Chỉ cần paste Link.</li>
+                <li><strong>Podcast:</strong> Chỉ cần Headline + Link (dùng cmt "Listen:").</li>
+                <li><strong>Headline only:</strong> Chỉ cần Headline + Link (dùng cmt "Read more:").</li>
+                <li><strong>One / Multi photo:</strong> Nhập LEDE + Link (viết liền trong Post, không cmt).</li>
+                <li><strong>Newscard:</strong> Nhập LEDE + Link (chỉ dán Link vào cmt "Details:").</li>
+            </ul>
+        </div>
 
         <!-- Tiện ích block -->
         <div class="section-title">🛠️ Tiện ích hỗ trợ</div>
         <div class="tools-grid">
             <a href="https://tienxu04.github.io/xuxucode/convert.html" target="_blank" class="tool-card">
                 <div class="tool-info">
-                    <h3>Convert Code / Text</h3>
-                    <p>Công cụ chuyển đổi code và xử lý ký tự</p>
+                    <h3>Convert WebP/Avif</h3>
+                    <p>Đổi ảnh sang jpg</p>
                 </div>
                 <div class="tool-icon">🔗</div>
             </a>
@@ -424,15 +516,23 @@
                 </div>
                 <div class="tool-icon">🖼️</div>
             </a>
+            <a href="https://tienxu04.github.io/xuxucode/collage.html" target="_blank" class="tool-card">
+                <div class="tool-info">
+                    <h3>Tạo Ảnh Ghép</h3>
+                    <p>Công cụ ghép ảnh và tùy chỉnh layout</p>
+                </div>
+                <div class="tool-icon">🧩</div>
+            </a>
         </div>
 
         <!-- Quy định chung block -->
         <div class="rules-card">
             <h2>📌 Quy định chung</h2>
             <ul class="rules-list">
-                <li>Khung giờ cố định <span class="highlight-badge">Breakfast: 8h00 sáng</span> hàng ngày.</li>
+                <li>Khung giờ cố định <span class="highlight-badge">Breakfast: 8h00 sáng</span></li>
+                 <li>Khung giờ cố định <span class="highlight-badge">Podcast: 7h00 tối</span></li>
                 <li>Đảm bảo gắn đúng mẫu Comment tương ứng cho từng định dạng bài để giữ tính thống nhất.</li>
-                <li>Tất cả mẫu bài viết có LEDE đều sử dụng dòng trống (line-break/double enter) giữa đoạn mở đầu và đường dẫn.</li>
+                
             </ul>
         </div>
 
@@ -455,7 +555,7 @@
                 </div>
                 <div class="form-group">
                     <label for="input-link">Link bài viết (Đường dẫn):</label>
-                    <input type="url" id="input-link" class="form-control" placeholder="https://tuoitrenews.vn/..." oninput="updateTemplates()">
+                    <input type="url" id="input-link" class="form-control" placeholder="https://news.tuoitre.vn/..." oninput="updateTemplates()">
                 </div>
             </div>
         </div>
@@ -467,8 +567,11 @@
             <!-- Template 1: Breakfast -->
             <div class="template-card">
                 <div class="template-header">
-                    <h3>1. Breakfast</h3>
-                    <span class="tag fixed">Cố định 8:00 AM</span>
+                    <div class="template-title-group">
+                        <h3>1. Breakfast</h3>
+                        <span class="tag fixed">Cố định 8:00 AM</span>
+                    </div>
+                    <span class="field-note">💡 Chỉ cần nhập Link</span>
                 </div>
                 <div class="template-body">
                     <div class="content-block">
@@ -488,8 +591,11 @@
             <!-- Template 2: Podcast -->
             <div class="template-card">
                 <div class="template-header">
-                    <h3>2. Podcast</h3>
-                    <span class="tag">Âm thanh / Audio</span>
+                    <div class="template-title-group">
+                        <h3>2. Podcast</h3>
+                         <span class="tag fixed">Cố định 7:00 PM</span>
+                    </div>
+                    <span class="field-note">💡 Không dùng LEDE</span>
                 </div>
                 <div class="template-body">
                     <div class="content-block">
@@ -508,8 +614,11 @@
             <!-- Template 3: Headline only -->
             <div class="template-card">
                 <div class="template-header">
-                    <h3>3. Headline only</h3>
-                    <span class="tag">Tiêu đề</span>
+                    <div class="template-title-group">
+                        <h3>3. Headline only</h3>
+                        <span class="tag">Tiêu đề</span>
+                    </div>
+                    <span class="field-note">💡 Không dùng LEDE</span>
                 </div>
                 <div class="template-body">
                     <div class="content-block">
@@ -528,8 +637,11 @@
             <!-- Template 4: One photo -->
             <div class="template-card">
                 <div class="template-header">
-                    <h3>4. One photo</h3>
-                    <span class="tag">1 Ảnh</span>
+                    <div class="template-title-group">
+                        <h3>4. One photo</h3>
+                        <span class="tag">1 Ảnh</span>
+                    </div>
+                    <span class="field-note">💡 Dùng LEDE & Link, không dùng Headline</span>
                 </div>
                 <div class="template-body">
                     <div class="content-block">
@@ -547,8 +659,11 @@
             <!-- Template 5: Multiple photos -->
             <div class="template-card">
                 <div class="template-header">
-                    <h3>5. Multiple photos</h3>
-                    <span class="tag">Nhiều Ảnh</span>
+                    <div class="template-title-group">
+                        <h3>5. Multiple photos</h3>
+                        <span class="tag">Nhiều Ảnh</span>
+                    </div>
+                    <span class="field-note">💡 Dùng LEDE & Link, không dùng Headline</span>
                 </div>
                 <div class="template-body">
                     <div class="content-block">
@@ -566,8 +681,11 @@
             <!-- Template 6: Newscard -->
             <div class="template-card">
                 <div class="template-header">
-                    <h3>6. Newscard</h3>
-                    <span class="tag">Ảnh Đồ Họa / Card</span>
+                    <div class="template-title-group">
+                        <h3>6. Newscard</h3>
+                        <span class="tag">Ảnh Đồ Họa / Card</span>
+                    </div>
+                    <span class="field-note">💡 Dùng LEDE & Link, không dùng Headline</span>
                 </div>
                 <div class="template-body">
                     <div class="content-block">
@@ -604,7 +722,7 @@
             cmt1Box.innerText = `➡️➡️➡️ Read more: ${linkVal}`;
             cmt1Box.classList.toggle('placeholder', !link);
 
-            // 2. Podcast (Post: Headline | Comment: ➡️➡️➡️ Listen: [link])
+            // 2. Podcast
             const post2Box = document.getElementById('post-2');
             post2Box.innerText = headlineVal;
             post2Box.classList.toggle('placeholder', !headline);
@@ -619,26 +737,26 @@
             post3Box.classList.toggle('placeholder', !headline);
 
             const cmt3Box = document.getElementById('cmt-3');
-            cmt3Box.innerText = `👉👉👉 Read more: ${linkVal}`;
+            cmt3Box.innerText = `➡️➡️➡️ Read more: ${linkVal}`;
             cmt3Box.classList.toggle('placeholder', !link);
 
-            // 4. One photo (LEDE + Enter + Enter + Full report:)
+            // 4. One photo
             const post4Box = document.getElementById('post-4');
             post4Box.innerText = `${ledeVal}\n\nFull report: ${linkVal}`;
             post4Box.classList.toggle('placeholder', !lede && !link);
 
-            // 5. Multiple photos (LEDE + Enter + Enter + Read more:)
+            // 5. Multiple photos
             const post5Box = document.getElementById('post-5');
             post5Box.innerText = `${ledeVal}\n\nRead more: ${linkVal}`;
             post5Box.classList.toggle('placeholder', !lede && !link);
 
-            // 6. Newscard (LEDE + Enter + Enter + Read more in comments)
+            // 6. Newscard
             const post6Box = document.getElementById('post-6');
             post6Box.innerText = `${ledeVal}\n\nRead more in comments`;
             post6Box.classList.toggle('placeholder', !lede);
 
             const cmt6Box = document.getElementById('cmt-6');
-            cmt6Box.innerText = `▶️▶️▶️ Details: ${linkVal}`;
+            cmt6Box.innerText = `➡️➡️➡️ Details: ${linkVal}`;
             cmt6Box.classList.toggle('placeholder', !link);
         }
 
@@ -680,5 +798,8 @@
         // Initialize default view
         window.onload = updateTemplates;
     </script>
+    <footer>
+    © xuxucode
+</footer>
 </body>
 </html>

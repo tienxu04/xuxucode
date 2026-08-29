@@ -77,7 +77,15 @@
                 <div>
                     <label>Headline</label>
                     <input type="text" id="headline" placeholder="Nhập tiêu đề tin tức...">
-                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 10px;">
+                    
+                    <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="toggleDivider" checked style="width: 18px; height: 18px; cursor: pointer;">
+                        <label for="toggleDivider" style="margin-bottom: 0; font-size: 0.9rem; cursor: pointer; font-weight: normal;">
+                            Hiển thị 3 đường gạch phân cách
+                        </label>
+                    </div>
+
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 8px;">
                         💡 Mẹo: Vuốt trực tiếp lên ảnh ở dưới để căn chỉnh vị trí.
                     </p>
                 </div>
@@ -102,16 +110,15 @@
         let isDragging = false;
         let startY = 0;
         let currentYOffset = 0; 
+        let showDivider = true;
         const logoSrc = 'logo_ttn_white.png';
 
-        // Load Logo
         const loadLogo = () => {
             logoImage = new Image();
             logoImage.src = logoSrc;
             logoImage.onload = () => render();
         };
 
-        // Hàm Wrap Text
         const wrapText = (ctx, text, x, y, maxWidth, lineHeight) => {
             const words = text.split(' ');
             let line = '';
@@ -128,13 +135,11 @@
             return lines;
         };
 
-        // Hàm vẽ chính
         const render = () => {
             const canvas = document.getElementById('canvasPortrait');
             const ctx = canvas.getContext('2d');
             canvas.width = 1080; canvas.height = 1350;
 
-            // Vẽ ảnh nền (2/3 phía trên)
             if (currentImage) {
                 const imgAreaH = 900;
                 const scale = Math.max(canvas.width / currentImage.width, imgAreaH / currentImage.height);
@@ -147,7 +152,6 @@
                 ctx.drawImage(currentImage, (canvas.width - sw)/2, (imgAreaH - sh)/2 + currentYOffset, sw, sh);
                 ctx.restore();
 
-                // Gradient che mờ phần dưới ảnh
                 const grad = ctx.createLinearGradient(0, imgAreaH - 150, 0, imgAreaH);
                 grad.addColorStop(0, 'rgba(0,0,0,0)'); 
                 grad.addColorStop(1, 'rgba(0,0,0,0.7)');
@@ -158,53 +162,48 @@
                 ctx.fillRect(0, 0, canvas.width, 900);
             }
 
-            // Phần chân trang màu đỏ
             ctx.fillStyle = '#e30f16'; 
             ctx.fillRect(0, 900, canvas.width, 450);
 
-            // Vẽ Headline
             ctx.fillStyle = '#ffffff'; 
             ctx.font = 'bold 64px Arial';
             const headlineText = document.getElementById('headline').value || 'Your Headline Here';
             const lines = wrapText(ctx, headlineText, 60, 985, 960, 85);
             lines.forEach(l => ctx.fillText(l.text, 60, l.y));
 
-            // Logo và Text phụ
-if (logoImage && logoImage.complete) {
-    const lh = 55; 
-    const lw = (logoImage.width/logoImage.height)*lh;
-    const logoX = canvas.width - lw - 60;
-    const logoY = canvas.height - 85;
+            if (logoImage && logoImage.complete) {
+                const lh = 55; 
+                const lw = (logoImage.width/logoImage.height)*lh;
+                const logoX = canvas.width - lw - 60;
+                const logoY = canvas.height - 85;
 
-    // --- BẮT ĐẦU VẼ 3 GẠCH DIVIDER DÀI ---
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1; // Giảm xuống 1px cho mảnh và tinh tế hơn khi kéo dài
-    
-    const lineYStart = logoY - 30; // Khoảng cách từ divider đến đỉnh logo (30px cho thoáng)
-    const lineSpacing = 10;        // Khoảng cách giữa các sợi mảnh
-    const sideMargin = 60;         // Căn lề 2 bên cho bằng với Headline
+                if (showDivider) {
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1;
+                    
+                    const lineYStart = logoY - 30;
+                    const lineSpacing = 10;
+                    const sideMargin = 60;
 
-    for (let i = 0; i < 3; i++) {
-        ctx.globalAlpha = 0.7 + (i * 0.15); // Tạo hiệu ứng mờ dần (sợi trên cùng mờ nhất)
-        ctx.beginPath();
-        ctx.moveTo(sideMargin, lineYStart - (i * lineSpacing));
-        ctx.lineTo(canvas.width - sideMargin, lineYStart - (i * lineSpacing));
-        ctx.stroke();
-    }
-    ctx.globalAlpha = 1.0; 
-    // --- KẾT THÚC VẼ DIVIDER ---
+                    for (let i = 0; i < 3; i++) {
+                        ctx.globalAlpha = 0.7 + (i * 0.15);
+                        ctx.beginPath();
+                        ctx.moveTo(sideMargin, lineYStart - (i * lineSpacing));
+                        ctx.lineTo(canvas.width - sideMargin, lineYStart - (i * lineSpacing));
+                        ctx.stroke();
+                    }
+                    ctx.globalAlpha = 1.0; 
+                }
 
-    // Vẽ Logo
-    ctx.drawImage(logoImage, logoX, logoY, lw, lh);
-    
-    ctx.font = '32px Arial'; 
-    ctx.globalAlpha = 0.9;
-    ctx.fillText('Link to article in comments', 60, canvas.height - 85 + (lh/1.5));
-    ctx.globalAlpha = 1.0;
-}
+                ctx.drawImage(logoImage, logoX, logoY, lw, lh);
+                
+                ctx.font = '32px Arial'; 
+                ctx.globalAlpha = 0.9;
+                ctx.fillText('Link to article in comments', 60, canvas.height - 85 + (lh/1.5));
+                ctx.globalAlpha = 1.0;
+            }
         };
 
-        // --- XỬ LÝ KÉO (PAN) ---
         const pCanvas = document.getElementById('canvasPortrait');
         const startDrag = (y) => { if(!currentImage) return; isDragging = true; startY = y - currentYOffset; };
         const moveDrag = (y) => { if(!isDragging) return; currentYOffset = y - startY; render(); };
@@ -218,7 +217,6 @@ if (logoImage && logoImage.complete) {
         window.addEventListener('touchmove', (e) => { if(isDragging) { e.preventDefault(); moveDrag(e.touches[0].clientY); } }, {passive: false});
         window.addEventListener('touchend', endDrag);
 
-        // --- UPLOAD ---
         const handleFiles = (files) => {
             if (files[0]) {
                 const reader = new FileReader();
@@ -235,6 +233,11 @@ if (logoImage && logoImage.complete) {
         ['dragover', 'drop'].forEach(ev => dz.addEventListener(ev, (e) => { e.preventDefault(); if(ev==='drop') handleFiles(e.dataTransfer.files); }));
         document.getElementById('imageInput').addEventListener('change', (e) => handleFiles(e.target.files));
         document.getElementById('headline').addEventListener('input', render);
+        
+        document.getElementById('toggleDivider').addEventListener('change', (e) => {
+            showDivider = e.target.checked;
+            render();
+        });
         
         const downloadCanvas = () => {
             const link = document.createElement('a');

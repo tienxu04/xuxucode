@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dự thảo Khung Định mức Nhuận bút Chi tiết</title>
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #334155;
+            --primary-color: #1e3a8a;
+            --accent-blue: #0284c7;
+            --accent-green: #059669;
+            --accent-purple: #7c3aed;
+            --accent-orange: #d97706;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            justify-content: center; /* Căn giữa toàn bộ giao diện */
+            align-items: center;
+            overflow: hidden; /* Giữ nguyên việc không scroll */
+        }
+
+        /* Khung chứa gom gọn nội dung vừa mắt */
+        .wrapper {
+            width: 100%;
+            max-width: 1100px; /* Giới hạn độ rộng tối đa để không bị dãn 2 bên */
+            height: 100vh;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 1.15rem;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+
+        /* Bố cục lưới Dashboard */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: auto 1fr;
+            gap: 10px;
+            flex-grow: 1;
+            height: calc(100vh - 55px);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 10px 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .card-header {
+            font-weight: bold;
+            font-size: 0.85rem;
+            padding-bottom: 6px;
+            margin-bottom: 6px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-transform: uppercase;
+        }
+
+        .card-content {
+            font-size: 0.75rem;
+            line-height: 1.35;
+            color: #475569;
+            overflow-y: auto;
+        }
+
+        /* Badge hiển thị điểm số */
+        .badge {
+            background-color: #e0f2fe;
+            color: var(--accent-blue);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+
+        /* Định style riêng từng nhóm */
+        .group-a { border-top: 3px solid var(--accent-blue); }
+        .group-a .card-header { color: var(--accent-blue); }
+
+        .group-b { border-top: 3px solid var(--accent-purple); }
+        .group-b .card-header { color: var(--accent-purple); }
+        .group-b .badge { background-color: #f3e8ff; color: var(--accent-purple); }
+
+        .group-c { border-top: 3px solid var(--accent-orange); grid-row: span 2; }
+        .group-c .card-header { color: var(--accent-orange); }
+        .group-c .badge { background-color: #fef3c7; color: var(--accent-orange); }
+
+        .group-d { border-top: 3px solid #64748b; }
+        .group-d .badge { background-color: #f1f5f9; color: #475569; }
+
+        .group-e { border-top: 3px solid var(--accent-green); grid-column: span 2; }
+        .group-e .card-header { color: var(--accent-green); }
+        .group-e .badge { background-color: #d1fae5; color: var(--accent-green); }
+
+        ul { list-style: none; }
+        li { margin-bottom: 6px; }
+        li strong { color: #1e293b; }
+
+        /* Bảng cho nhóm C */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.73rem;
+        }
+
+        th, td {
+            padding: 4px 6px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        th { background-color: #f8fafc; font-weight: 600; color: #334155; }
+
+        /* Bố cục danh sách Multimedia */
+        .media-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .sub-box {
+            background-color: #f8fafc;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #edf2f7;
+        }
+
+        .sub-title {
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .note {
+            font-size: 0.7rem;
+            color: #64748b;
+            font-style: italic;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <header>
+            <h1>II. DỰ THẢO KHUNG ĐỊNH MỨC NHUẬN BÚT CHI TIẾT</h1>
+        </header>
+
+        <div class="dashboard">
+
+            <!-- NHÓM A -->
+            <div class="card group-a">
+                <div class="card-header">
+                    <span>A. Thời sự thường nhật</span>
+                </div>
+                <div class="card-content">
+                    <ul>
+                        <li>
+                            <div style="display:flex; justify-content: space-between; align-items:center;">
+                                <strong>1. Tin ngắn, cơ bản</strong>
+                                <span class="badge">20 - 50 điểm</span>
+                            </div>
+                            <div>• Độ dài: 200 - 500 chữ.</div>
+                            <div>• Cập nhật nhanh sự kiện; phản ánh trực tiếp, nhanh nhạy.</div>
+                        </li>
+                        <li style="margin-top: 6px;">
+                            <div style="display:flex; justify-content: space-between; align-items:center;">
+                                <strong>2. Tin/bài mở rộng, tổng hợp</strong>
+                                <span class="badge">50 - 80 điểm</span>
+                            </div>
+                            <div>• Độ dài: 500 - 700 chữ.</div>
+                            <div>• Gia công biên tập, đối chiếu nhiều nguồn; bổ sung bối cảnh.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- NHÓM B -->
+            <div class="card group-b">
+                <div class="card-header">
+                    <span>B. Phân tích, chuyên sâu</span>
+                    <span class="badge">100 - 150 điểm</span>
+                </div>
+                <div class="card-content">
+                    <p><strong>• Độ dài:</strong> Từ 700 - 800 chữ trở lên.</p>
+                    <p><strong>• Đòi hỏi:</strong> Đầu tư cao về tư duy báo chí & thời gian nghiên cứu.</p>
+                    <p><strong>• Nội dung:</strong> Khai thác đa chiều, đa dạng nguồn tài liệu.</p>
+                    <p><strong>• Bắt buộc:</strong> Hỗ trợ trực quan (số liệu, biểu đồ/đồ họa, hình ảnh chất lượng cao).</p>
+                </div>
+            </div>
+
+            <!-- NHÓM C -->
+            <div class="card group-c">
+                <div class="card-header">
+                    <span>C. Thực tế, phỏng vấn & Chuyên biệt</span>
+                </div>
+                <div class="card-content">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Thể loại</th>
+                                <th style="text-align: right;">Điểm</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Ghi chép, phản ánh, tường thuật</td><td style="text-align: right;" class="badge">80 - 300</td></tr>
+                            <tr><td>Chân dung nhân vật</td><td style="text-align: right;" class="badge">80 - 300</td></tr>
+                            <tr><td>Phỏng vấn chuyên sâu</td><td style="text-align: right;" class="badge">120 - 300</td></tr>
+                            <tr><td>Bình luận, xã luận</td><td style="text-align: right;" class="badge">120 - 300</td></tr>
+                            <tr><td>Phóng sự, Phóng sự điều tra</td><td style="text-align: right;" class="badge">200 - 1.000</td></tr>
+                            <tr><td>Bài viết đặt hàng (Chuyên gia/Nhà NC)</td><td style="text-align: right;" class="badge">100 - 500</td></tr>
+                        </tbody>
+                    </table>
+                    <p class="note" style="margin-top: 6px;">* Khung điểm tham chiếu cơ chế hiện hành của Tuổi Trẻ Online.</p>
+                </div>
+            </div>
+
+            <!-- NHÓM D -->
+            <div class="card group-d">
+                <div class="card-header">
+                    <span>D. Xử lý tin văn bản & Quốc tế</span>
+                    <span class="badge">10 điểm</span>
+                </div>
+                <div class="card-content">
+                    <p>• Chọn lọc, kiểm chứng & xử lý nhanh thông tin từ hệ thống văn bản, Cổng thông tin điện tử Chính phủ, bộ ngành.</p>
+                    <p>• Biên tập lại từ hãng thông tấn uy tín (Reuters, AFP, AP, TTXVN,...).</p>
+                </div>
+            </div>
+
+            <!-- NHÓM E -->
+            <div class="card group-e">
+                <div class="card-header">
+                    <span>E. MULTIMEDIA (Video / Reel / Podcast / Ảnh)</span>
+                </div>
+                <div class="card-content">
+                    <div class="media-grid">
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <div class="sub-box">
+                                <div class="sub-title"><span>Video chuyển ngữ</span><span style="font-size:0.7rem; color:#64748b;">(Dịch + Voice AI + Sub)</span></div>
+                                <div>• &lt; 2 phút: <strong class="badge">60 - 75</strong> | 2-4 phút: <strong class="badge">75 - 90</strong></div>
+                                <div>• 4 - 5 phút: <strong class="badge">90 - 110 điểm</strong></div>
+                            </div>
+                            <div class="sub-box">
+                                <div class="sub-title"><span>Video tự sản xuất</span><span style="font-size:0.7rem; color:#64748b;">(Quay, dựng, sub, audio)</span></div>
+                                <div>• &lt; 2 phút: <strong class="badge">80 - 100</strong> | 2-4 phút: <strong class="badge">100 - 115</strong></div>
+                                <div>• 4 - 5 phút: <strong class="badge">120 - 130 điểm</strong></div>
+                                <div class="note">• Tách điểm nhóm: Script (35%), Quay (30%), Dựng (35%).</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <div class="sub-box">
+                                <div class="sub-title"><span>Reel (Video dọc &lt; 60s)</span></div>
+                                <div>• &lt; 40 giây: <strong class="badge">55 - 70 điểm</strong></div>
+                                <div>• 40 - 60 giây: <strong class="badge">75 - 90 điểm</strong></div>
+                            </div>
+                            <div class="sub-box">
+                                <div class="sub-title"><span>Podcast (2.5 - 3 phút)</span> <span class="badge">60 - 75 điểm</span></div>
+                            </div>
+                            <div class="sub-box" style="display:flex; justify-content:space-between;">
+                                <div><strong>Hình ảnh:</strong> <span class="badge">15 - 30 điểm/ảnh</span></div>
+                                <div><strong>Đồ họa:</strong> <span class="badge">20 - 200 điểm/đồ họa</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

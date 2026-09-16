@@ -634,49 +634,51 @@
                 </div>
             </div>
 
-            <!-- Template 4: One photo -->
-            <div class="template-card">
-                <div class="template-header">
-                    <div class="template-title-group">
-                        <h3>4. One photo</h3>
-                        <span class="tag">1 Ảnh</span>
-                    </div>
-                    <span class="field-note">💡 Dùng LEDE & Link, không dùng Headline</span>
-                </div>
-                <div class="template-body">
-                    <div class="content-block">
-                        <span class="content-label">Mẫu Post</span>
-                        <div class="code-box" id="post-4"></div>
-                        <button class="copy-btn" onclick="copyText('post-4', this)">📋 Copy Post</button>
-                    </div>
-                    <div class="content-block">
-                        <span class="content-label">Mẫu Comment</span>
-                        <div class="code-box na">N/A (Không cần comment)</div>
-                    </div>
-                </div>
-            </div>
+          <!-- Template 4: One photo -->
+<div class="template-card">
+    <div class="template-header">
+        <div class="template-title-group">
+            <h3>4. One photo</h3>
+            <span class="tag">1 Ảnh</span>
+        </div>
+        <span class="field-note">💡 Dùng Headline, không dùng LEDE</span>
+    </div>
+    <div class="template-body">
+        <div class="content-block">
+            <span class="content-label">Mẫu Post</span>
+            <div class="code-box" id="post-4"></div>
+            <button class="copy-btn" onclick="copyText('post-4', this)">📋 Copy Post</button>
+        </div>
+        <div class="content-block">
+            <span class="content-label">Mẫu Comment</span>
+            <div class="code-box" id="cmt-4"></div>
+            <button class="copy-btn" onclick="copyText('cmt-4', this)">📋 Copy Comment</button>
+        </div>
+    </div>
+</div>
 
-            <!-- Template 5: Multiple photos -->
-            <div class="template-card">
-                <div class="template-header">
-                    <div class="template-title-group">
-                        <h3>5. Multiple photos</h3>
-                        <span class="tag">Nhiều Ảnh</span>
-                    </div>
-                    <span class="field-note">💡 Dùng LEDE & Link, không dùng Headline</span>
-                </div>
-                <div class="template-body">
-                    <div class="content-block">
-                        <span class="content-label">Mẫu Post</span>
-                        <div class="code-box" id="post-5"></div>
-                        <button class="copy-btn" onclick="copyText('post-5', this)">📋 Copy Post</button>
-                    </div>
-                    <div class="content-block">
-                        <span class="content-label">Mẫu Comment</span>
-                        <div class="code-box na">N/A (Không cần comment)</div>
-                    </div>
-                </div>
-            </div>
+<!-- Template 5: Multiple photos -->
+<div class="template-card">
+    <div class="template-header">
+        <div class="template-title-group">
+            <h3>5. Multiple photos</h3>
+            <span class="tag">Nhiều Ảnh</span>
+        </div>
+        <span class="field-note">💡 Dùng Headline, không dùng LEDE</span>
+    </div>
+    <div class="template-body">
+        <div class="content-block">
+            <span class="content-label">Mẫu Post</span>
+            <div class="code-box" id="post-5"></div>
+            <button class="copy-btn" onclick="copyText('post-5', this)">📋 Copy Post</button>
+        </div>
+        <div class="content-block">
+            <span class="content-label">Mẫu Comment</span>
+            <div class="code-box" id="cmt-5"></div>
+            <button class="copy-btn" onclick="copyText('cmt-5', this)">📋 Copy Comment</button>
+        </div>
+    </div>
+</div>
 
             <!-- Template 6: Newscard -->
             <div class="template-card">
@@ -740,15 +742,23 @@
             cmt3Box.innerText = `➡️➡️➡️ Read more: ${linkVal}`;
             cmt3Box.classList.toggle('placeholder', !link);
 
-            // 4. One photo
-            const post4Box = document.getElementById('post-4');
-            post4Box.innerText = `${ledeVal}\n\nFull report: ${linkVal}`;
-            post4Box.classList.toggle('placeholder', !lede && !link);
+           // 4. One photo
+const post4Box = document.getElementById('post-4');
+post4Box.innerText = headline ? `${headlineVal} 👇` : '[Headline] 👇';
+post4Box.classList.toggle('placeholder', !headline);
 
-            // 5. Multiple photos
-            const post5Box = document.getElementById('post-5');
-            post5Box.innerText = `${ledeVal}\n\nRead more: ${linkVal}`;
-            post5Box.classList.toggle('placeholder', !lede && !link);
+const cmt4Box = document.getElementById('cmt-4');
+cmt4Box.innerText = `➡️➡️➡️ Read more: ${linkVal}`;
+cmt4Box.classList.toggle('placeholder', !link);
+
+// 5. Multiple photos
+const post5Box = document.getElementById('post-5');
+post5Box.innerText = headline ? `${headlineVal} 👇` : '[Headline] 👇';
+post5Box.classList.toggle('placeholder', !headline);
+
+const cmt5Box = document.getElementById('cmt-5');
+cmt5Box.innerText = `➡️➡️➡️ Read more: ${linkVal}`;
+cmt5Box.classList.toggle('placeholder', !link);
 
             // 6. Newscard
             const post6Box = document.getElementById('post-6');

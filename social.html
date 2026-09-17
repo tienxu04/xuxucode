@@ -742,9 +742,9 @@
             cmt3Box.innerText = `➡️➡️➡️ Read more: ${linkVal}`;
             cmt3Box.classList.toggle('placeholder', !link);
 
-           // 4. One photo
+         // 4. One photo
 const post4Box = document.getElementById('post-4');
-post4Box.innerText = headline ? `${headlineVal} 👇` : '[Headline] 👇';
+post4Box.innerText = headline ? `${headlineVal}\n\nLink in comments 👇` : '[Headline]\n\nLink in comments 👇';
 post4Box.classList.toggle('placeholder', !headline);
 
 const cmt4Box = document.getElementById('cmt-4');
@@ -753,7 +753,7 @@ cmt4Box.classList.toggle('placeholder', !link);
 
 // 5. Multiple photos
 const post5Box = document.getElementById('post-5');
-post5Box.innerText = headline ? `${headlineVal} 👇` : '[Headline] 👇';
+post5Box.innerText = headline ? `${headlineVal}\n\nLink in comments 👇` : '[Headline]\n\nLink in comments 👇';
 post5Box.classList.toggle('placeholder', !headline);
 
 const cmt5Box = document.getElementById('cmt-5');

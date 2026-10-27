@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Công cụ Tải & Ghép Segment Video</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Mux.js để lọc stream rác timed_id3 và chuyển mpegts sang mp4 chuẩn -->
+  <script src="https://cdn.jsdelivr.net/npm/mux.js@6.3.0/dist/mux.min.js"></script>
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+    .card { background-color: #1e293b; border: 1px solid #334155; }
+    .input-field { background-color: #0f172a; border: 1px solid #334155; color: #f8fafc; }
+    .input-field:focus { border-color: #10b981; outline: none; }
+  </style>
+</head>
+<div class="min-h-screen p-4 md:p-8 flex flex-col items-center justify-center">
+  <div class="w-full max-w-2xl space-y-6">
+    
+    <!-- HEADER -->
+    <div class="text-center space-y-2">
+      <h1 class="text-2xl md:text-3xl font-bold text-emerald-400">=== CHƯƠNG TRÌNH TẢI & GHÉP SEGMENT VIDEO ===</h1>
+      <p class="text-slate-400 text-sm">Tự động bóc tách URL, tải các đoạn .ts, lọc bỏ stream rác và ghép thành MP4</p>
+    </div>
+
+    <!-- FORM INPUT (Giao diện chuẩn bản gốc) -->
+    <div class="card p-6 rounded-xl space-y-4 shadow-xl">
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-1">1. Dán 1 URL segment bất kỳ:</label>
+        <input type="text" id="inputUrl" class="input-field w-full px-4 py-2.5 rounded-lg text-sm" placeholder="https://cdn-short.tuoitre.vn/.../seg-9-v1-a1.ts?v=32746f2e">
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">2. Segment bắt đầu (Start):</label>
+          <input type="number" id="startSeg" value="0" min="0" class="input-field w-full px-4 py-2.5 rounded-lg text-sm">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1">3. Segment kết thúc (End):</label>
+          <input type="number" id="endSeg" value="10" min="0" class="input-field w-full px-4 py-2.5 rounded-lg text-sm">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-300 mb-1">4. Nhập tên thư mục/file muốn lưu:</label>
+        <input type="text" id="folderName" value="video_merged" class="input-field w-full px-4 py-2.5 rounded-lg text-sm" placeholder="vd: duytan">
+      </div>
+
+      <button id="startBtn" onclick="startProcess()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg shadow-emerald-900/20">
+        Bắt đầu Tải & Ghép MP4
+      </button>
+    </div>
+
+    <!-- PROGRESS BOARD -->
+    <div id="progressCard" class="card p-6 rounded-xl space-y-4 hidden">
+      <div class="flex justify-between items-center text-sm">
+        <span id="statusText" class="font-medium text-emerald-400">Đang chuẩn bị...</span>
+        <span id="percentText" class="font-bold text-slate-200">0%</span>
+      </div>
+
+      <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
+        <div id="progressBar" class="bg-emerald-500 h-full w-0 transition-all duration-200"></div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 text-center text-xs pt-2">
+        <div class="bg-slate-800/50 p-2 rounded">
+          <div class="text-slate-400">Tổng số file</div>
+          <div id="statTotal" class="font-bold text-slate-200 text-sm">0</div>
+        </div>
+        <div class="bg-slate-800/50 p-2 rounded">
+          <div class="text-slate-400">Thành công</div>
+          <div id="statSuccess" class="font-bold text-emerald-400 text-sm">0</div>
+        </div>
+        <div class="bg-slate-800/50 p-2 rounded">
+          <div class="text-slate-400">Thất bại</div>
+          <div id="statFailed" class="font-bold text-rose-400 text-sm">0</div>
+        </div>
+      </div>
+
+      <div id="logBox" class="bg-slate-950 p-3 rounded font-mono text-xs text-slate-400 h-28 overflow-y-auto space-y-1"></div>
+    </div>
+
+    <!-- RESULT & PREVIEW -->
+    <div id="resultCard" class="card p-6 rounded-xl space-y-4 hidden border-emerald-500/50">
+      <div class="flex items-center space-x-2 text-emerald-400 font-semibold">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d=" "></path></svg>
+        <span>Hoàn tất ghép nối! File MP4 đã sẵn sàng.</span>
+      </div>
+
+      <video id="videoPreview" controls class="w-full rounded-lg bg-black max-h-[450px] shadow-lg"></video>
+
+      <a id="downloadBtn" download="video.mp4" class="block w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-center py-3 rounded-lg transition-colors">
+        Tải Video (.MP4) Về Máy
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let isProcessing = false;
+
+function log(msg, isError = false) {
+  const logBox = document.getElementById('logBox');
+  const div = document.createElement('div');
+  div.className = isError ? 'text-rose-400' : 'text-slate-300';
+  div.textContent = msg;
+  logBox.appendChild(div);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+
+async function startProcess() {
+  if (isProcessing) return;
+  
+  const inputUrl = document.getElementById('inputUrl').value.trim();
+  const start = parseInt(document.getElementById('startSeg').value);
+  const end = parseInt(document.getElementById('endSeg').value);
+  const folderName = document.getElementById('folderName').value.trim() || 'video_merged';
+
+  if (!inputUrl) {
+    alert('Vui lòng nhập URL segment mẫu!');
+    return;
+  }
+  if (isNaN(start) || isNaN(end) || start > end) {
+    alert('Segment bắt đầu và kết thúc không hợp lệ!');
+    return;
+  }
+
+  // TỰ ĐỘNG BÓC TÁCH CẤU TRÚC URL TƯƠNG TỰ BASH SCRIPT (seg-X-v1 -> seg-NUM-v1)
+  const baseUrl = inputUrl.replace(/seg-\d+-/, 'seg-NUM-');
+
+  // UI Setup
+  isProcessing = true;
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('progressCard').classList.remove('hidden');
+  document.getElementById('resultCard').classList.add('hidden');
+  document.getElementById('logBox').innerHTML = '';
+  
+  const total = end - start + 1;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statSuccess').textContent = '0';
+  document.getElementById('statFailed').textContent = '0';
+
+  log(`=== Bắt đầu tải ${total} file vào thư mục '${folderName}' ===`);
+
+  const downloadedBuffers = [];
+  let successCount = 0;
+  let failedCount = 0;
+
+  // 1. VÒNG LẶP TẢI FILE SEGMENT
+  for (let i = start; i <= end; i++) {
+    const currentUrl = baseUrl.replace('NUM', i);
+    const fileName = `seg-${i}-v1-a1.woff2`;
+    
+    try {
+      const res = await fetch(currentUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      
+      const buffer = await res.arrayBuffer();
+      if (buffer.byteLength === 0) throw new Error('File rỗng');
+
+      downloadedBuffers.push(new Uint8Array(buffer));
+      successCount++;
+      log(`[OK] Progress: ${fileName} (${(buffer.byteLength / 1024).toFixed(1)} KB)`);
+    } catch (err) {
+      failedCount++;
+      log(`[LỖI/THIẾU] ${fileName}: ${err.message}`, true);
+    }
+
+    // Cập nhật UI Progress
+    const currentProcessed = successCount + failedCount;
+    const percent = Math.round((currentProcessed / total) * 100);
+    document.getElementById('progressBar').style.width = `${percent}%`;
+    document.getElementById('percentText').textContent = `${percent}%`;
+    document.getElementById('statusText').textContent = `Đang tải: ${currentProcessed}/${total}`;
+    document.getElementById('statSuccess').textContent = successCount;
+    document.getElementById('statFailed').textContent = failedCount;
+  }
+
+  if (downloadedBuffers.length === 0) {
+    alert('Không thể tải bất kỳ segment nào!');
+    isProcessing = false;
+    document.getElementById('startBtn').disabled = false;
+    return;
+  }
+
+  // 2. GHÉP TẤT CẢ DỮ LIỆU BINARY & LỌC BỎ STREAM RÁC (TIMED_ID3) BẰNG MUX.JS
+  log('\nĐang lọc dữ liệu rác (timed_id3) & chuyển đổi sang MP4 chuẩn...');
+  document.getElementById('statusText').textContent = 'Đang ghép nối MP4...';
+
+  try {
+    const transmuxer = new muxjs.mp4.Transmuxer({ keepOriginalTimestamps: true });
+    const initSegmentChunks = [];
+    const mediaSegmentChunks = [];
+
+    transmuxer.on('data', (segment) => {
+      if (segment.type === 'combined') {
+        if (segment.initSegment) initSegmentChunks.push(segment.initSegment);
+        if (segment.data) mediaSegmentChunks.push(segment.data);
+      }
+    });
+
+    // Đẩy từng đoạn MPEG-TS vào transmuxer
+    for (const chunk of downloadedBuffers) {
+      transmuxer.push(chunk);
+    }
+    transmuxer.flush();
+
+    if (initSegmentChunks.length === 0) {
+      throw new Error('Không thể khởi tạo cấu trúc MP4!');
+    }
+
+    // Ghép các mảng Uint8Array thành 1 Blob MP4 hoàn chỉnh
+    const totalSize = initSegmentChunks.reduce((acc, c) => acc + c.byteLength, 0) +
+                      mediaSegmentChunks.reduce((acc, c) => acc + c.byteLength, 0);
+    
+    const finalMp4 = new Uint8Array(totalSize);
+    let offset = 0;
+
+    for (const chunk of initSegmentChunks) {
+      finalMp4.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    for (const chunk of mediaSegmentChunks) {
+      finalMp4.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+
+    const mp4Blob = new Blob([finalMp4], { type: 'video/mp4' });
+    const videoUrl = URL.createObjectURL(mp4Blob);
+
+    // Gán dữ liệu lên UI Preview & Nút tải về
+    const videoPreview = document.getElementById('videoPreview');
+    videoPreview.src = videoUrl;
+
+    const downloadBtn = document.getElementById('downloadBtn');
+    downloadBtn.href = videoUrl;
+    downloadBtn.download = `${folderName}.mp4`;
+
+    document.getElementById('resultCard').classList.remove('hidden');
+    log(`\n🎉 Hoàn tất! Video đã ghép xong thành công: ${folderName}.mp4`);
+  } catch (err) {
+    log(`❌ Lỗi khi đóng gói MP4: ${err.message}`, true);
+    alert('Không thể đóng gói MP4: ' + err.message);
+  } finally {
+    isProcessing = false;
+    document.getElementById('startBtn').disabled = false;
+  }
+}
+</script>
+</html>
